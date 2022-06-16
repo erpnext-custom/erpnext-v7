@@ -354,8 +354,75 @@ class BankPayment(Document):
             data = self.get_eme_payment()
         elif self.transaction_type == "Leave Travel Concession":
             data = self.get_ltc()
+        elif self.transaction_type == "Employee Loan Payment":
+            data = self.get_loan_detail()
         return data
-        
+
+    #added by cety on 16-06-2022
+    """
+    # Fetch Employee Loan Details
+    # Author: thukday@gmail.com
+    # Date : 2022-02-07
+    """
+    def get_loan_detail(self):
+        if not self.institution_name:
+            frappe.throw("Please select Financial Institution")
+
+        doc = frappe.get_doc("Financial Institution", self.institution_name)
+        if not doc.employee_loan_payment_in_single_account:
+            return frappe.db.sql("""SELECT "Salary Slip" transaction_type, t1.name transaction_id, 
+                            t2.name transaction_reference, t1.modified transaction_date,
+                            t1.employee, t1.employee_name beneficiary_name, 
+                            t2.institution_name bank_name, t2.bank_branch, fib.financial_system_code,
+                            t2.bank_account_type, t2.reference_number as bank_account_no, t2.amount,
+                            'Loan remittance for {month}-{salary_year}' remarks, "Draft" status						
+                        FROM `tabSalary Slip` t1
+                            JOIN `tabSalary Detail` t2 ON t1.name = t2.parent
+                            LEFT JOIN `tabFinancial Institution Branch` fib ON fib.name = t2.bank_branch
+                        WHERE t1.fiscal_year = '{salary_year}'
+                        AND t2.amount > 0
+                        AND t2.salary_component = 'Financial Institution Loan'
+                        AND t1.month = '{salary_month}'
+                        AND t1.docstatus = 1
+                        AND t2.institution_name = '{institution}'
+                        AND NOT EXISTS(select 1
+                            FROM `tabBank Payment Item` bpi
+                            WHERE bpi.transaction_type = 'Salary Slip'
+                            AND bpi.transaction_id = t1.name
+                            AND bpi.transaction_reference = t2.name
+                            AND bpi.parent != '{bank_payment}'
+                            AND bpi.docstatus != 2
+                            AND bpi.status NOT IN ('Cancelled', 'Failed')
+                        )
+                    """.format(salary_year=self.fiscal_year, 
+                        salary_month=self.get_month_id(self.month),
+                        month=self.month, institution=self.institution_name,
+                        bank_payment = self.name), as_dict=True)
+        else:
+            return frappe.db.sql("""SELECT "Salary Slip" transaction_type, t1.name transaction_id, 
+                            t2.name transaction_reference, t1.modified transaction_date,
+                            fi.account_holder_name beneficiary_name, 
+                            fi.account_bank_name as bank_name, fi.bank_branch, fib.financial_system_code,
+                            fi.bank_account_type, fi.account_no bank_account_no, sum(t2.amount) as amount,
+                            'Loan remittance for {month}-{salary_year}' remarks, "Draft" status						
+                        FROM `tabSalary Slip` t1
+                            JOIN `tabSalary Detail` t2 ON t1.name = t2.parent
+                            JOIN `tabFinancial Institution` fi ON fi.name = t2.institution_name
+                            LEFT JOIN `tabFinancial Institution Branch` fib ON fib.name = fi.bank_branch
+                        WHERE t1.fiscal_year = '{salary_year}'
+                        AND t2.salary_component = 'Financial Institution Loan'
+                        AND t1.month = '{salary_month}'
+                        AND t1.docstatus = 1
+                        AND t2.institution_name = '{institution}'
+                    """.format(salary_year=self.fiscal_year, 
+                        salary_month=self.get_month_id(self.month),
+                        month=self.month, institution=self.institution_name,
+                        bank_payment = self.name), as_dict=True)			
+    """
+    # Fetch MR payment details with Bank Details from Process MR Payment and MR Employee
+    # Author: thukday@gmail.com
+    # Date : 2021-09-03
+    """  
     def get_journal_entry(self):
         cond = ""
         if self.transaction_no:
@@ -653,34 +720,6 @@ class BankPayment(Document):
         
                             """.format(cond = cond, bank_payment=self.name), as_dict=True)
         
-    # def get_overtime_payment(self):
-    #     cond = ""
-    #     if self.transaction_no:
-    #         cond ="AND ota.name = '{}'".format(self.transaction_no)
-    #     elif not self.transaction_no and self.from_date and self.to_date:
-    #         cond = "AND ota.posting_date BETWEEN '{}' AND '{}' AND ota.branch = '{}'".format(str(self.from_date), str(self.to_date), str(self.branch))
-    #     return frappe.db.sql("""
-    #                 SELECT
-    #                     "Overtime Application" as transaction_type, ota.name as transaction_id, ota.name as transaction_reference, ota.posting_date as transaction_date, e.employee_name as beneficiary_name, e.bank_name, e.bank_branch, e.bank_account_type, e.bank_ac_no as bank_account_no, ota.total_amount as amount, ota.branch
-    #                 FROM `tabOvertime Application` ota
-    #                 JOIN `tabEmployee` e ON e.name = ota.employee 
-    #                 WHERE ota.docstatus = 1
-    #                 AND (ota.payment_jv IS NULL OR ota.payment_jv = '') 
-    #                 AND (ota.overtime_payment IS NULL OR ota.overtime_payment = '')
-    #                 AND e.bank_name IS NOT NULL
-    #                 AND e.bank_branch IS NOT NULL
-    #                 AND e.bank_account_type IS NOT NULL
-    #                 AND e.bank_ac_no IS NOT NULL
-    #                 {cond}
-    #                 AND NOT EXISTS(select 1
-    #                         FROM `tabBank Payment Item` bpi
-    #                         WHERE bpi.transaction_type = 'Overtime Application'
-    #                         AND bpi.transaction_id = ota.name
-    #                         AND bpi.parent != '{bank_payment}'
-    #                         AND bpi.docstatus != 2
-    #                         AND bpi.status NOT IN ('Cancelled', 'Failed'))
-        
-    #                         """.format(cond = cond, bank_payment=self.name), as_dict=True)
     #added by cety on 13-10-2021 for eme payment
     def get_eme_payment(self):
         cond = ""
@@ -1161,18 +1200,18 @@ def get_paid_from(doctype, txt, searchfield, start, page_len, filters):
         and a.bank_branch is not null
         and a.bank_account_type is not null
         and a.bank_account_no is not null
-        	and ( exists (select 1
-			from `tabBranch` b 
-			inner join `tabBranch Bank Account` ba 
-			on b.name = ba.parent
-			where b.name = '{0}'
-			and ba.account = a.name)
-		or 
-		exists (select 1
-			from `tabBranch` 
-			where name = "{0}"
-			and expense_bank_account = a.name)
-	)
+            and ( exists (select 1
+            from `tabBranch` b 
+            inner join `tabBranch Bank Account` ba 
+            on b.name = ba.parent
+            where b.name = '{0}'
+            and ba.account = a.name)
+        or 
+        exists (select 1
+            from `tabBranch` 
+            where name = "{0}"
+            and expense_bank_account = a.name)
+    )
     """.format(filters.get("branch")))
 
     if filters.get("branch") and not data:
