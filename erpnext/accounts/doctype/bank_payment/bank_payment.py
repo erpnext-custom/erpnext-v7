@@ -424,12 +424,51 @@ class BankPayment(Document):
     # Date : 2021-09-03
     """  
     def get_journal_entry(self):
+        data = []
+        if self.pf_remittance:
+            if not self.pf_vendor:
+                frappe.throw("Please select PF Service Provider/Vendor")
+            ven_doc = frappe.get_doc("Supplier", self.pf_vendor)
+            for a in frappe.db.sql("""select je.name transaction_id, jea.name transaction_reference, 
+                                  je.posting_date transaction_date, round(jea.credit_in_account_currency,2) as credit
+                                from `tabJournal Entry` je join `tabJournal Entry Account` jea
+                                on je.name = jea.parent
+                                left join `tabAccount` a on a.name = jea.account
+                                where je.name = '{journal_entry}'
+                                and a.account_type = "Bank"
+                                and je.docstatus = 1
+                                AND NOT EXISTS(select 1
+                                    FROM `tabBank Payment Item` bpi
+                                    WHERE bpi.transaction_type = 'Journal Entry'
+                                    AND bpi.transaction_id = je.name
+                                    AND bpi.parent != '{bank_payment}'
+                                    AND bpi.docstatus != 2
+                                    AND bpi.status NOT IN ('Cancelled', 'Failed')
+                                )
+                                """.format(journal_entry = self.transaction_no, bank_payment = self.name), as_dict=True):
+                data.append(frappe._dict({
+                            'transaction_type': 'Journal Entry',
+                            'transaction_id': a.transaction_id,
+                            'trnasaction_reference': a.transaction_reference,
+                            'transaction_date': a.transaction_date,
+                            'supplier': ven_doc.name,
+                            'beneficiary_name': ven_doc.supplier_name,
+                            'bank_name': ven_doc.bank_name_new,
+                            'bank_branch': ven_doc.bank_branch,
+                            'bank_account_type': ven_doc.bank_account_type,
+                            'bank_account_no': ven_doc.account_number,
+                            'amount': flt(a.credit),
+                            'status': "Draft",
+                            'remarks': "PF Remittance"
+                        }))
+            return data
+            
         cond = ""
         if self.transaction_no:
             cond = 'AND je.name = "{}"'.format(self.transaction_no)
         elif not self.transaction_no and self.from_date and self.to_date:
             cond = 'AND je.posting_date BETWEEN "{}" AND "{}"'.format(str(self.from_date), str(self.to_date))
-        data = []
+
         for a in frappe.db.sql("""SELECT je.name transaction_id, je.posting_date transaction_date, je.voucher_type
                                 FROM `tabJournal Entry` je 
                                 where je.docstatus = 1
