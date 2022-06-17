@@ -42,7 +42,7 @@ def get_tenant_list(filters):
 			emp = frappe.db.sql("select name from tabEmployee where employee_name = '{}'".format(filters.get("rental_official")), as_dict=True)
 			official = emp[0].name
 	tenant_list = frappe.db.sql("""
-		Select ti.name, tro.from_date, ti.customer_code,
+		Select ti.name, tro.from_date,
 				Case
 					When (select idx from `tabTenant Rental Officials` where parent=ti.name and from_date > tro.from_date limit 1)
 						Then (select from_date as to_date from `tabTenant Rental Officials` where parent=ti.name and idx=tro.idx + 1)
@@ -50,7 +50,7 @@ def get_tenant_list(filters):
 				End as to_date
 		From `tabTenant Information` ti
 		Inner Join `tabTenant Rental Officials` tro On ti.name = tro.parent 
-		Where tro.rental_official = '{rental_official}' Group By customer_code""".format(rental_official=official, end_date=filters.get("to_date")), as_dict=1)
+		Where tro.rental_official = '{rental_official}'""".format(rental_official=official, end_date=filters.get("to_date")), as_dict=1)
 
 	data = []
 	for i in tenant_list:
