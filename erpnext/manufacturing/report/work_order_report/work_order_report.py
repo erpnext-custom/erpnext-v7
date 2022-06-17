@@ -85,7 +85,7 @@ def get_completed_data(filters=None):
 			wo.branch,
 			wo.planned_start_date,
 			wo.production_item,
-			wo.item_name,
+			i.item_name,
 			i.item_sub_group_type,
 			wo.qty,
 			wo.produced_qty,
