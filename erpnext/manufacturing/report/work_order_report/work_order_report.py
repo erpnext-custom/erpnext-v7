@@ -61,7 +61,7 @@ def get_progress_data(filters):
 		query += " AND wo.production_item = '{}'".format(filters.get("item"))
 
 	if filters.get("item_sub_group_type"):
-		query += " AND i.item_sub_group_type = '{}'".format(filters.get("item_sub_group_Type"))
+		query += " AND i.item_sub_group_type = '{}'".format(filters.get("item_sub_group_type"))
 
 	
 	return frappe.db.sql(query)
@@ -109,7 +109,7 @@ def get_completed_data(filters=None):
 		query += " AND wo.production_item = '{}'".format(filters.get("item"))
 
 	if filters.get("item_sub_group_type"):
-		query += " AND i.item_sub_group_type = '{}'".format(filters.get("item_sub_group_Type"))
+		query += " AND i.item_sub_group_type = '{}'".format(filters.get("item_sub_group_type"))
 	return frappe.db.sql(query)
 # join `tabItem` i on i.name=wo.production_item
 # 	SELECT
