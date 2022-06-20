@@ -60,6 +60,9 @@ def get_progress_data(filters):
 	if filters.get("item"):
 		query += " AND wo.production_item = '{}'".format(filters.get("item"))
 
+	if filters.get("item_sub_group_type"):
+		query += " AND i.item_sub_group_type = '{}'".format(filters.get("item_sub_group_Type"))
+
 	
 	return frappe.db.sql(query)
 
@@ -102,6 +105,11 @@ def get_completed_data(filters=None):
 			query += " AND wo.branch = \'" + str(filters.branch).replace(' - NRDCL','') + "\'"
 		else:
 			query += " AND wo.branch in (select name from `tabBranch` where cost_center in (select name from `tabCost Center` where parent_cost_center = \'" + filters.cost_center + "\'))"
+	if filters.get("item"):
+		query += " AND wo.production_item = '{}'".format(filters.get("item"))
+
+	if filters.get("item_sub_group_type"):
+		query += " AND i.item_sub_group_type = '{}'".format(filters.get("item_sub_group_Type"))
 	return frappe.db.sql(query)
 # join `tabItem` i on i.name=wo.production_item
 # 	SELECT

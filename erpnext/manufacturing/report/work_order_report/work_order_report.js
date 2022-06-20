@@ -112,6 +112,12 @@ frappe.query_reports["Work Order Report"] = {
 				]
 			}
 		},
+	},
+	{
+		"fieldname": "item_sub_group_type",
+		"label": ("Item Sub Group Type"),
+		"fieldtype": "Link",
+		"options": "Item Sub Group Type",
 	}
 	]
 }
