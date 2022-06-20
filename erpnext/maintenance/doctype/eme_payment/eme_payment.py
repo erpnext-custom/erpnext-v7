@@ -40,7 +40,7 @@ class EMEPayment(Document):
 		# if self.deduction_amount and not self.deduction_remarks:
 		# 	frappe.throw("Deduction Remarks is mandatory")
 
-        def get_logbooks(self):
+	def get_logbooks(self):
 		if not self.branch:
 			frappe.throw("Select Branch")
 		if not self.supplier:
@@ -60,15 +60,15 @@ class EMEPayment(Document):
 					ORDER BY l.posting_date, li.expense_head
 				"""
 	
-                entries = frappe.db.sql(query, {"supplier": self.supplier, "from_date": self.from_date, "to_date": self.to_date, "branch": self.branch}, as_dict=True)
-                self.set('items', [])
+		entries = frappe.db.sql(query, {"supplier": self.supplier, "from_date": self.from_date, "to_date": self.to_date, "branch": self.branch}, as_dict=True)
+		self.set('items', [])
 
 		if len(entries) == 0:
 			frappe.msgprint("No valid logbooks found!")
 
 		total = 0
 		exist_list = {}
-                for d in entries:
+		for d in entries:
 			exist = frappe.db.sql(""" SELECT eme.name FROM `tabEME Payment` eme, `tabEME Payment Item` emi  
 				WHERE emi.parent = eme.name AND emi.logbook = '{0}' """.format(d.logbook))
 			if exist:
@@ -83,7 +83,7 @@ class EMEPayment(Document):
 		if exist_list:
 			frappe.msgprint("<b> {0} </b> </br> {1}".format(exist_list.keys(), exist_list.values()), title= "LogBook already pulled in EME Payment")
 		"""
-			AND NOT EXISTS ( SELECT eme.name FROM `tabEME Payment` eme, `tabEME Payment Item` emi                         WHERE emi.parent = eme.name AND emi.logbook = l.name) 
+			AND NOT EXISTS ( SELECT eme.name FROM `tabEME Payment` eme, `tabEME Payment Item` emi WHERE emi.parent = eme.name AND emi.logbook = l.name) 
 		"""
 		self.total_amount = total
 		self.calculate_totals()
@@ -305,35 +305,35 @@ class EMEPayment(Document):
 			frappe.db.sql("delete from `tabCommitted Budget` where po_no = %s", self.name)
 			frappe.db.sql("delete from `tabConsumed Budget` where po_no = %s", self.name)
 
-        def consume_budget(self, cc, account, amount):
-                bud_obj = frappe.get_doc({
-                        "doctype": "Committed Budget",
-                        "account": account,
-                        "cost_center": cc,
-                        "po_no": self.name,
-                        "po_date": self.posting_date,
-                        "amount": amount,
-                        "item_code": None,
-                        "poi_name": self.name,
-                        "date": frappe.utils.nowdate(),
+		def consume_budget(self, cc, account, amount):
+				bud_obj = frappe.get_doc({
+						"doctype": "Committed Budget",
+						"account": account,
+						"cost_center": cc,
+						"po_no": self.name,
+						"po_date": self.posting_date,
+						"amount": amount,
+						"item_code": None,
+						"poi_name": self.name,
+						"date": frappe.utils.nowdate(),
 			"consumed" : 1
-                        })
-                bud_obj.flags.ignore_permissions = 1
-                bud_obj.submit()
+						})
+				bud_obj.flags.ignore_permissions = 1
+				bud_obj.submit()
 
-                consume = frappe.get_doc({
-                        "doctype": "Consumed Budget",
-                        "account": account,
-                        "cost_center": cc,
-                        "po_no": self.name,
-                        "po_date": self.posting_date,
-                        "amount": amount,
-                        "pii_name": self.name,
-                        "item_code": None,
-                        "com_ref": bud_obj.name,
-                        "date": frappe.utils.nowdate()})
-                consume.flags.ignore_permissions=1
-                consume.submit()
+				consume = frappe.get_doc({
+						"doctype": "Consumed Budget",
+						"account": account,
+						"cost_center": cc,
+						"po_no": self.name,
+						"po_date": self.posting_date,
+						"amount": amount,
+						"pii_name": self.name,
+						"item_code": None,
+						"com_ref": bud_obj.name,
+						"date": frappe.utils.nowdate()})
+				consume.flags.ignore_permissions=1
+				consume.submit()
 
 def set_missing_values(source, target):
 	target.run_method("set_missing_values")
