@@ -65,10 +65,12 @@ class MaterialReturn(StockController):
 			wh_account = frappe.db.get_value("Account", {"account_type": "Stock", "warehouse": a.warehouse}, "name")
 			if not wh_account:
 				frappe.throw(str(self.warehouse) + " is not linked to any account.")
-
-			expense_account = frappe.db.get_value("Item", a.item_code, "expense_account")
+			# below code updated by Jai, 20 Jun 2022
+			# expense_account = frappe.db.get_value("Item", a.item_code, "expense_account")
+			expense_account = a.expense_account
 			if not expense_account:
-				frappe.throw("Setup Default Expense Account in Item for {}".format(a.item_name))
+				# frappe.throw("Setup Default Expense Account in Item for {}".format(a.item_name))
+				frappe.throw("Setup Expense Account at #Row {}".format(a.idx))
 							
 			gl_entries.append(
 				prepare_gl(self, {"account": wh_account,
