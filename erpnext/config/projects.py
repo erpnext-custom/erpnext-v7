@@ -18,6 +18,11 @@ def get_data():
 					"description": _("Design master."),
 				},
 				{
+					"type": "doctype",
+					"name": "RBA Project",
+					"description": _("RBA Project."),
+				},
+				{
                                         "type": "doctype",
                                         "name": "Project Category",
                                         "description": _("Project Category."),

@@ -332,7 +332,7 @@ def update_asset_details():
 		print a.name, count
 
 def ipol():
-	doc = frappe.get_doc("Issue POL", 'IPOL220400161')
+	doc = frappe.get_doc("Issue POL", 'IPOL220600116')
 	doc.submit()
 	print doc.name
 
@@ -353,7 +353,7 @@ def ipol1():
 			print doc.name
 
 def rpol():
-	pol = ["POL220600001"]
+	pol = ["POL220600075"]
 	for a in pol:
 		doc = frappe.get_doc("POL", a)
 		doc.submit()
@@ -367,8 +367,13 @@ def ss():
 		print (a)
 
 def submit_se():
-	doc = frappe.get_doc("Stock Entry", "SEMI22010955")
+	doc = frappe.get_doc("Stock Entry", "SEMI22030525-1")
 	doc.submit()
+	print doc.name
+
+def cancel_se():
+	doc = frappe.get_doc("Stock Entry", "SEM22012789")
+	doc.cancel()
 	print doc.name
 
 def submit_je():
