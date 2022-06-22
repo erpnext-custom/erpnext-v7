@@ -59,10 +59,10 @@ class SWSApplication(Document):
 				doc = frappe.get_doc("Employee Family Details", a.reference_document)
 				swsdoc = frappe.get_doc("SWS Membership Item", a.reference_document)
 				if self.docstatus == 1:
-					doc.db_set("deceased", 1)
+					doc.db_set("dead", 1)
 					swsdoc.db_set("deceased", 1)
 				if self.docstatus == 2:
-					doc.db_set("deceased", 0)
+					doc.db_set("dead", 0)
 					swsdoc.db_set("deceased", 0)
 			row = frappe.get_doc("SWS Membership Item", a.reference_document)
 			if self.docstatus == 1:
