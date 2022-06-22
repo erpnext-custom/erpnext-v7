@@ -513,8 +513,6 @@ class BankPayment(Document):
                         }))
                     if flt(p.debit) > 0:
                         debit_bank_account += 1
-                if flt(debit_amt) != flt(credit_amt) or debit_bank_account > 1:
-                    frappe.throw("Bank Payment not feasible as either Debit or Credit is not equal or there are more than one debit bank account")				
             else:
                 credit_amt = debit_amt = other_credit = 0.00
                 party_type = party = reference_type = reference_name = ""
