@@ -712,8 +712,10 @@ class BankPayment(Document):
 					{cond}
 					AND IFNULL(t1.net_pay,0) > 0
 					AND NOT EXISTS(select 1
-						FROM `tabBank Payment Item` bpi
+						FROM `tabBank Payment Item` bpi, `tabBank Payment` bp
 						WHERE bpi.transaction_type = 'Salary Slip'
+						AND bp.name=bpi.parent
+						AND bp.transaction_type not in ('Employee Loan Payment')
 						AND bpi.transaction_id = t1.name
 						AND bpi.parent != '{bank_payment}'
 						AND bpi.docstatus != 2
