@@ -1010,3 +1010,32 @@ def update_bank_branch_and_account_type():
 		frappe.db.sql("update `tabEmployee` set bank_branch = 'Samtse Branch - BOBL', bank_account_type='Savings' where name = %s", e.name)
 		print(e.name)
 
+def remove_salary_slip_from_mistaken_slip():
+	get_data = frappe.db.sql("""select s.employee_name, b.reference, (select ot.processed from `tabOvertime Application` ot where ot.name=b.reference) as processed from `tabSalary Slip` s, `tabOvertime Item` b where s.name=b.parent and s.fiscal_year='2022' and s.month='06'""",as_dict=1)
+	count = 1
+	if get_data:
+		for a in get_data:
+			ot = frappe.get_doc("Overtime Application",a.reference)
+			ss = frappe.db.sql("""
+				select name from `tabOvertime Item` where parent = '{}'
+			""".format(ot.salary_slip),as_dict=1)
+			if ss:
+				for b in ss:
+					ssd = frappe.get_doc("Overtime Item", b.name)
+					ssd.db_set("reference",None)
+			ot.db_set("salary_slip",None)
+			ot.db_set("processed",0)
+			print(str(count)+". Removed SS and Processed for OTA "+str(a.reference))
+			count += 1
+
+
+	# query = frappe.db.sql("update `tabOvertime Application` set reference='', processed=0 where name in '{}'".format(get_data.reference))
+
+def cancel_eme_payment():
+	doc = frappe.get_doc("EME Payment", 'EP220600015')
+	try:
+		doc.cancel()
+		print('done...')
+	except Exception as e:
+		print(str(e))
+	frappe.db.commit()

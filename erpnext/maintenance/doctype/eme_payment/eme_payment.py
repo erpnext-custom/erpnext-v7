@@ -305,8 +305,8 @@ class EMEPayment(Document):
 			frappe.db.sql("delete from `tabCommitted Budget` where po_no = %s", self.name)
 			frappe.db.sql("delete from `tabConsumed Budget` where po_no = %s", self.name)
 
-		def consume_budget(self, cc, account, amount):
-				bud_obj = frappe.get_doc({
+	def consume_budget(self, cc, account, amount):
+		bud_obj = frappe.get_doc({
 						"doctype": "Committed Budget",
 						"account": account,
 						"cost_center": cc,
@@ -316,12 +316,12 @@ class EMEPayment(Document):
 						"item_code": None,
 						"poi_name": self.name,
 						"date": frappe.utils.nowdate(),
-			"consumed" : 1
+			    		"consumed" : 1
 						})
-				bud_obj.flags.ignore_permissions = 1
-				bud_obj.submit()
+		bud_obj.flags.ignore_permissions = 1
+		bud_obj.submit()
 
-				consume = frappe.get_doc({
+		consume = frappe.get_doc({
 						"doctype": "Consumed Budget",
 						"account": account,
 						"cost_center": cc,
@@ -332,8 +332,8 @@ class EMEPayment(Document):
 						"item_code": None,
 						"com_ref": bud_obj.name,
 						"date": frappe.utils.nowdate()})
-				consume.flags.ignore_permissions=1
-				consume.submit()
+		consume.flags.ignore_permissions=1
+		consume.submit()
 
 def set_missing_values(source, target):
 	target.run_method("set_missing_values")
