@@ -156,7 +156,7 @@ def inter_payment(Amt, PayeeAcctNum, BnfcryAcct, BnfcryName, BnfcryAcctTyp, Bnfc
         elif a.param == "password":
             password = a.defined_value
 
-    if Amt > 100000:
+    if Amt > 1000000:
         ModeOfPmt = str("01")
     else:
         ModeOfPmt = str("02")   
