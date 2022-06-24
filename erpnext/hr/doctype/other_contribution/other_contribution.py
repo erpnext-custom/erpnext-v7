@@ -140,10 +140,21 @@ class OtherContribution(Document):
                                                 for d in doc.get("deductions"):
                                                         if d.salary_component == self.salary_component and self.name in (d.reference_number, d.ref_docname):
                                                                 rem_list.append(d)
+                                                        if d.salary_component == "Other Contribution" and d.from_date < self.application_date and str(d.from_date).split("-")[0]+"-"+str(d.from_date).split("-")[1] != str(self.application_date).split("-")[0]+"-"+str(self.application_date).split("-")[1]:
+                                                                rem_list.append(d)
 
                                                 [doc.remove(d) for d in rem_list]
                                                 doc.save(ignore_permissions=True)
                                 else:
+                                        rem_list = []
+                                        if i.salary_structure:
+                                                doc = frappe.get_doc("Salary Structure", i.salary_structure)
+                                                for d in doc.get("deductions"):
+                                                        if d.salary_component == "Other Contribution" and datetime.strptime(str(d.from_date),"%Y-%m-%d") < datetime.strptime(str(self.application_date),"%Y-%m-%d") and str(d.from_date).split("-")[0]+"-"+str(d.from_date).split("-")[1] != str(self.application_date).split("-")[0]+"-"+str(self.application_date).split("-")[1]:
+                                                                rem_list.append(d)
+
+                                                [doc.remove(d) for d in rem_list]
+                                                doc.save(ignore_permissions=True)
                                         if frappe.db.exists("Salary Structure", {"employee": i.employee, "is_active": "Yes"}):
                                                 doc = frappe.get_doc("Salary Structure", {"employee": i.employee, "is_active": "Yes"})
                                                 row = doc.append("deductions",{})
