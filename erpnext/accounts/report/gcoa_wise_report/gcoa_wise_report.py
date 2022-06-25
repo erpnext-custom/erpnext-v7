@@ -54,8 +54,8 @@ def from_gl_applicable_for_doc(coa,filters):
 							SUM(CASE WHEN posting_date < '{0}' THEN credit ELSE 0 END) AS opening_credit,
 							SUM(CASE WHEN posting_date >= "{0}" AND posting_date <="{1}" THEN debit ELSE 0 END) AS debit,
 							SUM(CASE WHEN posting_date >= "{0}" AND posting_date <="{1}" THEN credit ELSE 0 END) AS credit
-					FROM `tabGL Entry` where (account = "{2}" or exact_expense_acc = "{2}") 
-     				AND voucher_type not in ('Stock Entry','Purchase Receipt','Stock Reconciliation',
+					FROM `tabGL Entry` where account = "{2}"  
+     				AND voucher_type not in ('Purchase Receipt','Stock Reconciliation',
          			'Issue POL','Asset Movement','Bulk Asset Transfer','Equipment POL Transfer',
             		'Period Closing Voucher','TDS Remittance')
               		AND (credit IS NOT NULL OR debit IS NOT NULL)
@@ -108,8 +108,7 @@ def from_gl_applicable_for_both(is_inter_company,coa,filters):
 				AND account = "{2}" 
 				AND (party IS NOT NULL OR party != '')
 				AND (credit IS NOT NULL OR debit IS NOT NULL) 
-				AND voucher_type NOT IN ('Stock Entry','Purchase Receipt','Stock Reconciliation','Issue POL','Asset Movement',
-    				'Bulk Asset Transfer','Equipment POL Transfer','Period Closing Voucher','TDS Remittance')
+				AND voucher_type NOT IN ('Purchase Receipt','Stock Reconciliation','Issue POL','Asset Movement','Bulk Asset Transfer','Equipment POL Transfer','Period Closing Voucher','TDS Remittance')
 				GROUP BY party
 				""".format(filters['from_date'],filters['to_date'],coa.account)
 	else:
@@ -120,10 +119,9 @@ def from_gl_applicable_for_both(is_inter_company,coa,filters):
 					SUM(CASE WHEN posting_date >= "{0}" AND posting_date <="{1}" THEN credit ELSE 0 END) AS credit, 
 					consolidation_party AS party, consolidation_party_type AS party_type
 			FROM `tabGL Entry` WHERE posting_date <= "{1}" 
-			AND (account = "{2}" or exact_expense_acc = "{2}") 
+			AND account = "{2}"  
 			AND (credit is not null or debit is not null) 
-			AND voucher_type not in ('Stock Entry','Purchase Receipt','Stock Reconciliation','Issue POL','Asset Movement',
-   			'Bulk Asset Transfer','Equipment POL Transfer')
+			AND voucher_type not in ('Purchase Receipt','Stock Reconciliation','Issue POL','Asset Movement','Bulk Asset Transfer','Equipment POL Transfer')
 			GROUP BY consolidation_party
 			""".format(filters['from_date'],filters['to_date'],coa.account)
 	total_debit = total_credit = 0
@@ -140,7 +138,7 @@ def from_gl_applicable_for_both(is_inter_company,coa,filters):
 				a.opening_debit 	= 0
 			total_debit 	= flt(flt(a.debit) + flt(a.opening_debit))
 			total_credit 	= flt(flt(a.credit) + flt(a.opening_credit))
-			a['amount'] 	= total_debit - total_credit if coa.root_type in ['Asset','Expense'] else (total_credit - total_debit) * -1
+			a['amount'] 	= total_debit - total_credit if coa.root_type in ['Asset','Expense'] else flt(total_credit - total_debit) * -1
 			if a.debit or a.credit or a.opening_debit or a.opening_credit or a.amount:
 				dhi_company_code =''
 				# fetch company code base on party for dhi companies
