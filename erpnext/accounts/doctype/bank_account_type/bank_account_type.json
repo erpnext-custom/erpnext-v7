@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 0, 
- "allow_rename": 0, 
+ "allow_rename": 1, 
  "autoname": "field:account_type_code", 
  "beta": 0, 
  "creation": "2021-09-07 12:10:45.072752", 
@@ -72,7 +72,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2021-09-07 12:10:45.072752", 
+ "modified": "2022-06-27 15:26:54.834670", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Bank Account Type", 
