@@ -62,56 +62,56 @@ website_context = {
 }
 
 website_route_rules = [
-	{"from_route": "/orders", "to_route": "Sales Order"},
-	{"from_route": "/orders/<path:name>", "to_route": "order",
-		"defaults": {
-			"doctype": "Sales Order",
-			"parents": [{"title": _("Orders"), "name": "orders"}]
-		}
-	},
-	{"from_route": "/invoices", "to_route": "Sales Invoice"},
-	{"from_route": "/invoices/<path:name>", "to_route": "order",
-		"defaults": {
-			"doctype": "Sales Invoice",
-			"parents": [{"title": _("Invoices"), "name": "invoices"}]
-		}
-	},
-	{"from_route": "/shipments", "to_route": "Delivery Note"},
-	{"from_route": "/shipments/<path:name>", "to_route": "order",
-		"defaults": {
-			"doctype": "Delivery Note",
-			"parents": [{"title": _("Shipments"), "name": "shipments"}]
-		}
-	},
-	{"from_route": "/rfq", "to_route": "Request for Quotation"},
-	{"from_route": "/rfq/<path:name>", "to_route": "rfq",
-		"defaults": {
-			"doctype": "Request for Quotation",
-			"parents": [{"title": _("Request for Quotation"), "name": "rfq"}]
-		}
-	},
-	{"from_route": "/addresses", "to_route": "Address"},
-	{"from_route": "/addresses/<path:name>", "to_route": "addresses",
-		"defaults": {
-			"doctype": "Address",
-			"parents": [{"title": _("Addresses"), "name": "addresses"}]
-		}
-	},
-	{"from_route": "/jobs", "to_route": "Job Opening"},
+	# {"from_route": "/orders", "to_route": "Sales Order"},
+	# {"from_route": "/orders/<path:name>", "to_route": "order",
+	# 	"defaults": {
+	# 		"doctype": "Sales Order",
+	# 		"parents": [{"title": _("Orders"), "name": "orders"}]
+	# 	}
+	# },
+	# {"from_route": "/invoices", "to_route": "Sales Invoice"},
+	# {"from_route": "/invoices/<path:name>", "to_route": "order",
+	# 	"defaults": {
+	# 		"doctype": "Sales Invoice",
+	# 		"parents": [{"title": _("Invoices"), "name": "invoices"}]
+	# 	}
+	# },
+	# {"from_route": "/shipments", "to_route": "Delivery Note"},
+	# {"from_route": "/shipments/<path:name>", "to_route": "order",
+	# 	"defaults": {
+	# 		"doctype": "Delivery Note",
+	# 		"parents": [{"title": _("Shipments"), "name": "shipments"}]
+	# 	}
+	# },
+	# {"from_route": "/rfq", "to_route": "Request for Quotation"},
+	# {"from_route": "/rfq/<path:name>", "to_route": "rfq",
+	# 	"defaults": {
+	# 		"doctype": "Request for Quotation",
+	# 		"parents": [{"title": _("Request for Quotation"), "name": "rfq"}]
+	# 	}
+	# },
+	# {"from_route": "/addresses", "to_route": "Address"},
+	# {"from_route": "/addresses/<path:name>", "to_route": "addresses",
+	# 	"defaults": {
+	# 		"doctype": "Address",
+	# 		"parents": [{"title": _("Addresses"), "name": "addresses"}]
+	# 	}
+	# },
+	# {"from_route": "/jobs", "to_route": "Job Opening"},
 ]
 
 portal_menu_items = [
-	{"title": _("Projects"), "route": "/project", "reference_doctype": "Project"},
-	{"title": _("Request for Quotations"), "route": "/rfq", "reference_doctype": "Request for Quotation"},
-	{"title": _("Orders"), "route": "/orders", "reference_doctype": "Sales Order"},
-	{"title": _("Invoices"), "route": "/invoices", "reference_doctype": "Sales Invoice"},
-	{"title": _("Shipments"), "route": "/shipments", "reference_doctype": "Delivery Note"},
-	{"title": _("Issues"), "route": "/issues", "reference_doctype": "Issue", "show_always": True},
-	{"title": _("Addresses"), "route": "/addresses", "reference_doctype": "Address"},
-	{"title": _("Announcements"), "route": "/announcement", "reference_doctype": "Announcement"},
-	{"title": _("Courses"), "route": "/course", "reference_doctype": "Course"},
-	{"title": _("Assessment Schedule"), "route": "/assessment", "reference_doctype": "Assessment"},
-	{"title": _("Fees"), "route": "/fees", "reference_doctype": "Fees"}
+	# {"title": _("Projects"), "route": "/project", "reference_doctype": "Project"},
+	# {"title": _("Request for Quotations"), "route": "/rfq", "reference_doctype": "Request for Quotation"},
+	# {"title": _("Orders"), "route": "/orders", "reference_doctype": "Sales Order"},
+	# {"title": _("Invoices"), "route": "/invoices", "reference_doctype": "Sales Invoice"},
+	# {"title": _("Shipments"), "route": "/shipments", "reference_doctype": "Delivery Note"},
+	# {"title": _("Issues"), "route": "/issues", "reference_doctype": "Issue", "show_always": True},
+	# {"title": _("Addresses"), "route": "/addresses", "reference_doctype": "Address"},
+	# {"title": _("Announcements"), "route": "/announcement", "reference_doctype": "Announcement"},
+	# {"title": _("Courses"), "route": "/course", "reference_doctype": "Course"},
+	# {"title": _("Assessment Schedule"), "route": "/assessment", "reference_doctype": "Assessment"},
+	# {"title": _("Fees"), "route": "/fees", "reference_doctype": "Fees"}
 ]
 
 has_website_permission = {
