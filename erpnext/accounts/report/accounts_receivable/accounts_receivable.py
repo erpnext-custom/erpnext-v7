@@ -251,7 +251,7 @@ class ReceivablePayableReport(object):
 	def get_gl_entries(self, party_type):
 		if not hasattr(self, "gl_entries"):
 			conditions, values = self.prepare_conditions(party_type)
-			
+			date_condition = ""
 			# Ver 1.0 Begins by SSK on 21/10/2016, Following variable is introducted
                         exempt_gls = ["Abnormal Loss - SMCL","Normal Loss - SMCL"]
                         exempt_gls = " and account not in ('{0}','{1}')".format(*exempt_gls)
@@ -263,6 +263,10 @@ class ReceivablePayableReport(object):
 				cus_query = " and exists (select 1 from `tabSupplier` as c where c.inter_company = 1 and c.name = `tabGL Entry`.party)"
 			else:
 				cus_query = ""
+			if self.filters.from_date:
+				date_condition += " and posting_date >= '{}'".format(self.fitlers.from_date)
+			if self.filters.to_date:
+				date_condition += " and posting_date <= '{}'".format(self.fitlers.to_date)
 
 			if self.filters.get(scrub(party_type)):
 				select_fields = "debit_in_account_currency as debit, credit_in_account_currency as credit"
@@ -286,11 +290,12 @@ class ReceivablePayableReport(object):
 				where docstatus < 2 and party_type=%s and (party is not null and party != '') {1}
 				{2}
 				{3}
+				{4}
 				and against_voucher_type is not null
 				group by posting_date, party_type, party, voucher_type, voucher_no,
 				against_voucher_type, against_voucher, account_currency, cost_center
 				order by posting_date, party"""
-				.format(select_fields, conditions, cus_query, exempt_gls), values, as_dict=True)
+				.format(select_fields, conditions, cus_query, exempt_gls, date_condition), values, as_dict=True)
 
 		return self.gl_entries
 
