@@ -264,9 +264,9 @@ class ReceivablePayableReport(object):
 			else:
 				cus_query = ""
 			if self.filters.from_date:
-				date_condition += " and posting_date >= '{}'".format(self.fitlers.from_date)
+				date_condition += " and posting_date >= '{}'".format(self.filters.from_date)
 			if self.filters.to_date:
-				date_condition += " and posting_date <= '{}'".format(self.fitlers.to_date)
+				date_condition += " and posting_date <= '{}'".format(self.filters.to_date)
 
 			if self.filters.get(scrub(party_type)):
 				select_fields = "debit_in_account_currency as debit, credit_in_account_currency as credit"
