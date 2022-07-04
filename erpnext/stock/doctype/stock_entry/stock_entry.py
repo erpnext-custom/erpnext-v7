@@ -76,7 +76,6 @@ class StockEntry(StockController):
             if not self.technical_sanction:
                 frappe.throw("Please select approved technical sanction for Maintenance Purpose")
             
-
     def check_transfer_wh(self):
         if not self.from_warehouse and self.purpose != "Material Receipt":
             frappe.throw("Source Warehouse is mandatory")
@@ -861,7 +860,39 @@ class StockEntry(StockController):
             mr_child.business_activity = frappe.get_doc("Business Activity", {"is_default": 1}).name
             mr_child.budget_account = frappe.get_doc("Item", d).expense_account
         mr.submit()
-        
+
+
+    def get_details(self):
+        from erpnext.stock.stock_ledger import get_valuation_rate
+        for d in self.get('items'):
+            item_det = frappe.get_doc("Item", d.item_code)
+            d.employee_name = frappe.get_value("Desuup", d.issued_to, "desuup_name")                        
+            d.item_name = item_det.item_name                        
+            d.warehouse = cstr(d.s_warehouse) or cstr(d.t_warehouse)                        
+            d.transfer_qty = d.qty
+            d.basic_rate = get_valuation_rate(d.item_code, d.warehouse, allow_zero_rate=False)
+            d.valuation_rate = d.basic_rate                        
+            d.basic_amount = flt(d.basic_rate) * flt(d.transfer_qty)                        
+            d.amount = flt(d.valuation_rate) * flt(d.transfer_qty)
+            if not d.expense_account:
+                d.expense_account = item_det.expense_account 
+
+    def temp_balance_items(self, args=None):
+        from erpnext.stock.stock_ledger import get_valuation_rate
+        self.set('items', [])
+        for d in frappe.db.sql(""" select item_code, sum(actual_qty) as qty, stock_value_difference, warehouse
+                        from `tabStock Ledger Entry` force index (posting_sort_index) 
+                        where docstatus < 2 and posting_date <= '{0}' and warehouse = '{1}' group by item_code order by posting_date, posting_time, name""".format(args.get('posting_date'), args.get('warehouse')), as_dict=1):
+            row = self.append('items', {})
+            i = frappe.get_doc("Item", d.item_code)
+            basic_rate = get_valuation_rate(d.item_code, d.warehouse, allow_zero_rate=False)
+            basic_amount = flt(basic_rate) * flt(d.qty)
+            cc = frappe.db.get_value("Branch", args.get('branch'), "cost_center")
+            data = {'item_code': d.item_code, 'actual_qty': d.qty, 's_warehouse': d.warehouse, 'item_name': i.item_name, 'uom': i.stock_uom, 'business_activity': 'Common',
+                'expense_account': i.expense_account, 'basic_rate': basic_rate, 'valuation_rate': basic_rate, 'qty': d.qty, 'basic_amount': basic_amount, 'amount': basic_amount, 'cost_center': cc}
+            row.update(data)
+        return "Done"
+
 @frappe.whitelist()
 def get_work_order_details(work_order):
     work_order = frappe.get_doc("Work Order", work_order)

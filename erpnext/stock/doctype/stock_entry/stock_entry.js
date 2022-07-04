@@ -312,6 +312,20 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
         this.set_warehouse_if_different("s_warehouse", doc.from_warehouse, function(row) {
             return me.source_mandatory.indexOf(me.frm.doc.purpose)!==-1;
         });
+        // added Jai, 4 July 2022
+        frappe.call({
+            method: "temp_balance_items",
+            doc: cur_frm.doc,
+            args: {
+                'warehouse': doc.from_warehouse,
+                'posting_date': doc.posting_date,
+                'branch': doc.branch,
+            },
+            callback: function(r){
+                console.log('done')
+                refresh_field("items");
+            }
+        });
     },
 
     to_warehouse: function(doc) {
@@ -505,6 +519,20 @@ cur_frm.fields_dict['items'].grid.get_field('batch_no').get_query = function(doc
             filters: filters
         }
     }
+}
+
+cur_frm.cscript.pull_item_details = function (doc, cdt, cdn) {
+        var d = locals[cdt][cdn]
+        var c = d.items || [];
+        return frappe.call({
+                method: "get_details",
+                doc: cur_frm.doc,
+                callback: function(r, rt) {
+                        cur_frm.refresh_field("items");
+                        cur_frm.refresh_fields();
+                },
+                freeze: true
+        });
 }
 
 cur_frm.cscript.item_code = function(doc, cdt, cdn) {
