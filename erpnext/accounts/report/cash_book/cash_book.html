@@ -1,0 +1,199 @@
+<div style="margin-bottom: 7px;" class="text-center">
+	{%= frappe.boot.letter_heads[filters.letter_head || frappe.defaults.get_default("letter_head")] %}
+</div>
+<h2 class="text-center"><b>{%= __("Cash Book") %}</b></h2>
+<h4 class="text-center">{%= (filters.party || filters.account) && ((filters.party || filters.account) + ", ")  || "" %} {%= filters.company %}</h4>
+<h5 class="text-center">
+	For the month of {%= filters.month %} {%= filters.fiscal_year %}
+</h5>
+<hr>
+<table class="table table-bordered" style="font-size: 8pt;">
+	<thead>
+		<tr>
+			<th style="width: 10%; text-align: center;" rowspan = "2">{%= __("Date") %}</th>
+			<th style="width: 18%; text-align: center;" rowspan = "2">{%= __("Particulars") %}</th>
+			<th style="width: 3%; text-align: center;" rowspan = "2">{%= __("Cheque No") %}</th>
+			<th style="width: 13.8%; text-align: center;" rowspan = "2">{%= __("Amount") %}</th>
+			<th style="width: 27.6%; text-align: center;" colspan = "2">{%= __("Bank") %}</th>
+			<th style="width: 27.6%; text-align: center;" colspan = "2">{%= __("Cash") %}</th>
+
+		</tr>
+		<tr>
+			<th style="width: 13.8%; text-align: center;">{%= __("Receipts") %}</th>
+			<th style="width: 13.8%; text-align: center;">{%= __("Payments") %}</th>
+			<th style="width: 13.8%; text-align: center;">{%= __("Receipts") %}</th>
+			<th style="width: 13.8%; text-align: center;">{%= __("Payments") %}</th>
+		</tr>
+	</thead>
+	<tbody>
+	{% var a = 0; var b = 0; var c = 0; var amount_opening = 0; var amount_closing = 0; var amount_total= 0 %}
+		{% for(var i=0, length=data.length; i<length; i++) { %}
+			{% if(data[i][__("Particulars")] == 'Opening' && a == 0 ) { %}
+			<tr>
+				<td></td>
+				<td><b>{%= frappe.format(data[i][__("Particulars")], {fieldtype: "Link"}) || "&nbsp;" %}</b></td>
+				<td style="text-align: right">{%= data[i][__("Cheque No")] %}</td>
+				{% for(var i=0, length=data.length; i<length; i++) { %}
+					{% if(data[i][__("Particulars")] == 'Opening') { %}
+						{% amount_opening += data[i][__("Debit")]-data[i][__("Credit")] %}
+					{% } %}		
+				{% } %}
+				{% if(amount_opening >= 0.00){ %}
+					<td style="text-align: right;"><b>{%= format_number(amount_opening) %}</b></td>
+				{% } %}
+				{% if(amount_opening < 0.00){ %}
+					<td style="text-align: right;"><b>({%= format_number(-1*amount_opening) %})</b></td>
+				{% } %}
+				{% for(var i=0, length=data.length; i<length; i++) { %}
+					{% if(data[i][__("Particulars")] == 'Opening') { %}
+						<td style="text-align: right;"><b>{%= format_number(data[i][__("Debit")]) %}</b></td>
+						{% if(data[i][__("Credit")] == '0.00'){ %}
+							<td style="text-align: right;"><b>{%= format_number(data[i][__("Credit")]) %}</b></td>	
+						{% } %}
+						{% if(data[i][__("Credit")] != '0.00'){ %}
+							<td style="text-align: right;"><b>({%= format_number(data[i][__("Credit")]) %})</b></td>
+						{% } %}
+					{% } %}		
+				{% } %}
+			</tr>
+		{% } %}
+		{% a = 1 %}
+		{% } %}
+		{% bankDebit = 0; bankCredit=0; cashDebit = 0; cashCredit=0; transTotal = 0; %}
+		{% for(var i=0, length=data.length; i<length; i++) { %}
+			<tr>
+			{% if(data[i][__("Date")]) { %}
+				<td>{%= dateutil.str_to_user(data[i][__("Date")]) %}</td>
+				<!-- <td>{%= data[i][__("Voucher Type")] %}
+					<br>{%= data[i][__("Voucher No")] %}</td> -->
+				<td>{%= data[i][__("Against Account")] %}</td>
+				<td style="text-align: right">{%= data[i][__("Cheque No")] %}</td>
+				{% if(data[i][__("Particulars")] == '80.02-CD AC 101214282 - GCC'){ %}
+					{% 
+						bankDebit = bankDebit + data[i][__("Debit")];
+						bankCredit = bankCredit + data[i][__("Credit")];
+						transTotal = transTotal + data[i][__("Debit")] - data[i][__("Credit")]
+					%}
+					{% if(data[i][__("Debit")]-data[i][__("Credit")] >= 0){ %}
+						<td style="text-align: right;">{%= format_number(data[i][__("Debit")]-data[i][__("Credit")]) %}</td>
+					{% } %}
+					{% if(data[i][__("Debit")]-data[i][__("Credit")] < 0){ %}
+						<td style="text-align: right;">({%= format_number(-1*(data[i][__("Debit")]-data[i][__("Credit")])) %})</td>
+					{% } %}
+					<td style="text-align: right;">{%= format_number(data[i][__("Debit")]) %}</td>
+					{% if(data[i][__("Credit")] == '0.00'){ %}
+						<td style="text-align: right;">{%= format_number(data[i][__("Credit")]) %}</td>	
+					{% } %}
+					{% if(data[i][__("Credit")] != '0.00'){ %}
+						<td style="text-align: right;">({%= format_number(data[i][__("Credit")]) %})</td>
+					{% } %}
+					<td style="text-align: right;">0.00</td>
+					<td style="text-align: right;">0.00</td>
+				{% } else { %}
+					{% 
+						cashDebit = cashDebit + data[i][__("Debit")];
+						cashCredit = cashCredit + data[i][__("Credit")];
+						transTotal = transTotal + data[i][__("Debit")] - data[i][__("Credit")]
+					%}
+					{% if(data[i][__("Debit")]-data[i][__("Credit")] >= 0){ %}
+						<td style="text-align: right;">{%= format_number(data[i][__("Debit")]-data[i][__("Credit")]) %}</td>
+					{% } %}
+					{% if(data[i][__("Debit")]-data[i][__("Credit")] < 0){ %}
+						<td style="text-align: right;">({%= format_number(-1*(data[i][__("Debit")]-data[i][__("Credit")])) %})</td>
+					{% } %}
+					<td style="text-align: right;">0.00</td>
+					<td style="text-align: right;">0.00</td>
+					<td style="text-align: right;">{%= format_number(data[i][__("Debit")]) %}</td>
+					{% if(data[i][__("Credit")] == '0.00'){ %}
+						<td style="text-align: right;">{%= format_number(data[i][__("Credit")]) %}</td>	
+					{% } %}
+					{% if(data[i][__("Credit")] != '0.00'){ %}
+						<td style="text-align: right;">({%= format_number(data[i][__("Credit")]) %})</td>
+					{% } %}
+				{% } %}
+			{% } %}
+			</tr>
+		{% } %}
+		<tr>
+			<td></td>
+			<td><b>Total</b></td>
+			<td></td>
+			{% if(transTotal >= 0){ %}
+				<td style="text-align: right;"><b>{%= format_number(transTotal) %}</b></td>
+			{% } %}
+			{% if(transTotal < 0 ){ %}
+				<td style="text-align: right;"><b>{%= format_number(-1*transTotal) %}</b></td>
+			{% } %}
+			<td style="text-align: right;"><b>{%= format_number(bankDebit) %}</b></td>
+			{% if(bankCredit == '0.00'){ %}
+				<td style="text-align: right;"><b>{%= format_number(bankCredit) %}</b></td>	
+			{% } %}
+			{% if(bankCredit != '0.00'){ %}
+				<td style="text-align: right;"><b>({%= format_number(bankCredit) %})</b></td>
+			{% } %}
+			<td style="text-align: right;"><b>{%= format_number(cashDebit) %}</b></td>
+			{% if(cashCredit == '0.00'){ %}
+			<td style="text-align: right;"><b>{%= format_number(cashCredit) %}</b></td>	
+			{% } %}
+			{% if(cashCredit != '0.00'){ %}
+				<td style="text-align: right;"><b>({%= format_number(cashCredit) %})</b></td>
+			{% } %}
+		</tr>
+		{% for(var i=0, length=data.length; i<length; i++) { %}
+		{% if(data[i][__("Particulars")] == 'Closing') { %}
+		<tr>
+			<td></td>
+			<td><b>{%= frappe.format(data[i][__("Particulars")], {fieldtype: "Link"}) || "&nbsp;" %}</b></td>
+			<td style="text-align: right">{%= data[i][__("Cheque No")] %}</td>
+			{% for(var i=0, length=data.length; i<length; i++) { %}
+				{% if(data[i][__("Particulars")] == 'Closing') { %}
+					{% amount_closing += data[i][__("Debit")]-data[i][__("Credit")] %}
+				{% } %}		
+			{% } %}
+			{% if(amount_closing >= 0.00){ %}
+				<td style="text-align: right;"><b>{%= format_number(amount_closing) %}</b></td>
+			{% } %}
+			{% if(amount_closing < 0.00){ %}
+				<td style="text-align: right;"><b>({%= format_number(-1*amount_closing) %})</b></td>
+			{% } %}
+			{% for(var i=0, length=data.length; i<length; i++) { %}
+				{% if(data[i][__("Particulars")] == 'Closing') { %}
+					<td style="text-align: right;"><b>{%= format_number(data[i][__("Debit")]) %}</b></td>
+					{% if(data[i][__("Credit")] == '0.00'){ %}
+						<td style="text-align: right;"><b>{%= format_number(data[i][__("Credit")]) %}</b></td>	
+					{% } %}
+					{% if(data[i][__("Credit")] != '0.00'){ %}
+						<td style="text-align: right;"><b>({%= format_number(data[i][__("Credit")]) %})</b></td>
+					{% } %}
+				{% } %}		
+			{% } %}
+		</tr>
+		{% } %}
+		{% b = 1 %}
+	{% } %}
+	{% for(var i=0, length=data.length; i<length; i++) { %}
+			{% if(data[i][__("Particulars")] == 'Closing (Opening + Totals)' && b == 0) { %}
+			<p>here</p>
+			<tr>
+				<td></td>
+				<td><b>{%= frappe.format(data[i][__("Particulars")], {fieldtype: "Link"}) || "&nbsp;" %}</b></td>
+				<td style="text-align: right">{%= data[i][__("Cheque No")] %}</td>
+				{% for(var i=0, length=data.length; i<length; i++) { %}
+					{% if(data[i][__("Particulars")] == 'Closing (Opening + Totals)') { %}
+						{% amount_closing += data[i][__("Debit")]-data[i][__("Credit")] %}
+					{% } %}		
+				{% } %}
+				<td>{%= format_currency(amount_closing) %}</td>
+				{% for(var i=0, length=data.length; i<length; i++) { %}
+					{% if(data[i][__("Particulars")] == 'Closing (Opening + Totals)') { %}
+						<td style="text-align: right">{%= format_currency(data[i][__("Debit")]) %}</td>
+						<td style="text-align: right">({%= format_currency(data[i][__("Credit")]) %})</td>
+					{% } %}		
+				{% } %}
+			</tr>
+			{% } %}
+			{% b = 1 %}
+	{% } %}
+	</tbody>
+</table>
+<p class="text-right text-muted">Printed On {%= dateutil.str_to_user(dateutil.get_datetime_as_string()) %}</p>
