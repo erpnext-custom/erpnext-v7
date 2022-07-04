@@ -77,7 +77,7 @@ frappe.query_reports["Cash Book"] = {
 			"options": ["", "Customer", "Supplier", "Employee", "Equipment"],
 			"default": ""
 		},
-		{
+		{//changes
 			"fieldname":"party",
 			"label": __("Party"),
 			"fieldtype": "Dynamic Link",
