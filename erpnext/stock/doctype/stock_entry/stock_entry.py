@@ -883,14 +883,15 @@ class StockEntry(StockController):
         for d in frappe.db.sql(""" select item_code, sum(actual_qty) as qty, stock_value_difference, warehouse
                         from `tabStock Ledger Entry` force index (posting_sort_index) 
                         where docstatus < 2 and posting_date <= '{0}' and warehouse = '{1}' group by item_code order by posting_date, posting_time, name""".format(args.get('posting_date'), args.get('warehouse')), as_dict=1):
-            row = self.append('items', {})
-            i = frappe.get_doc("Item", d.item_code)
-            basic_rate = get_valuation_rate(d.item_code, d.warehouse, allow_zero_rate=False)
-            basic_amount = flt(basic_rate) * flt(d.qty)
-            cc = frappe.db.get_value("Branch", args.get('branch'), "cost_center")
-            data = {'item_code': d.item_code, 'actual_qty': d.qty, 's_warehouse': d.warehouse, 'item_name': i.item_name, 'uom': i.stock_uom, 'business_activity': 'Common',
-                'expense_account': i.expense_account, 'basic_rate': basic_rate, 'valuation_rate': basic_rate, 'qty': d.qty, 'basic_amount': basic_amount, 'amount': basic_amount, 'cost_center': cc}
-            row.update(data)
+            if d.qty > 0:
+                row = self.append('items', {})
+                i = frappe.get_doc("Item", d.item_code)
+                basic_rate = get_valuation_rate(d.item_code, d.warehouse, allow_zero_rate=False)
+                basic_amount = flt(basic_rate) * flt(d.qty)
+                cc = frappe.db.get_value("Branch", args.get('branch'), "cost_center")
+                data = {'item_code': d.item_code, 'actual_qty': d.qty, 's_warehouse': d.warehouse, 'item_name': i.item_name, 'uom': i.stock_uom, 'business_activity': 'Common',
+                    'expense_account': i.expense_account, 'basic_rate': basic_rate, 'valuation_rate': basic_rate, 'qty': d.qty, 'basic_amount': basic_amount, 'amount': basic_amount, 'cost_center': cc}
+                row.update(data)
         return "Done"
 
 @frappe.whitelist()
