@@ -297,7 +297,7 @@ def validate_workflow_states(doc):
 			if emp_status[0] and emp_status[1]:
 				emp = frappe.get_doc("Employee", doc.employee)
 				emp.employment_status = emp_status[1]
-				emp.save()
+				emp.save(ignore_permissions = True)
 
 		elif workflow_state == "Waiting Supervisor Approval".lower():
 			officiating = get_officiating_employee(reports_to[3])
