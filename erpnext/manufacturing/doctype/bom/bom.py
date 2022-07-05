@@ -1,10 +1,12 @@
-# Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
-# License: GNU General Public License v3. See license.txt
+# -*- coding: utf-8 -*-
+# Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and contributors
+# For license information, please see license.txt
 
 from __future__ import unicode_literals
 import frappe, erpnext
 from frappe.utils import cint, cstr, flt
 from frappe import _
+from frappe.model.mapper import get_mapped_doc
 from erpnext.setup.utils import get_exchange_rate
 from frappe.website.website_generator import WebsiteGenerator
 from erpnext.stock.get_item_details import get_conversion_factor
@@ -49,9 +51,10 @@ class BOM(WebsiteGenerator):
 		self.route = frappe.scrub(self.name).replace('_', '-')
 		
 		#Get Overhead Cost from Cost Sheet
-		overhead = frappe.db.get_value("Cost Sheet", {"item":self.item}, "production_cost")
-		if overhead:
-			self.overhead_cost = overhead 		
+		#overhead = frappe.db.get_value("Cost Sheet", {"item":self.item}, "production_cost")
+		
+		#if overhead:
+		#	self.overhead_cost = overhead 		
 
 		self.clear_operations()
 		self.validate_main_item()
@@ -113,6 +116,7 @@ class BOM(WebsiteGenerator):
 
 			ret = self.get_bom_material_detail({
 				"item_code": item.item_code,
+				"warehouse": item.source_warehouse,
 				"item_name": item.item_name,
 				"bom_no": item.bom_no,
 				"stock_qty": item.stock_qty,
@@ -137,7 +141,6 @@ class BOM(WebsiteGenerator):
 
 		item = self.get_item_det(args['item_code'])
 		self.validate_rm_item(item)
-
 		args['bom_no'] = args['bom_no'] or item and cstr(item[0]['default_bom']) or ''
 		args['transfer_for_manufacture'] = (cstr(args.get('include_item_in_manufacturing', '')) or
 			item and item[0].include_item_in_manufacturing or 0)
@@ -165,6 +168,22 @@ class BOM(WebsiteGenerator):
 		if item.get('bom_no') and frappe.db.get_value('BOM', item.get('bom_no'), 'currency') != self.currency:
 			frappe.throw(_("Row {0}: Currency of the BOM #{1} should be equal to the selected currency {2}")
 				.format(item.idx, item.bom_no, self.currency))
+		
+
+	#Administrative Cost Table Added By Tashi Dorji
+	def admin_cost(self):
+		total = 0.0
+		to_remove = []
+		found = []
+		for a in self.labor_and_overhead_items:
+			if a.component_name in found:
+				to_remove.append(a.component_name)
+			else:
+				found.append(a.component_name)
+				total += flt(a.amount)
+		
+		[self.remove(d) for d in to_remove]
+		self.operating_cost = total
 
 	def get_rm_rate(self, arg):
 		"""	Get raw material rate as per selected method, if bom exists takes bom cost """
@@ -173,6 +192,8 @@ class BOM(WebsiteGenerator):
 			self.rm_cost_as_per = "Valuation Rate"
 
 		if arg.get('scrap_items'):
+			arg['warehouse'] = self.from_warehouse
+			# frappe.msgprint(str(arg['warehouse']))
 			rate = self.get_valuation_rate(arg)
 		elif arg:
 			if arg.get('bom_no') and self.set_rate_of_sub_assembly_item_based_on_bom:
@@ -196,6 +217,7 @@ class BOM(WebsiteGenerator):
 						"transaction_type": "buying",
 						"company": self.company,
 						"currency": self.currency,
+						"price_list_currency": self.price_list_currency,
 						"conversion_rate": 1, # Passed conversion rate as 1 purposefully, as conversion rate is applied at the end of the function
 						"conversion_factor": arg.get("conversion_factor") or 1,
 						"plc_conversion_rate": 1,
@@ -225,6 +247,7 @@ class BOM(WebsiteGenerator):
 		for d in self.get("items"):
 			rate = self.get_rm_rate({
 				"item_code": d.item_code,
+				"warehouse": d.source_warehouse,
 				"bom_no": d.bom_no,
 				"qty": d.qty,
 				"uom": d.uom,
@@ -268,10 +291,12 @@ class BOM(WebsiteGenerator):
 
 	def get_valuation_rate(self, args):
 		""" Get weighted average of valuation rate from all warehouses """
+		if not args.get('scrap_items'):
+			args['warehouse'] = self.from_warehouse
 
 		total_qty, total_value, valuation_rate = 0.0, 0.0, 0.0
 		for d in frappe.db.sql("""select actual_qty, stock_value from `tabBin`
-			where item_code=%s""", args['item_code'], as_dict=1):
+			where item_code='{0}' and warehouse= "{1}" """.format(args['item_code'], args['warehouse']), as_dict=1):
 				total_qty += flt(d.actual_qty)
 				total_value += flt(d.stock_value)
 
@@ -281,14 +306,18 @@ class BOM(WebsiteGenerator):
 		if valuation_rate <= 0:
 			last_valuation_rate = frappe.db.sql("""select valuation_rate
 				from `tabStock Ledger Entry`
-				where item_code = %s and valuation_rate > 0
-				order by posting_date desc, posting_time desc, name desc limit 1""", args['item_code'])
+				where item_code = '{0}' and warehouse = "{1}" and valuation_rate > 0
+				order by posting_date desc, posting_time desc, name desc limit 1""".format(args['item_code'], args['warehouse']))
 
 			valuation_rate = flt(last_valuation_rate[0][0]) if last_valuation_rate else 0
 
 		if not valuation_rate:
-			valuation_rate = frappe.db.get_value("Item", args['item_code'], "valuation_rate")
+			#valuation_rate = frappe.db.get_value("Item", args['item_code'], "valuation_rate")
 
+			item_rate = frappe.db.get_value(
+            				"Item", args['item_code'], ["valuation_rate", "last_purchase_rate"])
+			valuation_rate = item_rate and item_rate[0] or item_rate[1]
+		
 		return valuation_rate
 
 	def manage_default_bom(self):
@@ -439,13 +468,17 @@ class BOM(WebsiteGenerator):
 		self.calculate_op_cost()
 		self.calculate_rm_cost()
 		self.calculate_sm_cost()
-		self.total_cost = self.operating_cost + self.raw_material_cost - self.scrap_material_cost + self.overhead_cost
-		self.base_total_cost = self.base_operating_cost + self.base_raw_material_cost - self.base_scrap_material_cost + self.overhead_cost
+		self.calculate_other_cost()
+		#self.total_cost = self.operating_cost + self.raw_material_cost - self.scrap_material_cost + self.overhead_cost
+		#self.total_cost = self.operating_cost + self.raw_material_cost - self.scrap_material_cost
+		self.total_cost = self.operating_cost + self.cost_for_sell - self.scrap_material_cost
+		#self.selling_price = flt(self.total_cost) + flt(self.cost_for_sell) * 0.01 * flt(manufacturing_settings.sales_margin)
 
 	def calculate_op_cost(self):
 		"""Update workstation rate and calculates totals"""
 		self.operating_cost = 0
 		self.base_operating_cost = 0
+		operation_cost = base_operation_cost = 0.0
 		for d in self.get('operations'):
 			if d.workstation:
 				if not d.hour_rate:
@@ -457,8 +490,12 @@ class BOM(WebsiteGenerator):
 				d.operating_cost = flt(d.hour_rate) * flt(d.time_in_mins) / 60.0
 				d.base_operating_cost = flt(d.operating_cost) * flt(self.conversion_rate)
 
-			self.operating_cost += flt(d.operating_cost)
-			self.base_operating_cost += flt(d.base_operating_cost)
+
+			operation_cost += flt(d.operating_cost)
+			base_operation_cost += flt(d.base_operating_cost)
+
+		self.operating_cost  = flt(operation_cost)
+
 
 	def calculate_rm_cost(self):
 		"""Fetch RM rate as per today's valuation rate and calculate totals"""
@@ -475,8 +512,49 @@ class BOM(WebsiteGenerator):
 			total_rm_cost += d.amount
 			base_total_rm_cost += d.base_amount
 
-		self.raw_material_cost = total_rm_cost
-		self.base_raw_material_cost = base_total_rm_cost
+		self.raw_material_cost = round(total_rm_cost)
+		self.base_raw_material_cost = round(base_total_rm_cost)
+
+	def calculate_other_cost(self):
+		self.validate_duplicate_admin_cost()
+		''' Direct Labor Cost, Manufacturing Overhead, Administration & Other Overhead, Selling and Distribution Overhead'''
+		direct_labor_cost = manufacturing_overhead = manufacturing_cost = 0.0
+		manufacturing_settings = frappe.get_doc("Manufacturing Settings")
+		
+		for a in self.get('labor_and_overhead_items'):
+			a.percent = 0.0
+			a.direct_labor_cost = flt(a.rate_per_unit) * flt(a.hour)
+			if a.manufacturing_overhead:
+				a.percent = flt(manufacturing_settings.manufacturing_overhead)
+				a.overhead_cost = flt(a.percent) * 0.01 * flt(a.direct_labor_cost)
+			direct_labor_cost += flt(a.direct_labor_cost)
+			manufacturing_overhead += flt(a.overhead_cost)
+
+		self.manufacturing_overhead_percent = manufacturing_settings.manufacturing_overhead
+		self.other_overhead_percent = manufacturing_settings.other_overhead
+		self.sales_margin_percent = manufacturing_settings.sales_margin
+
+		self.direct_labor_cost = round(flt(direct_labor_cost))	
+		self.manufacturing_overhead = round(flt(manufacturing_overhead))
+		self.manufacturing_cost = round(self.raw_material_cost + self.direct_labor_cost + self.manufacturing_overhead)
+		self.other_overhead = round(flt(manufacturing_settings.other_overhead) * 0.01 * flt(self.manufacturing_cost))
+		self.cost_of_production = round(flt(self.manufacturing_cost) + flt(self.other_overhead))
+		self.selling_and_distribution_overhead = round(flt(self.manufacturing_cost) * 0.01 * flt(manufacturing_settings.sd_overhead))
+		self.cost_for_sell = round(flt(self.cost_of_production) + flt(self.selling_and_distribution_overhead))
+		self.total_cost = round(self.cost_for_sell - flt(self.scrap_material_cost) + self.operating_cost)
+		self.sales_margin = round(flt(manufacturing_settings.sales_margin)  * 0.01 * flt(self.cost_for_sell))
+		self.selling_price = round(self.total_cost + self.sales_margin)
+	
+	def validate_duplicate_admin_cost(self):
+                total = 0.0
+                to_remove = []
+                found = []
+                for a in self.labor_and_overhead_items:
+                        if a.cost_component in found:
+                                to_remove.append(a.cost_component)
+                        else:
+                                found.append(a.cost_component)
+                [self.remove(d) for d in to_remove]	
 
 	def calculate_sm_cost(self):
 		"""Fetch RM rate as per today's valuation rate and calculate totals"""
@@ -585,6 +663,11 @@ class BOM(WebsiteGenerator):
 				if not d.description:
 					d.description = frappe.db.get_value('Operation', d.operation, 'description')
 
+
+	def get_settings(self):
+		manufacturing_settings = frappe.get_single("Manufacturing Settings")
+		return manufacturing_settings.manufacturing_overhead
+	
 def get_list_context(context):
 	context.title = _("Bill of Materials")
 	# context.introduction = _('Boms')
@@ -682,6 +765,64 @@ def validate_bom_no(item, bom_no):
  				rm_item_exists = True
 		if not rm_item_exists:
 			frappe.throw(_("BOM {0} does not belong to Item {1}").format(bom_no, item))
+
+@frappe.whitelist()
+def create_work_order(source_name, target_doc=None):
+	def set_missing_values(source, target):
+		pass
+		# if source.po_no:
+		# 	if target.po_no:
+		# 		target_po_no = target.po_no.split(", ")
+		# 		target_po_no.append(source.po_no)
+		# 		target.po_no = ", ".join(list(set(target_po_no))) if len(target_po_no) > 1 else target_po_no[0]
+		# 	else:
+		# 		target.po_no = source.po_no
+
+		# target.ignore_pricing_rule = 1
+		# target.run_method("set_missing_values")
+		# target.run_method("calculate_taxes_and_totals")
+
+	def update_item(source, target, source_parent):
+		pass
+		# target.base_amount = (flt(source.qty) - flt(source.delivered_qty)) * flt(source.base_rate)
+		# target.amount = (flt(source.qty) - flt(source.delivered_qty)) * flt(source.rate)
+		# target.qty = flt(source.qty) - flt(source.delivered_qty)
+		# expense_account,is_prod = frappe.db.get_value("Item", source.item_code, ["expense_account", "is_production_item"])
+		# if is_prod:
+		# 	expense_account = get_settings_value("Production Account Settings", source_parent.company, "default_production_account")
+		# 	if not expense_account:
+		# 		frappe.throw("Setup Default Production Account in Production Account Settings")
+		# target.expense_account = expense_account
+
+	target_doc = get_mapped_doc("BOM", source_name, {
+		"BOM": {
+			"doctype": "Work Order",
+			"field_map": {
+				"branch": "branch",
+				"item": "production_item",
+				"item_name" : "item_name",
+				"bom_no": "name",
+			},
+			"validation": {
+				"docstatus": ["=", 1]
+			}
+		},
+		"BOM Item": {
+			"doctype": "Work Order Item",
+			"field_map": {
+				"item_code": "item_code",
+				"item_name": "item_name",
+				"description": "description",
+				"source_warehouse": "source_warehouse",
+				"qty":"required_qty"
+				# "discount_amount":"discount_amount",
+				# "additional_cost":"additional_cost"
+			},
+			"postprocess": update_item,
+		},
+	}, target_doc, set_missing_values)
+
+	return target_doc
 
 @frappe.whitelist()
 def get_children(doctype, parent=None, is_root=False, **filters):

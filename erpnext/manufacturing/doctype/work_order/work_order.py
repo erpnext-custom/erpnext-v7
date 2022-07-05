@@ -1,5 +1,6 @@
-# Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
-# License: GNU General Public License v3. See license.txt
+# -*- coding: utf-8 -*-
+# Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and contributors
+# For license information, please see license.txt
 
 from __future__ import unicode_literals
 import frappe
@@ -163,6 +164,7 @@ class WorkOrder(Document):
 		return status
 
 	def get_status(self, status=None):
+
 		'''Return the status based on stock entries against this work order'''
 		if not status:
 			status = self.status
@@ -546,7 +548,7 @@ def get_job_spec(item):
 		frappe.throw(" Job Specification for Item <b> {0} </b> is not defined".format(item))
 
 @frappe.whitelist()
-def get_item_details(item, project = None):
+def get_item_details(item, branch = None, project = None):
 	res = frappe.db.sql("""
 		select stock_uom, description
 		from `tabItem`
@@ -565,6 +567,8 @@ def get_item_details(item, project = None):
 	if project:
 		filters = {"item": item, "project": project}
 
+	if branch:
+		filters = {"item": item, "branch" : branch}
 	res["bom_no"] = frappe.db.get_value("BOM", filters = filters)
 
 	if not res["bom_no"]:
@@ -609,6 +613,7 @@ def set_work_order_ops(name):
 
 @frappe.whitelist()
 def make_stock_entry(work_order_id, purpose, qty=None):
+
 	work_order = frappe.get_doc("Work Order", work_order_id)
 	if not frappe.db.get_value("Warehouse", work_order.wip_warehouse, "is_group") \
 			and not work_order.skip_transfer:
@@ -620,13 +625,16 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 	stock_entry = frappe.new_doc("Stock Entry")
 	stock_entry.purpose = purpose
 	stock_entry.branch = work_order.branch
-	stock_entry.title = "SE for '{0}'".format(work_order.name)
+	stock_entry.title = "{0} - {1}".format(work_order.item_name, work_order.name)
 	stock_entry.work_order = work_order_id
 	stock_entry.company = work_order.company
 	stock_entry.from_bom = 1
 	stock_entry.bom_no = work_order.bom_no
 	stock_entry.use_multi_level_bom = work_order.use_multi_level_bom
 	stock_entry.fg_completed_qty = qty or (flt(work_order.qty) - flt(work_order.produced_qty))
+	###*** Added by Thukten for Job No ***###
+	stock_entry.job_no = work_order.job_no
+
 	if work_order.bom_no:
 		stock_entry.inspection_required = frappe.db.get_value('BOM',
 			work_order.bom_no, 'inspection_required')
@@ -645,21 +653,24 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 
 	stock_entry.get_items()
 	stock_entry.save()
-	######**** Change Made by Thukten to include additional cost ****#####
-	if purpose =="Manufacture":
-		for a in frappe.db.sql("select item, overhead_cost from `tabBOM` where name = '{0}'".format(work_order.bom_no), as_dict=True):
-			if a.overhead_cost > 0:
-				add_cost = 0.0
-				for b in frappe.db.sql("select name, basic_amount, bom_no, qty from `tabStock Entry Detail` d where parent = '{0}' and item_code = '{1}' and bom_no = '{2}'".format(stock_entry.name, a.item, work_order.bom_no), as_dict=True):
-					add_cost = flt(a.overhead_cost) * flt(b.qty)
-					amount = flt(add_cost) + flt(b.basic_amount)
-					val_rate = flt(amount)/flt(b.qty)
-					frappe.db.sql("update `tabStock Entry Detail` set additional_cost = '{0}', amount = '{1}', valuation_rate = '{2}' where name ='{3}'".format(add_cost, amount, val_rate, b.name))				
-	
 
+	######**** Change Made by Thukten to include additional cost ****#####
+	# if purpose =="Manufacture":
+	# 	if frappe.db.exists("Cost Sheet", {"bom":work_order.bom_no, "docstatus":1}):
+	# 		for a in frappe.db.sql("select item, production_cost, bom_cost from `tabCost Sheet` where bom = '{}' and docstatus = 1".format(work_order.bom_no), as_dict=True):
+	# 			overhead_cost = flt(a.production_cost) - flt(a.bom_cost)
+	# 			if overhead_cost > 0:
+	# 				add_cost = 0.0
+	# 				for b in frappe.db.sql("select name, basic_amount, bom_no, qty from `tabStock Entry Detail` d where parent = '{0}' and item_code = '{1}'".format(stock_entry.name, a.item), as_dict=True):
+	# 					add_cost = flt(overhead_cost) * flt(b.qty)
+	# 					amount = flt(add_cost) + flt(b.basic_amount)
+	# 					val_rate = flt(amount)/flt(b.qty)
+	# 					frappe.db.sql("update `tabStock Entry Detail` set additional_cost = '{0}', amount = '{1}', valuation_rate = '{2}' where name ='{3}'".format(add_cost, amount, val_rate, b.name))
+	# 	else:
+	# 		frappe.throw("Cost Sheet missing for Item {} , {}".format(work_order.production_item, work_order.item_name))
+	
 	work_order.set("stock_entry", stock_entry.name)
 	return stock_entry.as_dict()
-
 
 @frappe.whitelist()
 def get_default_warehouse():
@@ -732,3 +743,4 @@ def get_work_order_operation_data(work_order, operation, workstation):
 	for d in work_order.operations:
 		if d.operation == operation and d.workstation == workstation:
 			return d
+

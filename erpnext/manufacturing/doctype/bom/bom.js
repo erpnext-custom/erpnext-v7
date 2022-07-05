@@ -1,10 +1,25 @@
-// Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
-// License: GNU General Public License v3. See license.txt
+// Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
+// For license information, please see license.txt
 
 frappe.provide("erpnext.bom");
 
 frappe.ui.form.on("BOM", {
+	onload: function(frm) {
+		 if(frm.doc.__islocal) {
+			 frappe.call({
+			       method: "erpnext.custom_utils.get_user_info",
+			       args: {"user": frappe.session.user},
+			       callback(r) {
+			     		cur_frm.set_value("branch", r.message.branch);
+			 		cur_frm.set_value("from_warehouse", r.message.warehouse);
+			     	}
+			});
+		}
+	},
+
 	setup: function(frm) {
+		frm.get_docfield("items").allow_bulk_edit = 1;
+
 		frm.set_query("bom_no", "items", function() {
 			return {
 				filters: {
@@ -13,7 +28,6 @@ frappe.ui.form.on("BOM", {
 				}
 			};
 		});
-
 		frm.set_query("source_warehouse", "items", function() {
 			return {
 				filters: {
@@ -21,7 +35,16 @@ frappe.ui.form.on("BOM", {
 				}
 			};
 		});
-
+		frm.set_query("cost_component", "labor_and_overhead_items", function() {
+			return {
+				query: "erpnext.controllers.queries.get_costing_component",
+				filters: {
+					'from_date': frm.doc.from_date,
+					'to_date': frm.doc.to_date,
+					"branch": frm.doc.branch
+				}
+			};
+		});
 		frm.set_query("item", function() {
 			return {
 				query: "erpnext.controllers.queries.item_query"
@@ -62,7 +85,14 @@ frappe.ui.form.on("BOM", {
 	refresh: function(frm) {
 		frm.toggle_enable("item", frm.doc.__islocal);
 		toggle_operations(frm);
-
+		frm.set_query("item", function() {
+			return {
+				filters: {
+					'disabled': 0,
+					'item_group': frm.doc.item_group,
+				}
+			}
+		});
 		frm.set_indicator_formatter('item_code',
 			function(doc) {
 				if (doc.original_item){
@@ -75,6 +105,9 @@ frappe.ui.form.on("BOM", {
 		if (!frm.doc.__islocal && frm.doc.docstatus<2) {
 			frm.add_custom_button(__("Update Cost"), function() {
 				frm.events.update_cost(frm);
+			});
+			frm.add_custom_button(__("Create Work Order"), function() {
+				frm.events.create_work_order(frm);
 			});
 			frm.add_custom_button(__("Browse BOM"), function() {
 				frappe.route_options = {
@@ -107,6 +140,24 @@ frappe.ui.form.on("BOM", {
 				});
 			}
 		}
+		
+		cur_frm.set_query("from_warehouse", function() {
+        		return {
+                		query: "erpnext.controllers.queries.filter_branch_wh",
+                		filters: {'branch': frm.doc.branch}
+        		}
+    		});
+	},
+
+	branch: function(frm) {
+		frm.refresh_field('from_warehouse');
+	},
+	
+	from_warehouse: function(frm) {
+			 var rm = frm.doc.items || [];
+			 for(var i=0;i<rm.length;i++) {
+				frappe.model.set_value('BOM Item', rm[i].name, 'source_warehouse', frm.doc.from_warehouse);
+			 }
 	},
 
 	update_cost: function(frm) {
@@ -125,7 +176,12 @@ frappe.ui.form.on("BOM", {
 			}
 		});
 	},
-
+	create_work_order: function(frm) {
+		frappe.model.open_mapped_doc({
+			method: "erpnext.manufacturing.doctype.bom.bom.create_work_order",
+			frm: cur_frm
+		});
+	},
 	routing: function(frm) {
 		if (frm.doc.routing) {
 			frappe.call({
@@ -143,6 +199,7 @@ frappe.ui.form.on("BOM", {
 		}
 	},
 	item: function(frm) {
+		/*
 	      if(frm.doc.item){
 		console.log("Test" + frm.doc.item);	
 		frappe.model.get_value('Cost Sheet', {'item': frm.doc.item}, 'production_cost',
@@ -151,7 +208,7 @@ frappe.ui.form.on("BOM", {
                             	cur_frm.set_value("overhead_cost", e.production_cost);
 			    }
                 });	
-	      }	
+	      }	*/
 	}
 });
 
@@ -177,6 +234,21 @@ erpnext.bom.BomController = erpnext.TransactionController.extend({
 
 		get_bom_material_detail(doc, cdt, cdn, scrap_items);
 	},
+
+	source_warehouse: function(doc, cdt, cdn) {
+		var scrap_items = false;
+                var child = locals[cdt][cdn];
+                if(child.doctype == 'BOM Scrap Item') {
+                        scrap_items = true;
+                }
+
+                if (child.bom_no) {
+                        child.bom_no = '';
+                }
+
+                get_bom_material_detail(doc, cdt, cdn, scrap_items);
+	},
+
 	conversion_factor: function(doc, cdt, cdn) {
 		if(frappe.meta.get_docfield(cdt, "stock_qty", cdn)) {
 			var item = frappe.get_doc(cdt, cdn);
@@ -214,6 +286,7 @@ var get_bom_material_detail= function(doc, cdt, cdn, scrap_items) {
 			method: "get_bom_material_detail",
 			args: {
 				'item_code': d.item_code,
+				'warehouse': d.source_warehouse,
 				'bom_no': d.bom_no != null ? d.bom_no: '',
 				"scrap_items": scrap_items,
 				'qty': d.qty,
@@ -272,18 +345,19 @@ erpnext.bom.update_cost = function(doc) {
 
 erpnext.bom.calculate_op_cost = function(doc) {
 	var op = doc.operations || [];
-	doc.operating_cost = 0.0;
-	doc.base_operating_cost = 0.0;
+	doc.operating_cost = doc.base_operating_cost = 0.0;
 
 	for(var i=0;i<op.length;i++) {
 		var operating_cost = flt(flt(op[i].hour_rate) * flt(op[i].time_in_mins) / 60, 2);
 		var base_operating_cost = flt(operating_cost * doc.conversion_rate, 2);
 		frappe.model.set_value('BOM Operation',op[i].name, "operating_cost", operating_cost);
 		frappe.model.set_value('BOM Operation',op[i].name, "base_operating_cost", base_operating_cost);
-
-		doc.operating_cost += operating_cost;
-		doc.base_operating_cost += base_operating_cost;
+		operating_cost += operating_cost;
+		base_operating_cost += base_operating_cost;
 	}
+	
+	doc.operating_cost = operating_cost
+	doc.base_operating_cost = base_operating_cost
 	refresh_field(['operating_cost', 'base_operating_cost']);
 };
 
@@ -387,6 +461,41 @@ frappe.ui.form.on("BOM Operation", "workstation", function(frm, cdt, cdn) {
 			erpnext.bom.calculate_total(frm.doc);
 		}
 	});
+});
+
+frappe.ui.form.on("Cost Component Item", "cost_component", function(frm, cdt, cdn) {
+	settings(frm, cdt, cdn);
+});
+
+frappe.ui.form.on("Cost Component Item", "hour", function(frm, cdt, cdn) {
+	settings(frm, cdt, cdn);
+});
+
+let settings = function(frm, cdt, cdn) {
+	var d = locals[cdt][cdn]
+        var labor_amount =flt( d.rate_per_unit) * flt(d.hour);
+        if(labor_amount){
+		frappe.model.set_value(d.doctype, d.name, "labor_cost", flt(labor_amount,2));
+	}
+	
+        if(d.manufacturing_overhead) {
+		frappe.call({
+			doc: frm.doc,
+			method: "get_settings",
+			callback: function(r) {
+				if (r.message) {
+					frappe.model.set_value(d.doctype, d.name, "percent", r.message);
+					let overhead_amount = 0.01 * flt(r.message) * flt(labor_amount);
+					frappe.model.set_value(d.doctype, d.name, "overhead_amount", overhead_amount); 
+				}
+			}
+		});
+	}
+}
+
+frappe.ui.form.on("Cost Component Item", "labor_cost", function(frm, cdt, cdn) {
+	erpnext.bom.calculate_op_cost(frm.doc);
+	erpnext.bom.calculate_total(frm.doc);
 });
 
 frappe.ui.form.on("BOM Item", "qty", function(frm, cdt, cdn) {
