@@ -879,6 +879,7 @@ class StockEntry(StockController):
 
     def temp_balance_items(self, args=None):
         from erpnext.stock.stock_ledger import get_valuation_rate
+        item_len = []
         self.set('items', [])
         for d in frappe.db.sql(""" select item_code, sum(actual_qty) as qty, stock_value_difference, warehouse
                         from `tabStock Ledger Entry` force index (posting_sort_index) 
@@ -886,12 +887,19 @@ class StockEntry(StockController):
             if d.qty > 0:
                 row = self.append('items', {})
                 i = frappe.get_doc("Item", d.item_code)
+                if not i.expense_account:
+                    item_len.append(str(i.item_code))
+                    # frappe.throw('{}'.format(i.item_code))
                 basic_rate = get_valuation_rate(d.item_code, d.warehouse, allow_zero_rate=False)
                 basic_amount = flt(basic_rate) * flt(d.qty)
                 cc = frappe.db.get_value("Branch", args.get('branch'), "cost_center")
                 data = {'item_code': d.item_code, 'actual_qty': d.qty, 's_warehouse': d.warehouse, 'item_name': i.item_name, 'uom': i.stock_uom,
                     'expense_account': i.expense_account, 'basic_rate': basic_rate, 'valuation_rate': basic_rate, 'qty': d.qty, 'basic_amount': basic_amount, 'amount': basic_amount, 'cost_center': cc}
                 row.update(data)
+        if len(item_len) > 0:
+            for j in range(len(item_len)):
+                frappe.msgprint("<a href='#Form/Item/{0}'>{0}, missing expense account.</a>".format(item_len[j]))
+            # frappe.msgprint(str(item_len))
         return "Done"
 
 @frappe.whitelist()
