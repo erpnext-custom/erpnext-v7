@@ -226,8 +226,8 @@ def get_item_warehouse_map(filters):
 				qty_dict.out_val += abs(value_diff)
 
 		qty_dict.val_rate = d.valuation_rate
-		qty_dict.bal_qty += flt(qty_diff,5)
-		qty_dict.bal_val += value_diff
+		qty_dict.bal_qty = flt(d.qty_after_transaction,5)
+		qty_dict.bal_val = d.stock_value_difference
 
 	return iwb_map
 
