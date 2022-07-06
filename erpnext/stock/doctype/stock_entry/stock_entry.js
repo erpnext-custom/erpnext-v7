@@ -313,19 +313,19 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
             return me.source_mandatory.indexOf(me.frm.doc.purpose)!==-1;
         });
         // added Jai, 4 July 2022
-        frappe.call({
-            method: "temp_balance_items",
-            doc: cur_frm.doc,
-            args: {
-                'warehouse': doc.from_warehouse,
-                'posting_date': doc.posting_date,
-                'branch': doc.branch,
-            },
-            callback: function(r){
-                console.log('done')
-                refresh_field("items");
-            }
-        });
+        // frappe.call({
+        //     method: "temp_balance_items",
+        //     doc: cur_frm.doc,
+        //     args: {
+        //         'warehouse': doc.from_warehouse,
+        //         'posting_date': doc.posting_date,
+        //         'branch': doc.branch,
+        //     },
+        //     callback: function(r){
+        //         console.log('done')
+        //         refresh_field("items");
+        //     }
+        // });
     },
     // added by Jai
     business_activity: function(doc) {
