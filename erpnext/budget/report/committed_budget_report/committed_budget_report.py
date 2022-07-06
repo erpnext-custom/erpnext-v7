@@ -29,7 +29,7 @@ def get_data(query):
 	return data
 
 def construct_query(filters=None):
-	query = "SELECT distinct com.account,com.cost_center,com.po_no,com.po_date,com.amount FROM `tabCommitted Budget` com WHERE com.docstatus = 1 and com.po_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' and not exists (select 1 from `tabConsumed Budget` cb where cb.account = com.account and cb.cost_center = com.cost_center and cb.com_ref = com.po_no and (IFNULL(com.item_code,1) = 1 OR cb.item_code = com.item_code)) "
+	query = "SELECT distinct com.account,com.cost_center,com.po_no,com.po_date,com.amount FROM `tabCommitted Budget` com WHERE com.docstatus = 1 and com.po_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' and not exists (select 1 from `tabConsumed Budget` cb where cb.account = com.account and cb.cost_center = com.cost_center and cb.com_ref = com.name and (IFNULL(com.item_code,1) = 1 OR cb.item_code = com.item_code)) "
 	return query;
 
 def validate_filters(filters):
