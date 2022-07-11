@@ -491,11 +491,11 @@ def make_salary_structure(source_name, target=None):
 
 @frappe.whitelist()
 def get_overtime_rate(employee):
-		basic = frappe.db.sql("select a.amount as basic_pay from `tabSalary Detail` a, `tabSalary Structure` b where a.parent = b.name and a.salary_component = 'Basic Pay' and b.is_active = 'Yes' and b.employee = \'" + str(employee) + "\'", as_dict=True)
+		basic = frappe.db.sql("select a.amount as basic_pay from `tabSalary Detail` a, `tabSalary Structure` b where a.parent = b.name and a.salary_component in ('GCE Basic Pay', 'Basic Pay') and b.is_active = 'Yes' and b.employee = \'" + str(employee) + "\'", as_dict=True)
 		if basic:
 			return ((flt(basic[0].basic_pay) * 1) / (30 * 8))
 		else:
-			frappe.throw("No Salary Structure foudn for the employee")
+			frappe.throw("No Salary Structure found for the employee")
 
 
 def validate_employee_role(doc, method):

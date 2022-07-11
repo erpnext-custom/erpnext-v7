@@ -24,14 +24,20 @@ def execute(filters=None):
 	provisional_profit_loss1 = get_provisional_profit_loss1(asset, liability, equity,
 		period_list, filters.company)
 
+	provisional_profit_loss2 = get_provisional_profit_loss2(asset, liability, equity,
+		period_list, filters.company)
+
 	message = check_opening_balance(asset, liability, equity)
 
 	data = []
 	data.extend(asset or [])
-	data.extend('')
+	
 	if provisional_profit_loss:
 		data.append(provisional_profit_loss)
-	data.extend('')
+	data.append("")
+	if provisional_profit_loss2:
+		data.append(provisional_profit_loss2)
+	data.append("")
 	data.extend(liability or [])
 	data.extend(equity or [])
 	if provisional_profit_loss1:
@@ -74,6 +80,36 @@ def get_provisional_profit_loss(asset, liability, equity, period_list, company):
 
 		if has_value:
 			return provisional_profit_loss
+
+def get_provisional_profit_loss2(asset, liability, equity, period_list, company):
+	if asset and (liability or equity):
+		total=0
+		provisional_profit_loss2 = {
+			"account_name": "'" + _("Total Asset and CWIP") + "'",
+			"account": None,
+			"warn_if_negative": True,
+			"currency": frappe.db.get_value("Company", company, "default_currency")
+		}
+
+		has_value = False
+
+		for period in period_list:
+			effective_liability = 0.0
+			if liability:
+				effective_liability += flt(liability[-2].get(period.key))
+			if equity:
+				effective_liability += flt(equity[-2].get(period.key))
+
+			provisional_profit_loss2[period.key] = -(flt(asset[-2].get(period.key)) - effective_liability) + flt(asset[-2].get(period.key))
+
+			if provisional_profit_loss2[period.key]:
+				has_value = True
+
+			total += flt(provisional_profit_loss2[period.key])
+			provisional_profit_loss2["total"] = total
+
+		if has_value:
+			return provisional_profit_loss2			
 
 def get_provisional_profit_loss1(asset, liability, equity, period_list, company):
 	if asset and (liability or equity):

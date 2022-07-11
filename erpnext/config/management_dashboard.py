@@ -86,11 +86,11 @@ def get_data():
                                         "name": "dessung-project",
                                         "label": "Priority Progress"
                                 },
-								# 	{
-                                #         "type": "page",
-                                #         "name": "target",
-                                #         "label": "target test"
-                                # },
+								{
+                                        "type": "page",
+                                        "name": "rba-project",
+                                        "label": "RBA Project Progress"
+                                },
 			]
 		},
 		{
