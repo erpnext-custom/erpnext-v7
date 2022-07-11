@@ -15,6 +15,13 @@ frappe.ui.form.on('Delivery Note', 'onload', function(frm) {
 	erpnext.queries.setup_queries(frm, "Warehouse", function() {
 		return erpnext.queries.warehouse(frm.doc);
 	});
+
+	/**Added on 6/7/22 by Dorji to filter only equipment those are not disabled */
+	frm.set_query("equipment", function() {
+		return {
+				"filters": {"is_disabled": "No"}
+		}
+	});
 })
 
 erpnext.stock.DeliveryNoteController = erpnext.selling.SellingController.extend({
