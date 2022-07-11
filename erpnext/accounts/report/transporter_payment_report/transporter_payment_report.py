@@ -31,7 +31,7 @@ def get_data(filters):
 
 	for d in frappe.db.sql(query, as_dict =1):
 		cc = frappe.get_doc("Branch", d.branch).cost_center
-		eq = frappe.db.get_values("Equipment", {"name": d.equipment, "is_disabled": 0}, ["equipment_type", "owner_name", \
+		eq = frappe.db.get_values("Equipment", {"name": d.equipment}, ["equipment_type", "owner_name", \
 					"account_number","bank_full_name","bank_branch", "ifs_code"], as_dict=True)
 		if eq:
 			equipment_type = eq[0].equipment_type 
