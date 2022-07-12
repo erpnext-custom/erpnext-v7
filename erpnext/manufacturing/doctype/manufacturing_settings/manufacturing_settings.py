@@ -8,7 +8,13 @@ from frappe.utils import cint
 from dateutil.relativedelta import relativedelta
 
 class ManufacturingSettings(Document):
-	pass
+	def validate(self):
+		item_list = []
+		for d in self.get("items"):
+			if d.item not in item_list:
+				item_list.append(d.item)
+			else:
+				frappe.throw("Item {0} duplicate at #Row {1}".format(d.item, d.idx))
 
 def get_mins_between_operations():
 	return relativedelta(minutes=cint(frappe.db.get_single_value("Manufacturing Settings",

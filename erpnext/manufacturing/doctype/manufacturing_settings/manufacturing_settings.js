@@ -4,5 +4,15 @@
 frappe.ui.form.on('Manufacturing Settings', {
 	refresh: function(frm) {
 
-	}
+	},
+	setup: function(frm) {
+		frm.set_query("item", "items", function() {
+			return {
+				filters: {
+					'item_group': 'Sales Product',
+					'disabled': 0
+				}
+			};
+		})
+	} 
 });
