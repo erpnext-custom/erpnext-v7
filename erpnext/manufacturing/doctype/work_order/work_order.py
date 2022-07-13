@@ -633,7 +633,7 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 	stock_entry.use_multi_level_bom = work_order.use_multi_level_bom
 	stock_entry.fg_completed_qty = qty or (flt(work_order.qty) - flt(work_order.produced_qty))
 	###*** Added by Thukten for Job No ***###
-	stock_entry.job_no = work_order.job_no
+	# stock_entry.job_no = work_order.job_no
 
 	if work_order.bom_no:
 		stock_entry.inspection_required = frappe.db.get_value('BOM',
