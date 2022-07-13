@@ -54,7 +54,7 @@ def validate_workflow_states(doc):
         if doc.doctype == "Salary Advance":
 		#CEO is set as the approver for Salary Advance.
                 ''' employee --> final_approver(branch)/reports_to(final_approver(branch)) '''
-                advance_doc  = frappe.get_doc("Employee", {"designation": 'Chief Executive Officer'})
+                advance_doc  = frappe.get_doc("Employee", {"designation": 'Chief Executive Officer', "status": 'Active'})
 		vars(doc)[document_approver[0]] = advance_doc.user_id
                 vars(doc)[document_approver[1]] = advance_doc.employee_name
                 vars(doc)[document_approver[2]] = advance_doc.designation
