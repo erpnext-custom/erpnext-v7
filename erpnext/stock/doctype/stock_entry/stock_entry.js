@@ -263,7 +263,7 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 		console.log(`this is the qty: ${d.qty}`)
 		this.calculate_basic_amount(d);
 	},
-
+	
 	work_order: function () {
 		var me = this;
 		this.toggle_enable_bom();
