@@ -372,7 +372,7 @@
    "print_hide_if_no_value": 0, 
    "read_only": 0, 
    "report_hide": 0, 
-   "reqd": 1, 
+   "reqd": 0, 
    "search_index": 0, 
    "set_only_once": 0, 
    "unique": 0
@@ -425,7 +425,7 @@
    "print_hide_if_no_value": 0, 
    "read_only": 0, 
    "report_hide": 0, 
-   "reqd": 1, 
+   "reqd": 0, 
    "search_index": 0, 
    "set_only_once": 0, 
    "unique": 0
@@ -1221,8 +1221,8 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2021-04-07 10:03:05.301893", 
- "modified_by": "Administrator", 
+ "modified": "2022-07-06 17:05:35.367230", 
+ "modified_by": "sangay.dorji2695@bt.bt", 
  "module": "Stock", 
  "name": "Material Request", 
  "name_case": "Title Case", 
