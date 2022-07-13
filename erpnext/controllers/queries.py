@@ -346,6 +346,13 @@ def get_income_account(doctype, txt, searchfield, start, page_len, filters):
 				'company': filters.get("company", "")
 			})
 
+@frappe.whitelist()
+def get_costing_component(doctype, txt, searchfield, start, page_len, filters):
+	if not filters.get("from_date") or not filters.get("to_date"):
+		frappe.throw("From Date and To Date are mandatory")
+	if not filters.get("branch"):
+		frappe.throw("Branch is mandatory.")
+	return frappe.db.sql("select name, particular from `tabCosting Component` where '{0}' >= from_date and '{1}' <= to_date and branch = '{2}'".format(filters.get("from_date"),filters.get("to_date"),filters.get("branch")))	
 
 @frappe.whitelist()
 def get_expense_account(doctype, txt, searchfield, start, page_len, filters):
