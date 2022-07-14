@@ -356,8 +356,13 @@ class StockEntry(StockController):
 		if self.purpose in ["Manufacture", "Repack"]:
 			for d in self.get("items"):
 				if d.bom_no or d.t_warehouse:
-					d.basic_rate = flt(raw_material_cost / flt(d.transfer_qty), d.precision("basic_rate"))
-					d.basic_amount = flt(raw_material_cost, d.precision("basic_amount"))
+					# this method well workded in NRDCL, but changed here by Jai as per Sangay Dorji
+					# d.basic_rate = flt(raw_material_cost / flt(d.transfer_qty), d.precision("basic_rate"))
+					# d.basic_amount = flt(raw_material_cost, d.precision("basic_amount"))
+
+					# new update by Jai
+					d.basic_rate = flt(frappe.db.get_value("BOM", d.bom_no, "cost_of_production"), d.precision("basic_rate"))
+					d.basic_amount = flt((d.basic_rate * d.transfer_qty), d.precision("basic_amount"))
 
 	def distribute_additional_costs(self):
 		if self.purpose == "Material Issue":
