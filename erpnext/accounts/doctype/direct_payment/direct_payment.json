@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 0, 
- "allow_rename": 0, 
+ "allow_rename": 1, 
  "autoname": "DPAY.YY.MM.###", 
  "beta": 0, 
  "creation": "2017-05-23 15:56:43.526864", 
@@ -1234,7 +1234,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2021-08-13 22:47:03.327192", 
+ "modified": "2022-07-16 00:21:38.248903", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Direct Payment", 
