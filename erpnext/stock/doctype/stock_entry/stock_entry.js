@@ -328,12 +328,12 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
         // });
     },
     // added by Jai
-    business_activity: function(doc) {
-        var me = this;
-        this.set_warehouse_if_different("business_activity", doc.business_activity, function(row) {
-            return me.source_mandatory.indexOf(me.frm.doc.purpose)!==-1;
-        });
-    },
+    // business_activity: function(doc) {
+    //     var me = this;
+    //     this.set_warehouse_if_different("business_activity", doc.business_activity, function(row) {
+    //         return me.source_mandatory.indexOf(me.frm.doc.purpose)!==-1;
+    //     });
+    // },
     to_warehouse: function(doc) {
         var me = this;
         this.set_warehouse_if_different("t_warehouse", doc.to_warehouse, function(row) {
