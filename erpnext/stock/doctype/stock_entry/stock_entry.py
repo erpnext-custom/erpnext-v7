@@ -91,7 +91,8 @@ class StockEntry(StockController):
         update_serial_nos_after_submit(self, "items")
         self.update_work_order()
         self.validate_purchase_order()
-        self.make_gl_entries()
+        if self.stock_entry_type != 'Soelra':
+            self.make_gl_entries()
     
     def on_cancel(self):
         self.update_stock_ledger()
