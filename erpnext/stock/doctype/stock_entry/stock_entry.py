@@ -301,7 +301,7 @@ class StockEntry(StockController):
 			# validate qty during submit
 			# Following condition modified by SHHIV on 07/12/2017
 			#if d.docstatus==1 and d.s_warehouse and not allow_negative_stock and d.actual_qty < d.transfer_qty:
-			if d.s_warehouse and not allow_negative_stock and flt(d.actual_qty) < flt(d.transfer_qty):
+			if d.s_warehouse and not allow_negative_stock and flt(d.actual_qty,2) < flt(d.transfer_qty,2):
 				frappe.throw(_("Row {0}: Qty not available for {4} in warehouse {1} at posting time of the entry ({2} {3})".format(d.idx,
 					frappe.bold(d.s_warehouse), formatdate(self.posting_date),
 					format_time(self.posting_time), frappe.bold(d.item_code)))
