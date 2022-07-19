@@ -437,18 +437,18 @@ def get_officiating_employee(employee):
 		frappe.throw("Employee is Mandatory")
 		
 	#return frappe.db.sql("select officiate from `tabOfficiating Employee` where docstatus = 1 and revoked != 1 and %(today)s between from_date and to_date and employee = %(employee)s order by creation desc limit 1", {"today": nowdate(), "employee": employee}, as_dict=True)
-        qry = "select officiate from `tabOfficiating Employee` where docstatus = 1 and revoked != 1 and %(today)s between from_date and to_date and employee = %(employee)s order by creation desc limit 1"
-        officiate = frappe.db.sql(qry, {"today": nowdate(), "employee": employee}, as_dict=True)
+	qry = "select officiate from `tabOfficiating Employee` where docstatus = 1 and revoked != 1 and %(today)s between from_date and to_date and employee = %(employee)s order by creation desc limit 1"
+	officiate = frappe.db.sql(qry, {"today": nowdate(), "employee": employee}, as_dict=True)
 
-        if officiate:
-                flag = True
-                while flag:
-                        temp = frappe.db.sql(qry, {"today": nowdate(), "employee": officiate[0].officiate}, as_dict=True)
-                        if temp:
-                                officiate = temp
-                        else:
-                                flag = False
-        return officiate
+	if officiate:
+			flag = True
+			while flag:
+					temp = frappe.db.sql(qry, {"today": nowdate(), "employee": officiate[0].officiate}, as_dict=True)
+					if temp:
+							officiate = temp
+					else:
+							flag = False
+	return officiate
 
 def update_suspension_record():
 	query = "select employee, increment_month, promotion_month from `tabEmployee Disciplinary Record` where docstatus=1 and not_quilty_or_acquitted=0 and DATE_ADD(to_date, INTERVAL 1 DAY) = %(today)s"
