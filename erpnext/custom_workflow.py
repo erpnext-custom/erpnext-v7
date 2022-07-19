@@ -344,7 +344,7 @@ def validate_workflow_states(doc):
 			officiating = get_officiating_employee(reports_to[3])
 			# employee's supervisor's officiate is if himself, get supervisor of his supervisor. Jai 19 July 2022 else take supervisor's officiate 
 			if officiating:
-				if officiating[0].officiate == employee[0]:
+				if officiating[0].officiate == doc.employee:
 					officiating = frappe.db.get_value("Employee", frappe.db.get_value("Employee", reports_to[3], "reports_to"), ["user_id","employee_name","designation","name"])
 				else:
 					officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
