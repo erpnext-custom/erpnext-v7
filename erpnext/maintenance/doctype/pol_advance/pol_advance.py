@@ -81,10 +81,11 @@ class PolAdvance(AccountsController):
                     self.od_outstanding_amount += doc.od_amount
                 elif flt(self.adjusted_amount) + flt(doc.od_amount) > flt(self.amount):
                     excess_amount = flt(self.adjusted_amount) + flt(doc.od_amount) - flt(self.amount)
-                    self.od_amount = flt(excess_amount)
-                    self.od_outstanding_amount = flt(excess_amount)
-                    self.adjusted_amount = flt(self.amount)
-                    self.balance_amount = flt(self.amount) - flt(self.adjusted_amount)
+                    self.od_amount += flt(excess_amount)
+                    self.od_outstanding_amount += flt(excess_amount)
+                    if self.adjusted_amount != self.amount:
+                        self.adjusted_amount = flt(self.amount)
+                        self.balance_amount = flt(self.amount) - flt(self.adjusted_amount)
                 else:
                     self.adjusted_amount += flt(doc.od_amount)
                     self.balance_amount = flt(self.amount) - flt(self.adjusted_amount)
