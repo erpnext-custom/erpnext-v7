@@ -203,4 +203,21 @@ def get_data():
                                 }
 			]
 		},
+		{
+			"label": _("Soelra Report"),
+			"items": [
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Soelra Summary Report",
+					"doctype": "Stock Entry"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Individual Soelra Report",
+					"doctype": "Stock Entry"
+				}
+			]
+		}
 	]
