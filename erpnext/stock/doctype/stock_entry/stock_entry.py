@@ -870,6 +870,7 @@ class StockEntry(StockController):
             d.employee_name = frappe.get_value("Desuup", d.issued_to, "desuup_name")                        
             d.item_name = item_det.item_name                        
             d.warehouse = cstr(d.s_warehouse) or cstr(d.t_warehouse)                        
+            d.uom = item_det.stock_uom
             d.transfer_qty = d.qty
             d.basic_rate = get_valuation_rate(d.item_code, d.warehouse, allow_zero_rate=False)
             d.valuation_rate = d.basic_rate                        
