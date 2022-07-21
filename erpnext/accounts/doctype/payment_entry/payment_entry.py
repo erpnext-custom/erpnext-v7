@@ -796,6 +796,13 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 
 	# party account
 	if dt == "Sales Invoice":
+		so = frappe.db.sql("""select sales_order from `tabSales Invoice Item` where parent = '{0}'""".format(dn))[0][0]
+		if so:
+			is_credit = frappe.db.get_value("Sales Order", so, "is_credit")
+			if is_credit == 1:
+				frappe.throw("SI {} should be paid through Consolidated Sales Invoice".format(dn))
+		else:
+			frappe.throw("No Sales Order is linked with Sales Invoice {}".format(dn))
 		party_account = doc.debit_to
 	elif dt == "Purchase Invoice":
 		party_account = doc.credit_to

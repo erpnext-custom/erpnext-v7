@@ -147,88 +147,90 @@ class SalesInvoice(SellingController):
 	def advance_make_gl_entry(self):
 		from erpnext.accounts.general_ledger import make_gl_entries
 		advance_account_currency = get_account_currency(self.advance_account)
-		for item in self.items:
-			gl_entries = []
-			if self.je_advance_amount >= self.outstanding_amount:
-				amount = self.je_advance_amount - self.outstanding_amount
-				gl_entries.append(
-					self.get_gl_dict({
-					"account": item.income_account,
-					"party_type": "Customer",
-					"party": self.party,
-					"against": self.advance_account,
-					"credit": self.outstanding_amount,
-					"credit_in_account_currency": self.outstanding_amount, 
-					"against_voucher_type": self.doctype,
-					"business_activity": self.advance_business_activity,
-					"cost_center": self.advance_cost_center
-					}, advance_account_currency)
-				)
-				gl_entries.append(
-					self.get_gl_dict({
-					"account": self.advance_account,
-					"party_type": self.party_type,
-					"party": self.party,
-					"against": self.party,
-					"debit": self.outstanding_amount,
-					"debit_in_account_currency": self.outstanding_amount,
-					"business_activity": self.advance_business_activity,
-					"against_voucher_type": self.doctype,
-					"cost_center": self.advance_cost_center
-					}, advance_account_currency)
-				)
-				frappe.db.sql("update `tabJournal Entry` set advance_amount='{}' where name='{}'".format(amount, self.reference_name))
-				self.advance_outstanding_amount = amount
-			elif self.je_advance_amount < self.outstanding_amount:
-				deficit_amount = self.outstanding_amount - self.je_advance_amount
-				gl_entries.append(
-					self.get_gl_dict({
-					"account": item.income_account,
-					"party_type": "Customer",
-					"party": self.party,
-					"against": self.advance_account,
-					"credit": self.grand_total,
-					"credit_in_account_currency": self.grand_total, 
-					"against_voucher_type": self.doctype,
-					"business_activity": self.advance_business_activity,
-					"cost_center": self.advance_cost_center
-					}, advance_account_currency)
-				)
-				gl_entries.append(
-					self.get_gl_dict({
-					"account": self.advance_account,
-					"party_type": self.party_type,
-					"party": self.party,
-					"against": self.party,
-					"debit": self.je_advance_amount,
-					"debit_in_account_currency": self.je_advance_amount,
-					"business_activity": self.advance_business_activity,
-					"against_voucher_type": self.doctype,
-					"cost_center": self.advance_cost_center
-					}, advance_account_currency)
-				)
-				gl_entries.append(
-					self.get_gl_dict({
-					"account": self.debit_to,
-					"party_type": self.party_type,
-					"party": self.party,
-					"against": self.party,
-					"debit": deficit_amount,
-					"debit_in_account_currency": deficit_amount,
-					"business_activity": self.advance_business_activity,
-					"against_voucher_type": self.doctype,
-					"cost_center": self.advance_cost_center
-					}, advance_account_currency)
-				)
-				frappe.db.sql("update `tabJournal Entry` set advance_amount=0 where name='{}'".format(self.reference_name)) 
-				self.advance_outstanding_amount = 0
-			make_gl_entries(gl_entries, cancel=(self.docstatus == 2), update_outstanding="No", merge_entries=False)
+		income_account = frappe.db.sql("""
+			select distinct income_account from `tabSales Invoice Item` where parent = '{}'
+		""".format(self.name))[0][0]
+		gl_entries = []
+		if self.je_advance_amount >= self.outstanding_amount:
+			amount = self.je_advance_amount - self.outstanding_amount
+			gl_entries.append(
+				self.get_gl_dict({
+				"account": income_account,
+				"party_type": "Customer",
+				"party": self.party,
+				"against": self.advance_account,
+				"credit": self.outstanding_amount,
+				"credit_in_account_currency": self.outstanding_amount, 
+				"against_voucher_type": self.doctype,
+				"business_activity": self.advance_business_activity,
+				"cost_center": self.advance_cost_center
+				}, advance_account_currency)
+			)
+			gl_entries.append(
+				self.get_gl_dict({
+				"account": self.advance_account,
+				"party_type": self.party_type,
+				"party": self.party,
+				"against": self.party,
+				"debit": self.outstanding_amount,
+				"debit_in_account_currency": self.outstanding_amount,
+				"business_activity": self.advance_business_activity,
+				"against_voucher_type": self.doctype,
+				"cost_center": self.advance_cost_center
+				}, advance_account_currency)
+			)
+			frappe.db.sql("update `tabJournal Entry` set advance_amount='{}' where name='{}'".format(amount, self.reference_name))
+			self.advance_outstanding_amount = amount
+		elif self.je_advance_amount < self.outstanding_amount:
+			deficit_amount = self.outstanding_amount - self.je_advance_amount
+			gl_entries.append(
+				self.get_gl_dict({
+				"account": income_account,
+				"party_type": "Customer",
+				"party": self.party,
+				"against": self.advance_account,
+				"credit": self.grand_total,
+				"credit_in_account_currency": self.grand_total, 
+				"against_voucher_type": self.doctype,
+				"business_activity": self.advance_business_activity,
+				"cost_center": self.advance_cost_center
+				}, advance_account_currency)
+			)
+			gl_entries.append(
+				self.get_gl_dict({
+				"account": self.advance_account,
+				"party_type": self.party_type,
+				"party": self.party,
+				"against": self.party,
+				"debit": self.je_advance_amount,
+				"debit_in_account_currency": self.je_advance_amount,
+				"business_activity": self.advance_business_activity,
+				"against_voucher_type": self.doctype,
+				"cost_center": self.advance_cost_center
+				}, advance_account_currency)
+			)
+			gl_entries.append(
+				self.get_gl_dict({
+				"account": self.debit_to,
+				"party_type": self.party_type,
+				"party": self.party,
+				"against": self.party,
+				"debit": deficit_amount,
+				"debit_in_account_currency": deficit_amount,
+				"business_activity": self.advance_business_activity,
+				"against_voucher_type": self.doctype,
+				"cost_center": self.advance_cost_center
+				}, advance_account_currency)
+			)
+			frappe.db.sql("update `tabJournal Entry` set advance_amount=0 where name='{}'".format(self.reference_name)) 
+			self.advance_outstanding_amount = 0
+		make_gl_entries(gl_entries, cancel=(self.docstatus == 2), update_outstanding="No", merge_entries=False)
 		
 	def reverse_advance_amount(self):
 		frappe.db.sql("update `tabJournal Entry` set advance_amount='{}' where name='{}'".format(self.je_advance_amount, self.reference_name))
 		amount = self.je_advance_amount
 		self.advance_outstanding_amount = amount
-     
+	 
 	def check_advance_amount(self):
 		if self.advances and not flt(self.outstanding_amount) == 0:
 			for a in self.advances:
@@ -435,11 +437,11 @@ class SalesInvoice(SellingController):
 			and amount = 0""", self.name)
 
 	def validate_with_previous_doc(self):
-                # Following condition added by SHIV on 2019/05/27
-                # Skip all checks for opening invoices created via "Opening Invoice Creation Tool"
-                if self.is_opening == "Yes":
-                        return
-                
+		# Following condition added by SHIV on 2019/05/27
+		# Skip all checks for opening invoices created via "Opening Invoice Creation Tool"
+		if self.is_opening == "Yes":
+			return
+				
 		super(SalesInvoice, self).validate_with_previous_doc({
 			"Sales Order": {
 				"ref_dn_field": "sales_order",
@@ -670,9 +672,8 @@ class SalesInvoice(SellingController):
 			#grand_total_in_company_currency = flt(self.grand_total * self.conversion_rate,
 			#	self.precision("grand_total"))
 			grand_total = flt(self.grand_total) + flt(self.total_loading_amount) + flt(self.void_amount)
-
-                        cost_center = frappe.db.get_value("Branch", self.branch, "cost_center")
-                        
+			cost_center = frappe.db.get_value("Branch", self.branch, "cost_center")
+						
 			gl_entries.append(
 				self.get_gl_dict({
 					"account": self.debit_to,
@@ -684,7 +685,7 @@ class SalesInvoice(SellingController):
 						if self.party_account_currency==self.company_currency else grand_total,
 					"against_voucher": self.return_against if cint(self.is_return) else self.name,
 					"against_voucher_type": self.doctype,
-                                        "cost_center": cost_center,
+										"cost_center": cost_center,
 					"business_activity": self.business_activity,
 				}, self.party_account_currency)
 			)
@@ -971,37 +972,36 @@ class SalesInvoice(SellingController):
 	##
 	def make_advance_gl_entry(self, gl_entries):
 		for a in self.get("advances"):
-		    if flt(a.allocated_amount) and a.advance_account:
-			advance_account_currency = get_account_currency(a.advance_account)
-			allocated_amount = round(flt(a.allocated_amount), 2)
-
-			gl_entries.append(
-				self.get_gl_dict({
-					"account": self.debit_to,
-					"party_type": "Customer",
-					"party": self.customer,
-					"against": a.advance_account,
-					"credit": allocated_amount,
-					"credit_in_account_currency": allocated_amount, 
-					"against_voucher": self.return_against if cint(self.is_return) else self.name,
-					"against_voucher_type": self.doctype,
-					"business_activity": a.advance_business_activity,
-					"cost_center": a.advance_cost_center
-				}, advance_account_currency)
-			)
-			gl_entries.append(
-				self.get_gl_dict({
-					"account": a.advance_account,
-					"party_type": "Customer",
-					"party": self.customer,
-					"against": self.customer,
-					"debit": allocated_amount,
-					"debit_in_account_currency": allocated_amount,
-					"business_activity": a.advance_business_activity,
-					"against_voucher": self.return_against if cint(self.is_return) else self.name,
-					"against_voucher_type": self.doctype,
-					"cost_center": a.advance_cost_center
-				}, advance_account_currency)
+			if flt(a.allocated_amount) and a.advance_account:
+				advance_account_currency = get_account_currency(a.advance_account)
+				allocated_amount = round(flt(a.allocated_amount), 2)
+				gl_entries.append(
+					self.get_gl_dict({
+						"account": self.debit_to,
+						"party_type": "Customer",
+						"party": self.customer,
+						"against": a.advance_account,
+						"credit": allocated_amount,
+						"credit_in_account_currency": allocated_amount, 
+						"against_voucher": self.return_against if cint(self.is_return) else self.name,
+						"against_voucher_type": self.doctype,
+						"business_activity": a.advance_business_activity,
+						"cost_center": a.advance_cost_center
+					}, advance_account_currency)
+				)
+				gl_entries.append(
+					self.get_gl_dict({
+						"account": a.advance_account,
+						"party_type": "Customer",
+						"party": self.customer,
+						"against": self.customer,
+						"debit": allocated_amount,
+						"debit_in_account_currency": allocated_amount,
+						"business_activity": a.advance_business_activity,
+						"against_voucher": self.return_against if cint(self.is_return) else self.name,
+						"against_voucher_type": self.doctype,
+						"cost_center": a.advance_cost_center
+					}, advance_account_currency)
 			)
 
 	def make_loading_gl_entry(self, gl_entries):

@@ -86,7 +86,7 @@ def get_columns(filters=None):
 				_("Qty Delivered") + ":Float:90",
 				_("UOM") + ":Data:90",
 				_("Amount") + ":Currency:100",
-				# _("Discount") + ":Currency:120",
+				_("Discount") + ":Currency:120",
 				# _("Additional Cost") + ":Currency:120",
 				_("Net Total")+":Currency:120",
 				# _("Vehicle") + ":Link/Vehicle:120", 
@@ -302,8 +302,9 @@ def get_data(filters=None):
 				(select cc.parent_cost_center from `tabCost Center` cc where cc.name = (select b.cost_center from `tabBranch` b where b.name = si.branch)) as region,
 				si.branch,
 				si.customer, (select mobile_no from `tabCustomer` where name=si.customer) as customer_number, si.customer_group, 
-				i.item_sub_group, sum(sii.qty) as qty, sii.stock_uom as uom, sum(sii.amount),	
-				sum(sii.net_amount)-si.loading_cost-si.challan_cost
+				i.item_sub_group, sum(sii.qty) as qty, sii.stock_uom as uom, sum(sii.amount),
+				max(si.discount_or_cost_amount) as discount_or_cost_amount,
+				sum(sii.net_amount)-max(si.loading_cost)-max(si.challan_cost)
 			"""
 			group_by = "group by si.name"
 			order_by = "order by si.posting_date"

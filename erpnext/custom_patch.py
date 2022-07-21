@@ -24,6 +24,13 @@ def delete_cancelled_sws_members():
 			""".format(a.name))
 			print(a.name)
 
+def cancel_payment_entry():
+	pe = ["PEJV220600081","PEBR220601486"]
+	for a in pe:
+		doc = frappe.get_doc("Payment Entry",a)
+		doc.cancel()
+		print(a)
+
 
 def update_mechanical_payment_tds_rate():
 	mp = frappe.db.sql("""
@@ -77,6 +84,12 @@ def submit_prd_20220211(debug=1):
 			except Exception as e:
 				print(str(e))
 			frappe.db.commit()
+def submit_dn_20220707():
+	dn = ['DN22070160']
+	for a in dn:
+		doc = frappe.get_doc("Delivery Note",a)
+		doc.submit()
+		print("submitted")
 
 def submit_dn_20220211(debug=1):
 	li = frappe.db.sql("""select 'Delivery Note' as doctype, name as docname
@@ -1709,6 +1722,18 @@ def update_employee():
 			edoc.save()
 		else:
 			frappe.throw("No branch for " + str(edoc.cost_center) + " for " + str(emp))
+
+def delete_extra_gl_entries():
+	gle = frappe.db.sql("""
+		select name from `tabGL Entry` where voucher_no = 'SI22055874' and account = 'Advance from Customer - NRDCL'
+	""", as_dict = 1)
+	count = 1
+	if gle:
+		for a in gle:
+			if count != 1:
+				frappe.db.sql("""delete from `tabGL Entry` where name = '{}'""".format(a.name))
+			print(str(count)+". "+a.name)
+			count+=1
 
 def give_admin_access():
 	reports = frappe.db.sql("select name from tabReport", as_dict=True)

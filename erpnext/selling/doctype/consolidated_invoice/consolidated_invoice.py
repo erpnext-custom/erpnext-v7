@@ -18,11 +18,20 @@ class ConsolidatedInvoice(Document):
 @frappe.whitelist()
 def get_invoices(from_date, to_date, customer, cost_center):
 	# frappe.msgprint(str(frappe.db.sql("select si.name, si.sales_invoice_date as posting_date, si.outstanding_amount, sii.delivery_note, sii.sales_order, sii.accepted_qty from `tabSales Invoice` si, `tabSales Invoice Item` sii where si.docstatus = 1 and si.outstanding_amount > 0 and si.sales_invoice_date between %s and %s and sii.sales_order = %s and sii.parent = si.name and not exists (select 1 from `tabConsolidated Invoice Item` ci where ci.invoice_no = si.name and ci.docstatus = 1) order by posting_date", (from_date, to_date, sales_order), as_dict=True)))
-	return frappe.db.sql("""select si.name, sii.sales_order, si.sales_invoice_date as posting_date, si.due_date, sum(sii.qty) as qty, sum(sii.base_amount) as cost_of_goods,
-	(select dn.transportation_charges from `tabDelivery Note` dn where dn.name = sii.delivery_note),
-	(select dn.loading_cost from `tabDelivery Note` dn where dn.name = sii.delivery_note),
-	(select dn.challan_cost from `tabDelivery Note` dn where dn.name = sii.delivery_note),
-	si.outstanding_amount, sii.delivery_note, sii.sales_order, sii.accepted_qty from `tabSales Invoice` si, `tabSales Invoice Item` sii where si.docstatus = 1 and si.outstanding_amount > 0 and si.sales_invoice_date between %s and %s and si.customer = %s and sii.parent = si.name and not exists (select 1 from `tabConsolidated Invoice Item` ci where ci.invoice_no = si.name and ci.docstatus = 1) and si.branch = (select b.name from `tabBranch` b where b.cost_center = %s) group by si.name order by posting_date""", (from_date, to_date, customer, cost_center), as_dict=True)
+	return frappe.db.sql("""select si.name, sii.sales_order, si.sales_invoice_date as posting_date, si.due_date, 
+				sum(sii.qty) as qty, sum(sii.base_amount) as cost_of_goods,
+				(select dn.transportation_charges from `tabDelivery Note` dn where dn.name = sii.delivery_note),
+				(select dn.loading_cost from `tabDelivery Note` dn where dn.name = sii.delivery_note),
+				(select dn.challan_cost from `tabDelivery Note` dn where dn.name = sii.delivery_note),
+				si.outstanding_amount, sii.delivery_note, sii.sales_order, sii.accepted_qty 
+			from `tabSales Invoice` si, `tabSales Invoice Item` sii 
+			where si.docstatus = 1 and si.outstanding_amount > 0 
+			and si.sales_invoice_date between %s and %s 
+			and si.customer = %s and sii.parent = si.name 
+			and not exists (select 1 from `tabConsolidated Invoice Item` ci 
+							where ci.invoice_no = si.name and ci.docstatus = 1) 
+			and si.branch = (select b.name from `tabBranch` b where b.cost_center = %s) 
+			group by si.name order by posting_date""", (from_date, to_date, customer, cost_center), as_dict=True)
 
 @frappe.whitelist()
 def make_payment_entry(source_name, target_doc=None): 

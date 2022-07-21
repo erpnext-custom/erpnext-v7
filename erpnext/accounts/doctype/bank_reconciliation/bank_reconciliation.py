@@ -98,11 +98,11 @@ class BankReconciliation(Document):
                                 "Imprest Recoup" as payment_document, name as payment_entry,
                                 cheque_no as cheque_number, cheque_date,
                                 purchase_amount as amount,
-                                cheque_date as posting_date, branch as against_account, clearance_date
+                                posting_date, branch as against_account, clearance_date
                         from `tabImprest Recoup`
                         where revenue_bank_account = '{0}'
                         and docstatus = 1
-                        and cheque_date >= '{1}' and cheque_date <= '{2}'
+                        and posting_date >= '{1}' and posting_date <= '{2}'
                         {3}
                 """.format(self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
 
@@ -126,7 +126,7 @@ class BankReconciliation(Document):
                                 net_amount as amount,
                                 posting_date, customer as against_account, clearance_date
                         from `tabMechanical Payment`
-                        where '{0}' IN (outgoing_account)
+                        where '{0}' IN (expense_account, outgoing_account)
                         and docstatus = 1
                         and posting_date >= '{1}' and posting_date <= '{2}'
                         {3}
