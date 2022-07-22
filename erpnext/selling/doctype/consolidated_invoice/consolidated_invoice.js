@@ -17,22 +17,27 @@ frappe.ui.form.on('Consolidated Invoice', {
 
 	},
 	to_date: function(frm) {
-		if(frm.doc.from_date && frm.doc.from_date <= frm.doc.to_date) {
-			get_invoices(frm.doc.from_date, frm.doc.to_date, frm.doc.customer, frm.doc.cost_center)
-		}
-		else if(frm.doc.from_date && frm.doc.from_date >= frm.doc.to_date) {
-			msgprint("To Date should be smaller than From Date")
-			frm.set_value("to_date", "")
-		}
+		get_invoices(frm);
+		// if(frm.doc.from_date && frm.doc.from_date <= frm.doc.to_date) {
+		// 	get_invoices(frm.doc.from_date, frm.doc.to_date, frm.doc.customer, frm.doc.cost_center)
+		// }
+		// else if(frm.doc.from_date && frm.doc.from_date >= frm.doc.to_date) {
+		// 	msgprint("To Date should be smaller than From Date")
+		// 	frm.set_value("to_date", "")
+		// }
 	},
 	from_date: function(frm) {
-		if(frm.doc.to_date && frm.doc.from_date < frm.doc.to_date) {
-			get_invoices(frm.doc.from_date, frm.doc.to_date, frm.doc.customer, frm.doc.cost_center)
-		}
-		else if(frm.doc.to_date && frm.doc.from_date > frm.doc.to_date) {
-			msgprint("To Date should be smaller than From Date")
-			frm.set_value("from_date", "")
-		}
+		get_invoices(frm);
+		// if(frm.doc.to_date && frm.doc.from_date < frm.doc.to_date) {
+		// 	get_invoices(frm.doc.from_date, frm.doc.to_date, frm.doc.customer, frm.doc.cost_center)
+		// }
+		// else if(frm.doc.to_date && frm.doc.from_date > frm.doc.to_date) {
+		// 	msgprint("To Date should be smaller than From Date")
+		// 	frm.set_value("from_date", "")
+		// }
+	},
+	customer: function(frm){
+		get_invoices(frm);
 	},
 	branch: function(frm){
 		if(frm.doc.branch != null && frm.doc.branch != undefined && frm.doc.branch != ""){
@@ -52,6 +57,9 @@ frappe.ui.form.on('Consolidated Invoice', {
 				}
 			})
 		}	
+	},
+	cost_center: function(frm){
+		get_invoices(frm);
 	},
 	sales_order: function(frm) {
 		if(frm.doc.cost_center){
@@ -90,42 +98,52 @@ frappe.ui.form.on('Consolidated Invoice', {
 // cur_frm.add_fetch("item_code", "stock_uom", "uom")
 // cur_frm.add_fetch("item_code", "item_name", "item_name")
 
-function get_invoices(from_date, to_date, customer, cost_center) {
-	frappe.call({
-		method: "erpnext.selling.doctype.consolidated_invoice.consolidated_invoice.get_invoices",
-		args: {
-			"from_date": from_date,
-			"to_date": to_date,
-			"customer": customer,
-			"cost_center": cost_center
-		},
-		callback: function(r) {
-			if(r.message) {
-				var total_amount = 0;
-				var total_qty = 0;
-				cur_frm.clear_table("items");
-				r.message.forEach(function(invoice) {
-				    var row = frappe.model.add_child(cur_frm.doc, "Consolidated Invoice Item", "items");
-					row.invoice_no = invoice['name']
-					row.sales_order = invoice['sales_order']
-					row.amount = invoice['outstanding_amount']
-					row.cost_of_goods = invoice['cost_of_goods']
-					row.qty = invoice['qty']
-					row.transportation_cost = invoice['transportation_charges']
-					row.loading_cost = invoice['loading_cost']
-					row.challan_cost = invoice['challan_cost']
-					row.date = invoice['posting_date']
-					row.due_date = invoice['due_date']
-					row.delivery_note = invoice['delivery_note']
-					refresh_field("items");
+function get_invoices(frm) {
+	cur_frm.clear_table("items");
+	cur_frm.set_value("total_amount", null)
+	cur_frm.set_value("quantity", null)
+	cur_frm.refresh_fields("items");
+	if(frm.doc.from_date && frm.doc.to_date && frm.doc.customer && frm.doc.cost_center){
+		frappe.call({
+			method: "erpnext.selling.doctype.consolidated_invoice.consolidated_invoice.get_invoices",
+			args: {
+				"name": frm.doc.name,
+				"from_date": frm.doc.from_date,
+				"to_date": frm.doc.to_date,
+				"customer": frm.doc.customer,
+				"cost_center": frm.doc.cost_center
+			},
+			callback: function(r) {
+				if(r.message) {
+					var total_amount = 0;
+					var total_qty = 0;
+					cur_frm.clear_table("items");
+					r.message.forEach(function(invoice) {
+						var row = frappe.model.add_child(cur_frm.doc, "Consolidated Invoice Item", "items");
+						row.invoice_no = invoice['name']
+						row.sales_order = invoice['sales_order']
+						row.amount = invoice['outstanding_amount']
+						row.cost_of_goods = invoice['cost_of_goods']
+						row.qty = invoice['qty']
+						row.transportation_cost = invoice['transportation_charges']
+						row.loading_cost = invoice['loading_cost']
+						row.challan_cost = invoice['challan_cost']
+						row.date = invoice['posting_date']
+						row.due_date = invoice['due_date']
+						row.delivery_note = invoice['delivery_note']
+						refresh_field("items");
 
-					total_amount += invoice['outstanding_amount']
-					total_qty += invoice['accepted_qty']
-				});
+						total_amount += invoice['outstanding_amount']
+						total_qty += invoice['accepted_qty']
+					});
 
-				cur_frm.set_value("total_amount", total_amount)
-				cur_frm.set_value("quantity", total_qty)
-			}
-		}
-	})
+					cur_frm.set_value("total_amount", total_amount)
+					cur_frm.set_value("quantity", total_qty)
+				}
+				cur_frm.refresh_fields("items");
+			},
+			freeze: true,
+            freeze_message: '<span style="color:white; background-color: red; padding: 10px 50px; border-radius: 5px;">Fetching Invoices...</span>',
+		});
+	}
 }
