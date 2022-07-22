@@ -29,11 +29,11 @@ def get_invoices(name, from_date, to_date, customer, cost_center):
 		frappe.throw(_("<b>From Date</b> should be less than or equal to <b>To Date</b>"))
 
 	invoices = frappe.db.sql("""select si.name, sii.sales_order, si.sales_invoice_date as posting_date, si.due_date, 
-				dn.name as delivery_note, sum(sii.qty) as qty, sum(sii.base_amount) as cost_of_goods,
+				sum(sii.qty) as qty, sum(sii.accepted_qty) as accepted_qty, sum(sii.base_amount) as cost_of_goods,
 				max(dn.transportation_charges) transportation_charges,
 				max(dn.loading_cost) loading_cost,
 				max(dn.challan_cost) challan_cost,
-				si.outstanding_amount, sii.delivery_note, sii.sales_order, sii.accepted_qty 
+				max(si.outstanding_amount) outstanding_amount, sii.delivery_note 
 			from `tabSales Invoice` si
 			inner join `tabSales Invoice Item` sii on sii.parent = si.name
 			left join `tabDelivery Note` dn on dn.name = sii.delivery_note
@@ -45,7 +45,7 @@ def get_invoices(name, from_date, to_date, customer, cost_center):
 							where ci.invoice_no = si.name and ci.docstatus != 2
 							and ci.parent != %(name)s) 
 			and si.branch = (select b.name from `tabBranch` b where b.cost_center = %(cost_center)s) 
-			group by si.name, sii.sales_order, si.sales_invoice_date, si.due_date, dn.name
+			group by si.name, sii.sales_order, si.sales_invoice_date, si.due_date, sii.delivery_note
 			order by posting_date""", ({"from_date": from_date, "to_date": to_date,
 					"customer": customer, "cost_center": cost_center, "name": name}), as_dict=True)
 	if not invoices:
