@@ -86,7 +86,7 @@ def sst_create_missing_components(debug=1):
 	print('Total no.of components missing: ', counter)
 
 def sst_refresh_missing_components():
-    for d in frappe.db.sql("""select parent from `tabSalary Detail`
+	for d in frappe.db.sql("""select parent from `tabSalary Detail`
 				where owner='Administrator' and date(creation)='2022-07-24' """, as_dict=True):
 		doc = frappe.get_doc("Salary Structure", d.parent)
 		doc.save()
