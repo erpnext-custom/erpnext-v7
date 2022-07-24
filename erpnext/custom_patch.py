@@ -61,21 +61,21 @@ def sst_create_missing_components(debug=1):
 							payment_days, total_days_in_month, working_days, leave_without_pay,
 							bank_branch, bank_account_type
 							)
-						VALUES("{}", NOW(), NOW(), "Administrator", "Administrator", 1,
-							"{}", "{}", "Salary Structure", {}, {}, {}, {},
-							"{}", "{}", NULL, "{}", "{}",
+						VALUES({}, NOW(), NOW(), "Administrator", "Administrator", 1,
+							{}, {}, "Salary Structure", {}, {}, {}, {},
+							{}, {}, NULL, {}, {},
 							{}, {}, {},
-							"{}", "{}", NULL, NULL, NULL,
+							{}, {}, NULL, NULL, NULL,
 							0, 0, 0, {},
-							"{}", "{}"
+							{}, {}
 						)
-			""".format(i.ref_docname,
-					i.salary_structure, i.parentfield, cint(max_idx) + 1, i.default_amount, i.depends_on_lwp, i.amount,
-					i.salary_component, from_date, i.institution_name, i.reference_number,
+			""".format(str(i.ref_docname),
+					str(i.salary_structure), str(i.parentfield), cint(max_idx) + 1, i.default_amount, i.depends_on_lwp, i.amount,
+					str(i.salary_component), str(from_date) if from_date else None, str(i.institution_name) if i.institution_name else None, str(i.reference_number),
 					i.total_deductible_amount, i.total_deducted_amount, i.total_outstanding_amount, 
-					i.reference_type, i.salary_component_type, 
+					str(i.reference_type) if i.reference_type else None, str(i.salary_component_type) i.salary_component_type else None, 
 					i.leave_without_pay,
-					i.bank_branch, i.bank_account_type
+					str(i.bank_branch) if i.bank_branch else None, str(i.bank_account_type) if i.bank_account_type else None
 		))
 		frappe.db.commit()
 	print('Total no.of components missing: ', counter)
