@@ -10,6 +10,76 @@ from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 import csv
 
+# 2022/07/22 BY SHIV
+# Someone's silly code deleted components from SST, hence this method is created to recreate those 
+#	missing components under SST based on the latest salary slip 2022-06
+def sst_create_missing_components(debug=1):
+	'''
+	1. Found that the malicious code effected only those components who have reference_number value
+	2. While restoring from_date, to_date needs to be determined by past salary slips
+	'''
+	
+	def _get_from_date(ref_docname):
+		''' get starting day of a components effect '''
+		return frappe.db.sql("""select min(from_date) from `tabSalary Detail`
+				where ref_docname="{}" """.format(ref_docname))[0][0]
+	
+	def _get_max_idx(salary_structure, parentfield):
+		''' get max idx from salary structure '''
+		return frappe.db.sql("""select max(idx) from `tabSalary Detail`
+                where parent = "{}" and parentfield = "{}" """).format(salary_structure, parentfield)[0][0]
+
+	missing = frappe.db.sql("""SELECT sd.*, ssi.salary_structure
+				FROM `tabSalary Detail` sd, `tabSalary Slip` ss, `tabSalary Slip Item` ssi
+				WHERE ss.yearmonth = '202206'
+				AND ss.docstatus = 1
+				AND ssi.parent = ss.name
+				AND sd.parent = ss.name
+				AND sd.reference_number IS NOT NULL
+				AND sd.salary_component != 'Other Contribution'
+				AND (
+					IFNULL(sd.total_deductible_amount,0) = 0
+					OR
+					(IFNULL(sd.total_deductible_amount,0) > 0 AND IFNULL(sd.total_deductible_amount,0)-IFNULL(sd.total_deducted_amount,0) > 0)
+				)
+				AND NOT EXISTS(SELECT 1
+					FROM `tabSalary Detail` d2
+					WHERE d2.name = sd.ref_docname)
+				ORDER BY ss.employee, sd.parentfield, sd.idx""", as_dict=True) 
+	counter = 0
+	for i in missing:
+		counter += 1
+		from_date 	= _get_from_date(i.ref_docname)
+		max_idx 	= _get_max_idx(i.salary_structure, i.parentfield)
+
+		frappe.db.sql("""
+			INSERT INTO `tabSalary Detail`(name, creation, modified, modified_by, owner, docstatus, 
+							parent, parentfield, parenttype, idx, default_amount, depends_on_lwp, amount,
+							salary_component, from_date, to_date, institution_name, reference_number,
+							total_deductible_amount, total_deducted_amount, total_outstanding_amount,
+							reference_type, salary_component_type, ref_docname, submission, submitted_by, 
+							payment_days, total_days_in_month, working_days, leave_without_pay,
+							bank_branch, bank_account_type
+							)
+						VALUES("{}", NOW(), NOW(), "Administrator", "Administrator", 1,
+							"{}", "{}", "Salary Structure", {}, {}, {}, {},
+							"{}", "{}", NULL, "{}", "{}",
+							{}, {}, {},
+							"{}", "{}", NULL, NULL, NULL,
+							0, 0, 0, {},
+							"{}", "{}"
+						)
+			""".format(i.ref_docname,
+					i.salary_structure, i.parentfield, cint(max_idx) + 1, i.default_amount, i.depends_on_lwp, i.amount,
+					i.salary_component, from_date, i.institution_name, i.reference_number,
+					i.total_deductible_amount, i.total_deducted_amount, i.total_outstanding_amount, 
+					i.reference_type, i.salary_component_type, 
+					i.leave_without_pay,
+					i.bank_branch, i.bank_account_type
+		))
+		frappe.db.commit()
+	print('Total no.of components missing: ', counter)
+
 def delete_cancelled_sws_members():
 	smem = frappe.db.sql("""
 		select name from `tabSWS Membership Item` where docstatus = 2
