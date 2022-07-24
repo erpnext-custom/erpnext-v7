@@ -27,7 +27,10 @@ def sst_create_missing_components(debug=1):
 	def _get_max_idx(salary_structure, parentfield):
 		''' get max idx from salary structure '''
 		return frappe.db.sql("""select max(idx) from `tabSalary Detail`
-                where parent = "{}" and parentfield = "{}" """.format(salary_structure, parentfield))[0][0]
+				where parent = "{}" and parentfield = "{}" """.format(salary_structure, parentfield))[0][0]
+
+	def _str(value):
+		return '"{}"'.format(value)
 
 	missing = frappe.db.sql("""SELECT sd.*, ssi.salary_structure
 				FROM `tabSalary Detail` sd, `tabSalary Slip` ss, `tabSalary Slip Item` ssi
@@ -52,8 +55,7 @@ def sst_create_missing_components(debug=1):
 		from_date 	= _get_from_date(i.ref_docname)
 		max_idx 	= _get_max_idx(i.salary_structure, i.parentfield)
 
-		frappe.db.sql("""
-			INSERT INTO `tabSalary Detail`(name, creation, modified, modified_by, owner, docstatus, 
+		qry = """INSERT INTO `tabSalary Detail`(name, creation, modified, modified_by, owner, docstatus, 
 							parent, parentfield, parenttype, idx, default_amount, depends_on_lwp, amount,
 							salary_component, from_date, to_date, institution_name, reference_number,
 							total_deductible_amount, total_deducted_amount, total_outstanding_amount,
@@ -69,16 +71,26 @@ def sst_create_missing_components(debug=1):
 							0, 0, 0, {},
 							{}, {}
 						)
-			""".format(str(i.ref_docname),
-					str(i.salary_structure), str(i.parentfield), cint(max_idx) + 1, i.default_amount, i.depends_on_lwp, i.amount,
-					str(i.salary_component), str(from_date) if from_date else None, str(i.institution_name) if i.institution_name else None, str(i.reference_number),
+			""".format(_str(i.ref_docname),
+					_str(i.salary_structure), _str(i.parentfield), cint(max_idx) + 1, i.default_amount, i.depends_on_lwp, i.amount,
+					_str(i.salary_component), _str(from_date) if from_date else "NULL", _str(i.institution_name) if i.institution_name else "NULL", _str(i.reference_number),
 					i.total_deductible_amount, i.total_deducted_amount, i.total_outstanding_amount, 
-					str(i.reference_type) if i.reference_type else None, str(i.salary_component_type) i.salary_component_type else None, 
+					_str(i.reference_type) if i.reference_type else "NULL", _str(i.salary_component_type) if i.salary_component_type else "NULL", 
 					i.leave_without_pay,
-					str(i.bank_branch) if i.bank_branch else None, str(i.bank_account_type) if i.bank_account_type else None
-		))
+					_str(i.bank_branch) if i.bank_branch else "NULL", _str(i.bank_account_type) if i.bank_account_type else "NULL"
+			)
+
+		print(qry)
+		frappe.db.sql(qry)
 		frappe.db.commit()
 	print('Total no.of components missing: ', counter)
+
+def sst_refresh_missing_components():
+    for d in frappe.db.sql("""select parent from `tabSalary Detail`
+				where owner='Administrator' and date(creation)='2022-07-24' """, as_dict=True):
+		doc = frappe.get_doc("Salary Structure", d.parent)
+		doc.save()
+	frappe.db.commit()
 
 def delete_cancelled_sws_members():
 	smem = frappe.db.sql("""
