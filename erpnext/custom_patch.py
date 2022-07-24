@@ -27,7 +27,7 @@ def sst_create_missing_components(debug=1):
 	def _get_max_idx(salary_structure, parentfield):
 		''' get max idx from salary structure '''
 		return frappe.db.sql("""select max(idx) from `tabSalary Detail`
-                where parent = "{}" and parentfield = "{}" """).format(salary_structure, parentfield)[0][0]
+                where parent = "{}" and parentfield = "{}" """.format(salary_structure, parentfield))[0][0]
 
 	missing = frappe.db.sql("""SELECT sd.*, ssi.salary_structure
 				FROM `tabSalary Detail` sd, `tabSalary Slip` ss, `tabSalary Slip Item` ssi
