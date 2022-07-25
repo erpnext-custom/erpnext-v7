@@ -10,7 +10,7 @@ import csv
 # ticket 2011 by SHIV, mistake in warehouse PRO220201128
 def prd_cancel20220725():
 	doc = frappe.get_doc("Production", "PRO220201128")
-	if doc.status == 1:
+	if doc.docstatus == 1:
 		print("Cancelling production entry PRO220201128")
 		doc.cancel()
 	frappe.db.commit()
@@ -18,7 +18,7 @@ def prd_cancel20220725():
 
 def prd_submit20220725():
 	doc = frappe.get_doc("Production", "PRO220702537")
-	if doc.status == 0:
+	if doc.docstatus == 0:
 		print("Submitting production entry PRO220702537")
 		doc.submit()
 	frappe.db.commit()
