@@ -7,6 +7,23 @@ from frappe.utils.data import get_first_day, get_last_day, add_years, getdate, n
 from erpnext.custom_utils import get_branch_cc
 import csv
 
+# ticket 2011 by SHIV, mistake in warehouse PRO220201128
+def prd_cancel20220725():
+	doc = frappe.get_doc("Production", "PRO220201128")
+	if doc.status == 1:
+		print("Cancelling production entry PRO220201128")
+		doc.cancel()
+	frappe.db.commit()
+	print("Cancellation done...")
+
+def prd_submit20220725():
+	doc = frappe.get_doc("Production", "PRO220702537")
+	if doc.status == 0:
+		print("Submitting production entry PRO220702537")
+		doc.submit()
+	frappe.db.commit()
+	print("Submitted successfully")
+
 def delete_ss():
 	count = 0
 	li = []
