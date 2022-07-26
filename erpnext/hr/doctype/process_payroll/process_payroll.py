@@ -29,13 +29,14 @@ class ProcessPayroll(Document):
 		if process_type == "create":
                         cond += self.get_joining_releiving_condition()
 
-			if self.employment_type == "GEP":
+			'''
+                        if self.employment_type == "GEP":
 				emp_type_cond = "t1.employment_type in ('GEP')"
 			else:
 				emp_type_cond = "t1.employment_type not in ('GEP')"  	
 
 			frappe.msgprint("{0}".format(emp_type_cond))
-
+                        '''
                         emp_list = frappe.db.sql("""
                                 select t1.name
                                 from `tabEmployee` t1
