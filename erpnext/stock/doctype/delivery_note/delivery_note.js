@@ -129,12 +129,57 @@ erpnext.stock.DeliveryNoteController = erpnext.selling.SellingController.extend(
 
 	reopen_delivery_note : function() {
 		cur_frm.cscript.update_status("Submitted")
-	}
+	},
 
+	/**Added by dorji 15/7/22 #1952 */
+	tyre_weight : function(doc) {
+		calculateNetQuantity(doc);
+	},
+
+	gross_vehicle_weight : function(doc) {
+		calculateNetQuantity(doc);
+	},
+
+	volumetric_weight : function(doc) {
+		calculateNetQuantity(doc);
+	},
+	/**end */
 });
 
 // for backward compatibility: combine new and previous states
 $.extend(cur_frm.cscript, new erpnext.stock.DeliveryNoteController({frm: cur_frm}));
+
+/**#1952 added by dorji */
+function calculateNetQuantity(doc) {
+	var netQuantity = 0;
+	if(cint(doc.is_volumetric) == 0) {
+		if (flt(doc.tyre_weight) > 0 && flt(doc.gross_vehicle_weight) > 0) {
+			netQuantity = flt(doc.gross_vehicle_weight) - flt(doc.tyre_weight);	
+			if (netQuantity < 0) {
+				netQuantity = 0;
+				frappe.throw("Net Quantity can't be negative")
+			} else if (netQuantity == 0) {
+				frappe.throw("Net Quantity can't Zero")
+			}		
+		} else if (flt(doc.tyre_weight) > 0 || flt(doc.gross_vehicle_weight) > 0) {
+			netQuantity = (flt(doc.gross_vehicle_weight) - flt(doc.tyre_weight)).toFixed(2);
+		} 
+	} else {
+		netQuantity = flt(doc.volumetric_weight)
+	}
+	
+	for(var i = 0; i < doc.items.length; ++i) {
+		doc.items[i].qty = netQuantity;
+	}
+
+	refresh_field("items");
+};
+
+frappe.ui.form.on("Delivery Note Item", {
+	"items_add": function(frm, cdt, cdn) { 
+		calculateNetQuantity(frm.doc);
+	}});
+/**end of #1952 */
 
 cur_frm.cscript.new_contact = function(){
 	tn = frappe.model.make_new_doc_and_get_name('Contact');
@@ -275,22 +320,51 @@ frappe.ui.form.on("Delivery Note", "onload", function(frm) {
 	});
 });
 
-
-
-
 frappe.ui.form.on('Delivery Note', {
         refresh: function(frm) {
-        cur_frm.toggle_reqd("equipment", cint(frm.doc.others_equipment) == 0);
-        if (cint(frm.doc.others_equipment) == 1){
-        cur_frm.set_df_property("lr_no", "read_only", 0);
-        }
+			cur_frm.toggle_reqd("equipment", cint(frm.doc.others_equipment) == 0);
+			if (cint(frm.doc.others_equipment) == 1) {
+				cur_frm.set_df_property("lr_no", "read_only", 0);
+			}
+
+			if (cint(frm.doc.is_volumetric) == 1) {
+				cur_frm.set_df_property("volumetric_weight", "hidden", 0);
+				cur_frm.set_df_property("tyre_weight", "hidden", 1);
+				cur_frm.set_df_property("tyre_weight", "req", 0);
+				cur_frm.set_df_property("gross_vehicle_weight", "hidden", 1);
+				cur_frm.set_df_property("gross_vehicle_weight", "req", 0);
+			} else {
+				cur_frm.set_df_property("volumetric_weight", "hidden", 1);
+				cur_frm.set_df_property("tyre_weight", "hidden", 0);
+				cur_frm.set_df_property("gross_vehicle_weight", "hidden", 0);
+			}
         },
         "others_equipment": function(frm, cdt, cdn) {
-                doc = locals[cdt][cdn]
-                cur_frm.toggle_reqd("equipment", cint(doc.others_equipment) == 0);
-                if (cint(doc.others_equipment) == 1){
-        cur_frm.set_df_property("lr_no", "read_only", 0);
-        }
+			doc = locals[cdt][cdn]
+			cur_frm.toggle_reqd("equipment", cint(doc.others_equipment) == 0);
+			if (cint(doc.others_equipment) == 1) {
+				cur_frm.set_df_property("lr_no", "read_only", 0);
+			}
+		},
+		
+		/**#1952 */
+		"is_volumetric" : function(frm, cdt, cdn) {
+			doc = locals[cdt][cdn];
+			cur_frm.toggle_reqd("volumetric_weight", cint(doc.is_volumetric) == 1);
+			cur_frm.toggle_reqd("tyre_weight", cint(doc.is_volumetric) == 0);
+			cur_frm.toggle_reqd("gross_vehicle_weight", cint(doc.is_volumetric) == 0);
 
-        }
+			if (cint(doc.is_volumetric) == 1) {
+				cur_frm.set_df_property("volumetric_weight", "hidden", 0);
+				cur_frm.set_df_property("tyre_weight", "hidden", 1);
+				cur_frm.set_df_property("tyre_weight", "req", 0);
+				cur_frm.set_df_property("gross_vehicle_weight", "hidden", 1);
+				cur_frm.set_df_property("gross_vehicle_weight", "req", 0);
+			} else {
+				cur_frm.set_df_property("volumetric_weight", "hidden", 1);
+				cur_frm.set_df_property("tyre_weight", "hidden", 0);
+				cur_frm.set_df_property("gross_vehicle_weight", "hidden", 0);
+			}
+		}
+		/**End */
 });

@@ -337,7 +337,7 @@
    "print_hide": 0, 
    "print_hide_if_no_value": 0, 
    "print_width": "100px", 
-   "read_only": 0, 
+   "read_only": 1, 
    "report_hide": 0, 
    "reqd": 1, 
    "search_index": 0, 
@@ -1494,7 +1494,7 @@
  "issingle": 0, 
  "istable": 1, 
  "max_attachments": 0, 
- "modified": "2021-01-13 18:44:39.116645", 
+ "modified": "2022-07-25 13:20:39.991238", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Delivery Note Item", 
@@ -1506,5 +1506,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 0, 
  "track_seen": 0
 }
