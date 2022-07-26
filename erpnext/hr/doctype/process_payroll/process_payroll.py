@@ -40,7 +40,7 @@ class ProcessPayroll(Document):
                         emp_list = frappe.db.sql("""
                                 select t1.name
                                 from `tabEmployee` t1
-                                where {3}
+                                where 1=1
 				and not exists(select 1
                                                 from `tabSalary Slip` as t3
                                                 where t3.employee = t1.name
@@ -49,7 +49,7 @@ class ProcessPayroll(Document):
                                                 and t3.month = '{1}')
                                 {2}
                                 order by t1.branch, t1.name
-                        """.format(self.fiscal_year, self.month, cond, emp_type_cond), as_dict=True)
+                        """.format(self.fiscal_year, self.month, cond), as_dict=True)
                 else:
                         emp_list = frappe.db.sql("""
                                 select t1.name
