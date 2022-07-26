@@ -850,7 +850,7 @@ class BankPayment(Document):
                         IFNULL(t1.bank_branch, e.bank_branch) bank_branch, fib.financial_system_code,
                         e.bank_account_type,
                         IFNULL(t1.bank_account_no, e.bank_ac_no) bank_account_no, 
-                        round(t1.net_pay + ifnull(t1.ot_total, 0), 2) amount,
+                        round(t1.net_pay, 2) amount,
                         'Salary for {month}-{salary_year}' remarks, "Draft" status						
                     FROM `tabSalary Slip` t1
                         JOIN `tabEmployee` e ON t1.employee = e.name
