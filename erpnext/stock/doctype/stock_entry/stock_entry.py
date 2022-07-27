@@ -363,6 +363,7 @@ class StockEntry(StockController):
 					# new update by Jai
 					d.basic_rate = flt(frappe.db.get_value("BOM", d.bom_no, "cost_of_production"), d.precision("basic_rate"))
 					d.basic_amount = flt((d.basic_rate * d.transfer_qty), d.precision("basic_amount"))
+					d.cost_center = frappe.db.get_value("Branch", self.branch, "cost_center")
 
 	def distribute_additional_costs(self):
 		if self.purpose == "Material Issue":
