@@ -52,7 +52,7 @@ class LeaveAllocation(Document):
         ##### Ver 3.0.190212 Ends
         
 	def validate_period(self):
-		if date_diff(self.to_date, self.from_date) <= 0:
+		if (date_diff(self.to_date, self.from_date) + 1) <= 0:
 			frappe.throw(_("To date cannot be before from date"))
 
 	def validate_new_leaves_allocated_value(self):
