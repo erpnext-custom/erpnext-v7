@@ -320,12 +320,12 @@ def get_data():
 		{
 			"label": _("Bank Accounting"),
 			"items": [
-				{
-					"type": "doctype",
-					"name": "Upload BRS Entries",
-					"label": _("Upload BRS Data"),
-					"description": _("Upload bank payment dates.")
-				},
+				# {
+				# 	"type": "doctype",
+				# 	"name": "Upload BRS Entries",
+				# 	"label": _("Upload BRS Data"),
+				# 	"description": _("Upload bank payment dates.")
+				# },
 				{
 					"type": "doctype",
 					"name": "Bank Reconciliation",
