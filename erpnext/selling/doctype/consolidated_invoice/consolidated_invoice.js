@@ -6,35 +6,31 @@ frappe.ui.form.on('Consolidated Invoice', {
 		if(!frm.doc.posting_date) {
 			frm.set_value("posting_date", get_today())
 		}
+
 		if(frm.doc.items && frm.doc.docstatus==1) {
-			frm.add_custom_button("Receive Payment", function() {
-				frappe.model.open_mapped_doc({
-					method: "erpnext.selling.doctype.consolidated_invoice.consolidated_invoice.make_payment_entry",
-					frm: cur_frm
-				})
-			}, __("Payment"));
+			if(frm.doc.payment_entry){
+				frm.add_custom_button(__('Payment Entry'), function(){
+					frappe.route_options = {
+						"consolidated_invoice_id": frm.docname,
+					};
+					frappe.set_route("List", "Payment Entry");
+				}, __("View"));
+			} else {
+				frm.add_custom_button("Receive Payment", function() {
+					frappe.model.open_mapped_doc({
+						method: "erpnext.selling.doctype.consolidated_invoice.consolidated_invoice.make_payment_entry",
+						frm: cur_frm
+					})
+				}, __("Payment"));
+			}
 		}
 
 	},
 	to_date: function(frm) {
 		get_invoices(frm);
-		// if(frm.doc.from_date && frm.doc.from_date <= frm.doc.to_date) {
-		// 	get_invoices(frm.doc.from_date, frm.doc.to_date, frm.doc.customer, frm.doc.cost_center)
-		// }
-		// else if(frm.doc.from_date && frm.doc.from_date >= frm.doc.to_date) {
-		// 	msgprint("To Date should be smaller than From Date")
-		// 	frm.set_value("to_date", "")
-		// }
 	},
 	from_date: function(frm) {
 		get_invoices(frm);
-		// if(frm.doc.to_date && frm.doc.from_date < frm.doc.to_date) {
-		// 	get_invoices(frm.doc.from_date, frm.doc.to_date, frm.doc.customer, frm.doc.cost_center)
-		// }
-		// else if(frm.doc.to_date && frm.doc.from_date > frm.doc.to_date) {
-		// 	msgprint("To Date should be smaller than From Date")
-		// 	frm.set_value("from_date", "")
-		// }
 	},
 	customer: function(frm){
 		get_invoices(frm);

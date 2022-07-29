@@ -11,17 +11,20 @@ from frappe.utils import flt
 
 class ConsolidatedInvoice(Document):
 	def on_update(self):
-		for i in self.get("items"):
-			for d in frappe.db.get_all("Consolidated Invoice Item", {"invoice_no": i.invoice_no, "parent": ("!=",self.name),
-						"docstatus": ("!=", 2)}, ["parent"]):
-				frappe.throw(_("Row#{}: {} is already pulled in {}").format(i.idx, frappe.get_desk_link("Sales Invoice", i.invoice_no),
-					frappe.get_desk_link("Consolidated Invoice", d.parent)))
+		self.check_duplicate_entries()
 
 	def on_cancel(self):
 		if self.payment_entry:
 			pe = frappe.get_doc("Payment Entry",self.payment_entry)
 			if pe.docstatus != 2:
 				frappe.throw("""Payment Entry <b><a href="#Form/Payment%20Entry/{0}">{0}</a></b> linked with this Consolidated Invoice which is not cancelled.""".format(self.payment_entry))
+
+	def check_duplicate_entries(self):
+		for i in self.get("items"):
+			for d in frappe.db.get_all("Consolidated Invoice Item", {"invoice_no": i.invoice_no, "parent": ("!=",self.name),
+						"docstatus": ("!=", 2)}, ["parent"]):
+				frappe.throw(_("Row#{}: {} is already pulled in {}").format(i.idx, frappe.get_desk_link("Sales Invoice", i.invoice_no),
+					frappe.get_desk_link("Consolidated Invoice", d.parent)))
 
 @frappe.whitelist()
 def get_invoices(name, from_date, to_date, customer, cost_center):

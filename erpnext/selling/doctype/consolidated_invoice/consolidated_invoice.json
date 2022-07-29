@@ -705,7 +705,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2022-07-22 17:44:57.325742", 
+ "modified": "2022-07-29 12:08:16.266976", 
  "modified_by": "Administrator", 
  "module": "Selling", 
  "name": "Consolidated Invoice", 
@@ -776,8 +776,10 @@
  "quick_entry": 0, 
  "read_only": 0, 
  "read_only_onload": 0, 
+ "search_fields": "customer, cost_center, from_date, to_date, total_amount", 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "title_field": "customer", 
  "track_changes": 1, 
  "track_seen": 0
 }
