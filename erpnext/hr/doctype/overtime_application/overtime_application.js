@@ -46,6 +46,10 @@ frappe.ui.form.on("Overtime Application Item", {
 	items_remove: function(frm, cdt, cdn) {
 		calculate_time(frm, cdt, cdn);
 	},
+	//added by cety to check for holiday and double the rate by 50% on 31/07/2022
+	"date": function(frm, cdt, cdn){
+		check_holidays(frm, cdt, cdn);
+	}
 })
 
 function calculate_time(frm, cdt, cdn) {
@@ -171,3 +175,22 @@ frappe.ui.form.on("Overtime Application", "after_save", function(frm, cdt, cdn){
 		}
 	}
 });
+//#added by cety to check for holiday and double the rate by 50% on 31/07/2022
+function check_holidays(frm, cdt, cdn){
+	var item = locals[cdt][cdn];
+	frappe.call({
+		method: "erpnext.hr.doctype.overtime_application.overtime_application.get_holidays",
+		args: {
+			"employee": frm.doc.employee,
+			"date": item.date
+		},
+		callback: function(r){
+			if (r.message){
+				item.is_holiday = 1
+			}else{
+				item.is_holiday = 0
+			}
+			frm.refresh_field('items')
+		}
+	})	
+}
