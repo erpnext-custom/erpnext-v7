@@ -28,7 +28,7 @@ class OvertimeApplication(Document):
             item.rate = self.rate
             if item.is_late_night_ot or item.is_holiday:
                 item.number_of_hours    = flt(time_diff_in_hours(item.to_time, item.from_time),2)
-                item.amount             = flt(item.number_of_hours) * flt(flt(item.rate) * 2)
+                item.amount             = flt(item.number_of_hours) * flt(flt(item.rate) * 1.5)
             else:
                 item.number_of_hours    = flt(time_diff_in_hours(item.to_time, item.from_time),2)
                 item.amount             = flt(item.number_of_hours) * flt(item.rate)
