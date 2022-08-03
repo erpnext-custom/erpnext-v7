@@ -47,8 +47,8 @@ frappe.ui.form.on('Break Down Report', {
 	owned_by: function(frm) {
 		cur_frm.set_value("customer", "")
 		cur_frm.set_value("equipment", "")
-		cur_frm.toggle_reqd("customer_cost_center", frm.doc.owned_by == 'Own Company')
-		cur_frm.toggle_reqd("customer_branch", frm.doc.owned_by == 'Own Company')
+		cur_frm.toggle_reqd("customer_cost_center", frm.doc.owned_by == 'Own Company' && frm.out_source == 0)
+		cur_frm.toggle_reqd("customer_branch", frm.doc.owned_by == 'Own Company' && frm.out_source == 0)
 
 		//cur_frm.toggle_reqd("equipment_model", frm.doc.owned_by != 'Others')
 		//cur_frm.toggle_reqd("equipment_number", frm.doc.owned_by != 'Others')
