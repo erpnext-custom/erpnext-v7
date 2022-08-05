@@ -78,8 +78,13 @@ function enable_disable(frm){
 			}
 		}
 		
+		// HR Approver, Added by Jai, 5 July 2022
+		if(in_list(user_roles, "HR Manager") && frm.doc.workflow_state.indexOf("Waiting HR Approval") >= 0){
+			toggle_form_fields(frm, toggle_fields, 0);		
+		}
+
 		// Approver
-		if(in_list(user_roles, "Approver") && frm.doc.workflow_state.indexOf("Waiting Approval") >= 0){
+		if(in_list(user_roles, "Approver") && frm.doc.workflow_state.indexOf("Waiting CEO Approval") >= 0){
 			if(frappe.session.user === frm.doc.advance_approver){
 				toggle_form_fields(frm, toggle_fields, 0);
 			}			
