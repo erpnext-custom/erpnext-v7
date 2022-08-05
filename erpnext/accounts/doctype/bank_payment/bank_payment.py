@@ -804,7 +804,7 @@ class BankPayment(Document):
 					(case when mp.payment_for = 'Transporter Payment' then (select bank_branch from `tabTransporter` where name=mp.transporter) else (select bank_branch from `tabSupplier` where name=mp.supplier) end) as bank_branch,
 					(case when mp.payment_for = 'Transporter Payment' then (select bank_account_type from `tabTransporter` where name=mp.transporter) else (select bank_account_type from `tabSupplier` where name=mp.supplier) end) as bank_account_type,
 					(case when mp.payment_for = 'Transporter Payment' then (select account_number from `tabTransporter` where name=mp.transporter) else (select account_number from `tabSupplier` where name=mp.supplier) end) as bank_account_no,
-					mp.net_amount as amount
+					round(mp.net_amount, 2) as amount
 				FROM `tabMechanical Payment` mp
 				WHERE mp.branch = '{branch}'
 				{cond}
