@@ -129,7 +129,7 @@ function get_invoices(frm) {
 						row.delivery_note = invoice['delivery_note']
 						refresh_field("items");
 
-						total_amount += invoice['outstanding_amount']
+						total_amount += invoice['amount']
 						total_qty += invoice['accepted_qty']
 					});
 
