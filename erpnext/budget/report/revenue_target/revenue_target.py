@@ -17,7 +17,7 @@ def execute(filters=None):
 def get_conditions(filters):
 	conditions = ""
 	if filters.get("cost_center"):
-		conditions =  "and cost_center = '{0}'".format(filters.get("cost_center"))
+		conditions =  "and rt.cost_center = '{0}'".format(filters.get("cost_center"))
 
 	return conditions
                 
