@@ -71,6 +71,9 @@ def make_payment_entry(source_name, target_doc=None):
 		target.consolidated_invoice_id = source.name
 		target.paid_from = source.debit_to
 		target.paid_to = frappe.db.get_value("Branch",frappe.db.get_value("Branch",{"cost_center":source.cost_center},"name"),"revenue_bank_account")
+		acc_to = get_account_details(frappe.db.get_value("Branch",frappe.db.get_value("Branch",{"cost_center":source.cost_center},"name"),"revenue_bank_account"), source.posting_date)
+		target.paid_to_account_currency = acc_to.account_currency
+		target.paid_to_account_balance = acc_to.account_balance
 		if source.debit_to:
 			acc = get_account_details(source.debit_to, source.posting_date)
 			target.paid_from_account_currency = acc.account_currency
