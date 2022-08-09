@@ -123,7 +123,7 @@ def calculate_values(accounts_by_name, gl_entries_by_account, period_list, accum
 		for entry in entries:
 			d = accounts_by_name.get(entry.account)
 			for period in period_list:
-				frappe.throw(str(d))
+				# frappe.throw(str(d))
 				# check if posting date is within the period
 				if entry.posting_date <= period.to_date:
 					if accumulated_values or entry.posting_date >= period.from_date:
