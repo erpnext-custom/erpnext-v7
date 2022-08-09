@@ -57,6 +57,6 @@ def get_data(filters):
 				condition = cond
 			)
 
-	query += "  Group by rb.month ORDER BY rb.month, rb.fiscal_year"
+	query += "  Group by rb.month, rb.fiscal_year ORDER BY rb.fiscal_year desc, rb.month desc"
 
 	return frappe.db.sql(query)
