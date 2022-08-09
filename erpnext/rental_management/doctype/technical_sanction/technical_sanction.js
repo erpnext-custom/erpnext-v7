@@ -93,7 +93,7 @@ frappe.ui.form.on("Technical Sanction Item", {
 					}
 				});
 		} else if (c.type == "Rate Analysis") {
-			frappe.model.get_value("Rate Analysis", { 'name': c.service }, ['total_amount', 'title', 'uom'],
+			frappe.model.get_value("Rate Analysis", { 'name': c.service }, ['total_amount', 'title'],
 				function (d) {
 					frappe.model.set_value(cdt, cdn, 'amount', d.total_amount);
 					frappe.model.set_value(cdt, cdn, 'total', d.total_amount * d.qty);
@@ -149,7 +149,7 @@ frappe.ui.form.on("Technical Sanction Detail Item", {
 					}
 				});
 		} else if (c.type == "Rate Analysis") {
-			frappe.model.get_value("Rate Analysis", { 'name': c.service }, ['total_amount', 'title', 'uom'],
+			frappe.model.get_value("Rate Analysis", { 'name': c.service }, ['total_amount', 'title'],
 				function (d) {
 					frappe.model.set_value(cdt, cdn, 'amount', d.total_amount);
 					frappe.model.set_value(cdt, cdn, 'total', d.total_amount * d.qty);
