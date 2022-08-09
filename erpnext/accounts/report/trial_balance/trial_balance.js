@@ -55,6 +55,12 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 				"label": __("Show zero values"),
 				"fieldtype": "Check"
 			},
+			{
+				"fieldname": "show_excluded_accounts",
+				"label": __("Show Excluded Accounts"),
+				"fieldtype": "Check",
+				"default": 0
+			},
 		],
 		"formatter": erpnext.financial_statements.formatter,
 		"tree": true,

@@ -219,7 +219,7 @@ def add_total_row(out, root_type, balance_must_be, period_list, company_currency
 
 def get_accounts(company, root_type):
 	return frappe.db.sql("""select name, parent_account, lft, rgt, root_type, report_type, account_name from `tabAccount`
-		where company=%s and root_type=%s order by lft""", (company, root_type), as_dict=True)
+		where company=%s and exclude_account = 0 and root_type=%s order by lft""", (company, root_type), as_dict=True)
 
 def filter_accounts(accounts, depth=10):
 	parent_children_map = {}
@@ -277,7 +277,7 @@ def set_gl_entries_by_account(company, from_date, to_date, root_lft, root_rgt, g
 		{additional_conditions}
 		and posting_date <= %(to_date)s
 		and account in (select name from `tabAccount`
-			where lft >= %(lft)s and rgt <= %(rgt)s)
+			where lft >= %(lft)s and rgt <= %(rgt)s and exclude_account = 0)
 		order by account, posting_date""".format(additional_conditions="\n".join(additional_conditions)),
 		{
 			"company": company,

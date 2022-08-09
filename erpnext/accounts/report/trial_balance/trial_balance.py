@@ -4,9 +4,10 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from frappe.utils import flt, getdate, formatdate, cstr
+from frappe.utils import flt, getdate, formatdate, cstr, cint
 from erpnext.accounts.report.financial_statements \
 	import filter_accounts, set_gl_entries_by_account, filter_out_zero_value_rows
+from frappe.utils.nestedset import get_ancestors_of
 
 value_fields = ("opening_debit", "opening_credit", "debit", "credit", "closing_debit", "closing_credit")
 
@@ -53,9 +54,27 @@ def validate_filters(filters):
 	if not filters.cost_center:
 		filters.cost_center = "%"
 
+def get_excluded_accounts():
+	excluded_accounts = []
+	for a in frappe.db.get_all("Account", {"exclude_account": 1}, "name"):
+		excluded_accounts.append(a.name)
+		excluded_accounts.extend(get_ancestors_of("Account", a.name))
+	excluded_accounts = list(set(excluded_accounts))
+	return excluded_accounts
+
 def get_data(filters):
+	cond = ""
+	if cint(filters.show_excluded_accounts):
+		excluded_accounts = get_excluded_accounts()
+		if len(excluded_accounts) > 1:
+			cond = "and a1.name in ({})".format(','.join(['"'+str(i)+'"' for i in excluded_accounts]))
+		elif len(excluded_accounts) == 1:
+			cond = 'and a1.name = "{}"'.format(excluded_accounts[0])
+	else:
+		cond = "and a1.exclude_account = 0"
+
 	accounts = frappe.db.sql("""select name, parent_account, account_name, root_type, report_type, lft, rgt
-		from `tabAccount` where company=%s order by lft""", filters.company, as_dict=True)
+		from `tabAccount` where company=%s {cond} order by lft""".format(cond=cond), (filters.company), as_dict=True)
 
 	if not accounts:
 		return None

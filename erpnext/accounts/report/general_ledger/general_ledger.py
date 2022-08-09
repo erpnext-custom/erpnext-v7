@@ -134,7 +134,10 @@ def get_conditions(filters):
 	if filters.get("account"):
 		lft, rgt = frappe.db.get_value("Account", filters["account"], ["lft", "rgt"])
 		conditions.append("""account in (select name from tabAccount
-			where lft>=%s and rgt<=%s and docstatus<2)""" % (lft, rgt))
+			where lft>=%s and rgt<=%s and docstatus<2 and exclude_account = 0)""" % (lft, rgt))
+	else:
+		conditions.append("""account in (select name from tabAccount
+			where docstatus<2 and exclude_account = 0)""" )
 
 	if filters.get("voucher_no"):
 		conditions.append("voucher_no=%(voucher_no)s")
