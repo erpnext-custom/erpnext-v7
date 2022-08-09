@@ -118,7 +118,7 @@ function get_invoices(frm) {
 						var row = frappe.model.add_child(cur_frm.doc, "Consolidated Invoice Item", "items");
 						row.invoice_no = invoice['name']
 						row.sales_order = invoice['sales_order']
-						row.amount = invoice['outstanding_amount']
+						row.amount = invoice['amount']
 						row.cost_of_goods = invoice['cost_of_goods']
 						row.qty = invoice['qty']
 						row.transportation_cost = invoice['transportation_charges']

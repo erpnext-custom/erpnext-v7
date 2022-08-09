@@ -36,7 +36,7 @@ def get_invoices(name, from_date, to_date, customer, cost_center):
 				max(dn.transportation_charges) transportation_charges,
 				max(dn.loading_cost) loading_cost,
 				max(dn.challan_cost) challan_cost,
-				max(si.outstanding_amount) outstanding_amount, sii.delivery_note 
+				sum(sii.amount) amount, sii.delivery_note 
 			from `tabSales Invoice` si
 			inner join `tabSales Invoice Item` sii on sii.parent = si.name
 			left join `tabDelivery Note` dn on dn.name = sii.delivery_note
