@@ -89,6 +89,7 @@ class RRCOReceiptTool(Document):
 			if self.branch:
 				cond += " AND d.branch = '{}'".format(self.branch)
 				cond1 += " AND p.branch = '{}'".format(self.branch)
+				cond2 += " AND a.branch = '{}'".format(self.branch)
 
 			if self.purpose == 'Leave Encashment':
 				query = """select  "Leave Encashment" as transaction, name, application_date as posting_date, 
@@ -100,7 +101,7 @@ class RRCOReceiptTool(Document):
 									FROM `tabRRCO Receipt Entries` AS b 
 									WHERE b.purchase_invoice = a.name)
 						AND tax_amount > 0
-						""".format(self.from_date, self.to_date, cond)
+						""".format(self.from_date, self.to_date, cond2)
 			elif self.purpose == 'PBVA':
 				query = """select  "PBVA" as transaction, a.name, a.posting_date as posting_date, 
     					b.amount as invoice_amount, b.tax_amount, b.employee as party
@@ -112,7 +113,7 @@ class RRCOReceiptTool(Document):
 									FROM `tabRRCO Receipt Entries` AS b 
 									WHERE b.purchase_invoice = a.name)
 						AND b.tax_amount > 0
-						""".format(self.fiscal_year, cond)
+						""".format(self.fiscal_year, cond2)
 			else:
 				query = """
           				select "Purchase Invoice" as transaction, name, posting_date, 
