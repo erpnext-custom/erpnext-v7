@@ -85,7 +85,7 @@ class RRCOReceiptTool(Document):
 			if not self.tds_rate and not self.from_date and not self.to_date:
 				frappe.throw("Select the details to retrieve the invoices")
 			cond = ''
-			cond1 = ''
+			cond2 = cond1 = ''
 			if self.branch:
 				cond += " AND d.branch = '{}'".format(self.branch)
 				cond1 += " AND p.branch = '{}'".format(self.branch)
