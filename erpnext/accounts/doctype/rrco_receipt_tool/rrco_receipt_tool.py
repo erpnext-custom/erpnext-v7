@@ -100,8 +100,8 @@ class RRCOReceiptTool(Document):
 						AND NOT EXISTS (SELECT 1 
 									FROM `tabRRCO Receipt Entries` AS b 
 									WHERE b.purchase_invoice = a.name)
-						AND tax_amount > 0
 						""".format(self.from_date, self.to_date, cond2)
+						# AND tax_amount > 0
 			elif self.purpose == 'PBVA':
 				query = """select  "PBVA" as transaction, a.name, a.posting_date as posting_date, 
     					b.amount as invoice_amount, b.tax_amount, b.employee as party
