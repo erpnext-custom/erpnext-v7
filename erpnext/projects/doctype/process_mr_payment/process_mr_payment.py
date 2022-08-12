@@ -88,7 +88,7 @@ class ProcessMRPayment(Document):
 					frappe.throw("Only GM {0} ({1}) is allowed to forward MR Payment".format(final_approver[1], final_approver[0]))
 
 		elif self.workflow_state == "Approved":
-			approver = frappe.db.get_value("Employee", {"designation":"Chief Executive Officer"}, ["user_id","employee_name","designation","name"])
+			approver = frappe.db.get_value("Employee", {"designation":"Chief Executive Officer", "status": 'Active'}, ["user_id","employee_name","designation","name"])
 			officiating = get_officiating_employee(approver[3])
 			if officiating:
 				officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
