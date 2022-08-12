@@ -425,8 +425,10 @@ frappe.ui.form.on("Sales Order", "refresh", function(frm) {
     });
     cur_frm.set_query("rate_template", function() {
         return {
+			"query": "erpnext.controllers.queries.filter_rate_template",
             "filters": {
-                "branch": frm.doc.branch
+                "branch": frm.doc.branch,
+				"posting_date": frm.doc.transaction_date
             }
         };
     });

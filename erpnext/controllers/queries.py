@@ -127,6 +127,16 @@ def filter_sws_member_item(doctype, txt, searchfield, start, page_len, filters):
 	and b.employee = '{0}' and a.status != 'Claimed' and b.docstatus = 1
 	""".format(filters.get("employee")))
 
+#filtering transportation rate based on postng_date@frappe.whitelist()
+def filter_rate_template(doctype, txt, searchfield, start, page_len, filters):
+	data = []
+	# if not filters.get("employee"):
+	# 	frappe.throw("Please select employee first.")
+	return frappe.db.sql("""
+	select a.name as name, a.branch as branch, a.rate as rate from `tabTransportation Rate` a where
+	a.branch = '{0}' and '{1}' between a.from_date and a.to_date
+	""".format(filters.get("branch"), filters.get("posting_date")))
+
 #Added by Kinley DOrji to filter CRM customers in lot allotment
 @frappe.whitelist()
 def get_crm_users(doctype, txt, searchfield, start, page_len, filters):
