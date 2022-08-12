@@ -57,7 +57,7 @@ frappe.query_reports["Stock Ledger Report"] = {
 							for (i = 0; i < r.message.length; i++) { 
 								options[i]= r.message[i].name
 							}
-							console.log(options)
+							// console.log(options)
 							frappe.query_reports["Stock Ledger Report"].filters[5].options = options
 							frappe.query_report.filters_by_name.warehouse.refresh();
 							frappe.query_report.refresh();
@@ -106,7 +106,7 @@ frappe.query_reports["Stock Ledger Report"] = {
 							for (i = 0; i < r.message.length; i++) { 
 								options[i]= r.message[i].name
 							}
-							console.log(options)
+							// console.log(options)
 							frappe.query_reports["Stock Ledger Report"].filters[5].options = options
 							frappe.query_report.filters_by_name.warehouse.refresh();
 							frappe.query_report.refresh();
@@ -169,7 +169,7 @@ frappe.query_reports["Stock Ledger Report"] = {
 				// frappe.msgprint(branch)
 				frappe.call({
 					method:"erpnext.selling.report.timber_sales_report.timber_sales_report.get_item_sub_group",
-					args:{"item_group":timber_prod_group},
+					args:{"item_group": item_group},
 					callback: function(r){
 						// console.log(r.message)
 						// frappe.query_report.filters_by_name.warehouse.set_option(r.message)					
@@ -179,7 +179,7 @@ frappe.query_reports["Stock Ledger Report"] = {
 							for (i = 0; i < r.message.length; i++) { 
 								options[i]= r.message[i].name
 							}
-							console.log(options)
+							// console.log(options)
 							frappe.query_reports["Stock Ledger Report"].filters[10].options = options
 							frappe.query_report.filters_by_name.tp_sub_group.refresh();
 							frappe.query_report.refresh();
