@@ -41,6 +41,9 @@ class TransporterPayment(AccountsController):
 		if not self.cheque_no or not self.cheque_date:
 			frappe.throw("Both Cheque No and Date are mandatory")
 
+		frappe.db.sql('''update `tabGL Entry` set reference_no="{}", reference_date="{}" 
+			where voucher_no="{}" '''.format(self.cheque_no, self.cheque_date, self.name))
+
 	def validate_defaults(self):
 		if not self.get("items"):
 			frappe.throw("No Transportation Detail(s) for Equipment <b>{0} </b> ".format(self.equipment))
@@ -121,7 +124,7 @@ class TransporterPayment(AccountsController):
 		# security deposit
 		if self.security_deposit_percent:
 			self.security_deposit_amount = flt(self.gross_amount) * flt(self.security_deposit_percent) / 100.0
-                        self.security_deposit_account = settings.security_deposit_account 
+			self.security_deposit_account = settings.security_deposit_account 
 			if not self.security_deposit_account:
 				frappe.throw(_("GL for {} is not set under {}")\
 					.format(frappe.bold("Security Deposit Received"), frappe.bold("Accounts Settings")))
@@ -162,20 +165,20 @@ class TransporterPayment(AccountsController):
 			self.clearing_amount = 0
 			self.clearing_account = None
 		# other deductions
-                other_deductions = 0
-                for d in self.get("deductions"):
-                        if d.party_type == "Equipment" and not d.party:
-                                d.party = self.equipment
-                        '''        
-                        if d.account_type != "Payable" and d.account_type != "Receivable" and d.party:
-                                frappe.throw(_("Row#{0} : Party is not allowed against Non-payable or Non-receivable accounts.").format(d.idx), title="Invalid Data")
-						'''
-                        if (d.account_type == "Payable" or d.account_type == "Receivable") and not d.party:
-                                frappe.throw(_("Row#{0} : Party is mandatory").format(d.idx), title="Missing Data")
-                                
-                        other_deductions += flt(d.amount)
+		other_deductions = 0
+		for d in self.get("deductions"):
+			if d.party_type == "Equipment" and not d.party:
+				d.party = self.equipment
+			'''        
+			if d.account_type != "Payable" and d.account_type != "Receivable" and d.party:
+					frappe.throw(_("Row#{0} : Party is not allowed against Non-payable or Non-receivable accounts.").format(d.idx), title="Invalid Data")
+			'''
+			if (d.account_type == "Payable" or d.account_type == "Receivable") and not d.party:
+				frappe.throw(_("Row#{0} : Party is mandatory").format(d.idx), title="Missing Data")
+					
+			other_deductions += flt(d.amount)
 
-                self.other_deductions 	= flt(other_deductions) + flt(self.tds_amount) + flt(self.security_deposit_amount)
+		self.other_deductions 	= flt(other_deductions) + flt(self.tds_amount) + flt(self.security_deposit_amount)
 		self.amount_payable 	= flt(self.net_payable) - flt(self.weighbridge_amount) - flt(self.other_deductions)	- flt(self.clearing_amount)		
 
 	def get_stock_entries(self, cost_center):
@@ -571,21 +574,24 @@ class TransporterPayment(AccountsController):
 
 			gl_entries.append(
 				self.get_gl_dict({
-				       "account": self.credit_account,
-				       "credit": self.amount_payable,
-				       "credit_in_account_currency": self.amount_payable,
-				       "against_voucher": self.name,
-				       "party_type": party_type,
-				       "party": party,
-				       "against_voucher_type": self.doctype,
-				       "cost_center": cost_center,
+					"account": self.credit_account,
+					"credit": self.amount_payable,
+					"credit_in_account_currency": self.amount_payable,
+					"against_voucher": self.name,
+					"party_type": party_type,
+					"party": party,
+					"against_voucher_type": self.doctype,
+					"cost_center": cost_center,
+					"reference_no": self.cheque_no,
+					"reference_date": self.cheque_date,
+					"equipment_number": self.registration_no
 				}, self.currency)
 			)
 
-                # transportaion_amount - DR
+		# transportaion_amount - DR
 		if (flt(self.transfer_charges) +  flt(self.delivery_charges)) + flt(self.within_warehouse_amount) + flt(self.production_transport_amount) > 0:
 			items = self.get_expense_gl()
-                        
+
 			for k,v in items.iteritems():
 				party = party_type = None
 				account_type = frappe.db.get_value("Account", k, "account_type")
@@ -593,20 +599,23 @@ class TransporterPayment(AccountsController):
 					party = self.equipment
 					party_type = "Equipment"
 
-                                gl_entries.append(
-                                        self.get_gl_dict({
-                                                "account":  k,
-                                                "debit": flt(v),
-                                                "debit_in_account_currency": flt(v),
-                                                "against_voucher": self.name,
-                                                "against_voucher_type": self.doctype,
-					        "party_type": party_type,
-					        "party": party,
-                                                "cost_center": cost_center,
-                                        }, self.currency)
-                                )
+				gl_entries.append(
+					self.get_gl_dict({
+							"account":  k,
+							"debit": flt(v),
+							"debit_in_account_currency": flt(v),
+							"against_voucher": self.name,
+							"against_voucher_type": self.doctype,
+							"party_type": party_type,
+							"party": party,
+							"cost_center": cost_center,
+							"reference_no": self.cheque_no,
+							"reference_date": self.cheque_date,
+							"equipment_number": self.registration_no
+					}, self.currency)
+				)
 
-                # unloading_amount - DR
+		# unloading_amount - DR
 		if flt(self.unloading_amount):
 			party = party_type = None
 			account_type = frappe.db.get_value("Account", self.unloading_account, "account_type")
@@ -616,18 +625,21 @@ class TransporterPayment(AccountsController):
 
 			gl_entries.append(
 				self.get_gl_dict({
-				       "account":  self.unloading_account,
-				       "debit": self.unloading_amount,
-				       "debit_in_account_currency": self.unloading_amount,
-				       "against_voucher": self.name,
-				       "against_voucher_type": self.doctype,
+					"account":  self.unloading_account,
+					"debit": self.unloading_amount,
+					"debit_in_account_currency": self.unloading_amount,
+					"against_voucher": self.name,
+					"against_voucher_type": self.doctype,
 					"party_type": party_type,
 					"party": party,
-				       "cost_center": cost_center,
+					"cost_center": cost_center,
+					"reference_no": self.cheque_no,
+					"reference_date": self.cheque_date,
+					"equipment_number": self.registration_no
 				}, self.currency)
 			)
 
-                # tds_amount - CR
+		# tds_amount - CR
 		if flt(self.tds_amount):
 			party = party_type = None
 			account_type = frappe.db.get_value("Account", self.tds_account, "account_type")
@@ -637,14 +649,17 @@ class TransporterPayment(AccountsController):
 
 			gl_entries.append(
 				self.get_gl_dict({
-				       "account":  self.tds_account,
-				       "credit": self.tds_amount,
-				       "credit_in_account_currency": self.tds_amount,
-				       "against_voucher": self.name,
-				       "against_voucher_type": self.doctype,
-				       "party_type": party_type,
-				       "party": party,
-				       "cost_center": cost_center,
+					"account":  self.tds_account,
+					"credit": self.tds_amount,
+					"credit_in_account_currency": self.tds_amount,
+					"against_voucher": self.name,
+					"against_voucher_type": self.doctype,
+					"party_type": party_type,
+					"party": party,
+					"cost_center": cost_center,
+					"reference_no": self.cheque_no,
+					"reference_date": self.cheque_date,
+					"equipment_number": self.registration_no
 				}, self.currency)
 			)
 
@@ -658,14 +673,17 @@ class TransporterPayment(AccountsController):
 
 			gl_entries.append(
 				self.get_gl_dict({
-				       "account":  self.security_deposit_account,
-				       "credit": self.security_deposit_amount,
-				       "credit_in_account_currency": self.security_deposit_amount,
-				       "against_voucher": self.name,
-				       "against_voucher_type": self.doctype,
-				       "party_type": party_type,
-				       "party": party,
-				       "cost_center": cost_center,
+					"account":  self.security_deposit_account,
+					"credit": self.security_deposit_amount,
+					"credit_in_account_currency": self.security_deposit_amount,
+					"against_voucher": self.name,
+					"against_voucher_type": self.doctype,
+					"party_type": party_type,
+					"party": party,
+					"cost_center": cost_center,
+					"reference_no": self.cheque_no,
+					"reference_date": self.cheque_date,
+					"equipment_number": self.registration_no
 				}, self.currency)
 			)
 
@@ -679,16 +697,20 @@ class TransporterPayment(AccountsController):
 
 			gl_entries.append(
 				self.get_gl_dict({
-				       "account":  self.weighbridge_account,
-				       "credit": self.weighbridge_amount,
-				       "credit_in_account_currency": self.weighbridge_amount,
-				       "against_voucher": self.name,
-				       "against_voucher_type": self.doctype,
-				       "party_type": party_type,
-				       "party": party,
-				       "cost_center": cost_center,
+					"account":  self.weighbridge_account,
+					"credit": self.weighbridge_amount,
+					"credit_in_account_currency": self.weighbridge_amount,
+					"against_voucher": self.name,
+					"against_voucher_type": self.doctype,
+					"party_type": party_type,
+					"party": party,
+					"cost_center": cost_center,
+					"reference_no": self.cheque_no,
+					"reference_date": self.cheque_date,
+					"equipment_number": self.registration_no
 				}, self.currency)
 			)
+		
 		#clearing amount -CR implemented by Birendra(02/02/2021)
 		if flt(self.clearing_amount):
 			party = party_type = None
@@ -707,9 +729,13 @@ class TransporterPayment(AccountsController):
 					"party_type": party_type,
 					"party": party,
 					"cost_center": cost_center,
+					"reference_no": self.cheque_no,
+					"reference_date": self.cheque_date,
+					"equipment_number": self.registration_no
 				}, self.currency)
 			)
-                # deductions - CR
+
+		# deductions - CR
 		for d in self.get("deductions"):
 			party = party_type = None
 			account_type = frappe.db.get_value("Account", d.account, "account_type")
@@ -726,7 +752,10 @@ class TransporterPayment(AccountsController):
 								"against_voucher_type": self.doctype,
 								"cost_center": cost_center,
 								"party_type": d.party_type,
-								"party": d.party
+								"party": d.party,
+								"reference_no": self.cheque_no,
+								"reference_date": self.cheque_date,
+								"equipment_number": self.registration_no
 						}, self.currency)
 					)
 			else:
@@ -738,6 +767,9 @@ class TransporterPayment(AccountsController):
 								"against_voucher": self.name,
 								"against_voucher_type": self.doctype,
 								"cost_center": cost_center,
+								"reference_no": self.cheque_no,
+								"reference_date": self.cheque_date,
+								"equipment_number": self.registration_no
 						}, self.currency)
 					)
 		make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)

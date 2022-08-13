@@ -22,7 +22,11 @@ class DirectPayment(AccountsController):
     def on_submit(self):
         self.post_gl_entry()
         self.consume_budget()
-        
+
+    def on_update_after_submit(self):
+        frappe.db.sql('''update `tabGL Entry` set reference_no="{}", reference_date="{}" 
+            where voucher_no="{}" '''.format(self.cheque_no, self.cheque_date, self.name))
+
     def before_cancel(self):
         pass
 
@@ -137,6 +141,8 @@ class DirectPayment(AccountsController):
                     "party": party,
                     "company": self.company,
                     "remarks": self.remarks,
+                    "reference_no": self.cheque_no,
+                    "reference_date": self.cheque_date
                     })
                 )
         else:
@@ -156,6 +162,8 @@ class DirectPayment(AccountsController):
                     "party": party,
                     "company": self.company,
                     "remarks": self.remarks,
+                    "reference_no": self.cheque_no,
+                    "reference_date": self.cheque_date
                     })
                 )
     
@@ -181,7 +189,9 @@ class DirectPayment(AccountsController):
                         "company": self.company,
                         "remarks": self.remarks,
                         "consolidation_party_type":a.party_type,
-                        "consolidation_party":a.party
+                        "consolidation_party":a.party,
+                        "reference_no": self.cheque_no,
+                        "reference_date": self.cheque_date
                         })
                     )
             else:
@@ -198,7 +208,9 @@ class DirectPayment(AccountsController):
                         "company": self.company,
                         "remarks": self.remarks,
                         "consolidation_party_type":a.party_type,
-                        "consolidation_party":a.party
+                        "consolidation_party":a.party,
+                        "reference_no": self.cheque_no,
+                        "reference_date": self.cheque_date
                         })
                     )
         if self.deduct:
@@ -238,6 +250,8 @@ class DirectPayment(AccountsController):
                         "cost_center": self.cost_center,
                         "company": self.company,
                         "remarks": self.remarks,
+                        "reference_no": self.cheque_no,
+                        "reference_date": self.cheque_date
                         })
                     )
             else:
@@ -251,6 +265,8 @@ class DirectPayment(AccountsController):
                         "cost_center": self.cost_center,
                         "company": self.company,
                         "remarks": self.remarks,
+                        "reference_no": self.cheque_no,
+                        "reference_date": self.cheque_date
                         })
                     )
                 

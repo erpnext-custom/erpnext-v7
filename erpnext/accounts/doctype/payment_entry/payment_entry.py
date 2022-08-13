@@ -69,7 +69,11 @@ class PaymentEntry(AccountsController):
 			frappe.throw(_("Difference Amount must be zero"))
 		self.make_gl_entries()
 		self.update_advance_paid()
-		
+	
+	def on_update_after_submit(self):
+		frappe.db.sql('''update `tabGL Entry` set reference_no="{}", reference_date="{}" 
+			where voucher_no="{}" '''.format(self.reference_no, self.reference_date, self.name))
+
 	def on_cancel(self):
 		if self.clearance_date:
 			frappe.throw("Already done bank reconciliation.")
@@ -266,8 +270,8 @@ class PaymentEntry(AccountsController):
 			total_deductions = sum([flt(d.amount) for d in self.get("deductions")])
 
 
-                        # Ver 1.0 Begins added by SSK on 15/08/2016
-                        # Following code is commented
+			# Ver 1.0 Begins added by SSK on 15/08/2016
+			# Following code is commented
 			'''
 			if self.total_allocated_amount < party_amount:
 				if self.payment_type == "Receive":
@@ -285,8 +289,8 @@ class PaymentEntry(AccountsController):
 			
 		base_party_amount = flt(self.base_total_allocated_amount) + flt(base_unallocated_amount)
 
-                # Ver 1.0 Begins added SSK on 15/08/2016
-                # Following code is commented
+		# Ver 1.0 Begins added SSK on 15/08/2016
+		# Following code is commented
 		'''
 		if self.payment_type == "Receive":
 			self.difference_amount = base_party_amount - self.base_received_amount
@@ -294,12 +298,12 @@ class PaymentEntry(AccountsController):
 			self.difference_amount = self.base_paid_amount - base_party_amount
 		else:
 			self.difference_amount = self.base_paid_amount - flt(self.base_received_amount)
-                '''
+		'''
 		# Following line is added
 		if self.payment_type == "Receive":
-                        self.difference_amount = self.total_allocated_amount - self.paid_amount
-                else:
-                        self.difference_amount = self.paid_amount - self.total_allocated_amount
+			self.difference_amount = self.total_allocated_amount - self.paid_amount
+		else:
+			self.difference_amount = self.paid_amount - self.total_allocated_amount
 		# Ver 1.0 Ends
 		
 		for d in self.get("deductions"):
@@ -402,7 +406,9 @@ class PaymentEntry(AccountsController):
 				"party": self.party,
 				"against": against_account,
 				"account_currency": self.party_account_currency,
-				"cost_center": self.pl_cost_center
+				"cost_center": self.pl_cost_center,
+				"reference_no": self.reference_no,
+				"reference_date": self.reference_date
 			})
 			
 			dr_or_cr = "credit" if self.party_type == "Customer" else "debit"
@@ -438,21 +444,21 @@ class PaymentEntry(AccountsController):
 				gl_entries.append(gle)
 				
 	def add_bank_gl_entries(self, gl_entries):
-                """ ++++++++++ Ver 1.0.190516 Begins ++++++++++ """
-                # Ver 1.0.190516, Following code added by SHIV on 2019/05/16
-                party_type = ''
-                party      = ''
-                if self.party_account:
-                        if self.payment_type=="Receive":
-                                against_account = self.paid_to
-                        else:
-                                against_account = self.paid_from
+		""" ++++++++++ Ver 1.0.190516 Begins ++++++++++ """
+		# Ver 1.0.190516, Following code added by SHIV on 2019/05/16
+		party_type = ''
+		party      = ''
+		if self.party_account:
+			if self.payment_type=="Receive":
+				against_account = self.paid_to
+			else:
+				against_account = self.paid_from
 
-                        if frappe.get_value("Account", against_account, "account_type") in ('Receivable', 'Payable'):
-                                party_type = self.party_type
-                                party      = self.party
-                """ ++++++++++ Ver 1.0.190516 Ends ++++++++++++ """
-                                
+			if frappe.get_value("Account", against_account, "account_type") in ('Receivable', 'Payable'):
+				party_type = self.party_type
+				party      = self.party
+		""" ++++++++++ Ver 1.0.190516 Ends ++++++++++++ """
+
 		if self.payment_type in ("Pay", "Internal Transfer"):
 			if frappe.get_value("Account", self.paid_from, "report_type") == "Profit and Loss":	
 				if self.pl_cost_center:
@@ -464,8 +470,10 @@ class PaymentEntry(AccountsController):
 							"credit_in_account_currency": self.paid_amount,
 							"credit": self.base_paid_amount,
 							"cost_center": self.pl_cost_center,
-                                                        "party_type": party_type,       # Ver 1.0.190516, Line added by SHIV on 2019/05/16
-                                                        "party": party                  # Ver 1.0.190516, Line added by SHIV on 2019/05/16
+							"party_type": party_type,       # Ver 1.0.190516, Line added by SHIV on 2019/05/16
+							"party": party,                  # Ver 1.0.190516, Line added by SHIV on 2019/05/16
+							"reference_no": self.reference_no,
+							"reference_date": self.reference_date
 						})
 					)
 				else:
@@ -479,8 +487,10 @@ class PaymentEntry(AccountsController):
 						"credit_in_account_currency": self.paid_amount,
 						"credit": self.base_paid_amount,
 						"cost_center": self.pl_cost_center,
-                                                "party_type": party_type,       # Ver 1.0.190516, Line added by SHIV on 2019/05/16
-                                                "party": party                  # Ver 1.0.190516, Line added by SHIV on 2019/05/16
+						"party_type": party_type,       # Ver 1.0.190516, Line added by SHIV on 2019/05/16
+						"party": party,                  # Ver 1.0.190516, Line added by SHIV on 2019/05/16
+						"reference_no": self.reference_no,
+						"reference_date": self.reference_date
 					})
 				)
 
@@ -495,8 +505,10 @@ class PaymentEntry(AccountsController):
 							"debit_in_account_currency": self.received_amount,
 							"debit": self.base_received_amount,
 							"cost_center": self.pl_cost_center,
-                                                        "party_type": party_type,       # Ver 1.0.190516, Line added by SHIV on 2019/05/16
-                                                        "party": party                  # Ver 1.0.190516, Line added by SHIV on 2019/05/16
+							"party_type": party_type,       # Ver 1.0.190516, Line added by SHIV on 2019/05/16
+							"party": party,                  # Ver 1.0.190516, Line added by SHIV on 2019/05/16
+							"reference_no": self.reference_no,
+							"reference_date": self.reference_date
 						})
 					)
 				else:
@@ -510,8 +522,10 @@ class PaymentEntry(AccountsController):
 						"debit_in_account_currency": self.received_amount,
 						"debit": self.base_received_amount,
 						"cost_center": self.pl_cost_center,
-                                                "party_type": party_type,       # Ver 1.0.190516, Line added by SHIV on 2019/05/16
-                                                "party": party                  # Ver 1.0.190516, Line added by SHIV on 2019/05/16
+						"party_type": party_type,       # Ver 1.0.190516, Line added by SHIV on 2019/05/16
+						"party": party,                  # Ver 1.0.190516, Line added by SHIV on 2019/05/16
+						"reference_no": self.reference_no,
+						"reference_date": self.reference_date
 					})
 				)
 			
@@ -529,7 +543,9 @@ class PaymentEntry(AccountsController):
 						"against": self.party or self.paid_from,
 						"debit_in_account_currency": d.amount,
 						"debit": d.amount,
-						"cost_center": d.cost_center
+						"cost_center": d.cost_center,
+						"reference_no": self.reference_no,
+						"reference_date": self.reference_date
 					})
 				)
 				
@@ -692,9 +708,6 @@ def get_reference_details(reference_doctype, reference_name, party_account_curre
 @frappe.whitelist()
 def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=None):
 	doc = frappe.get_doc(dt, dn)
-
-	#for d in doc.get("items"):
-        #        msgprint(d.item_code)
 	
 	if dt in ("Sales Order", "Purchase Order") and flt(doc.per_billed, 2) > 0:
 		frappe.throw(_("Can only make payment against unbilled {0}").format(dt))
@@ -732,11 +745,11 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 
 	# bank or cash
 	if dt =="Sales Invoice":
-                bank = get_default_bank_cash_sales_account(doc.company, "Bank", mode_of_payment=doc.get("mode_of_payment"), 
-                        account=bank_account)
+		bank = get_default_bank_cash_sales_account(doc.company, "Bank", mode_of_payment=doc.get("mode_of_payment"), 
+				account=bank_account)
 	else:
-                bank = get_default_bank_cash_account(doc.company, "Bank", mode_of_payment=doc.get("mode_of_payment"), 
-                        account=bank_account)
+		bank = get_default_bank_cash_account(doc.company, "Bank", mode_of_payment=doc.get("mode_of_payment"), 
+				account=bank_account)
 
 	
 	paid_amount = received_amount = 0
@@ -767,7 +780,7 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 	pe.received_amount = received_amount
 	
 	if dt == "Sales Order" or dt == "Purchase Order":
-                pe.so_reference = doc.name
+		pe.so_reference = doc.name
 	
 	pe.append("references", {
 		"reference_doctype": dt,

@@ -24,6 +24,7 @@ class EMEPayment(Document):
 		is_disabled = frappe.db.get_value("Branch", self.branch, "is_disabled")
 		if is_disabled:
 			frappe.throw("Cannot use a disabled branch in transaction")
+
 	#Function to pay arrear base on change in rate
 	def update_rate_amount(self):
 		for a in self.get("items"):
@@ -159,6 +160,9 @@ class EMEPayment(Document):
 		if not self.cheque_no or not self.cheque_date:
 			frappe.throw("Both Cheque No and Date are mandatory")
 
+		frappe.db.sql('''update `tabGL Entry` set reference_no="{}", reference_date="{}" 
+			where voucher_no="{}" '''.format(self.cheque_no, self.cheque_date, self.name))
+
 	def validate_logbook(self):
 		for a in self.items:
 			paid = frappe.db.get_value("Logbook", a.logbook, "paid")
@@ -191,15 +195,19 @@ class EMEPayment(Document):
 						"cost_center": self.cost_center,
 						"party_type": party_type,
 						"party": party,
+						"reference_no": self.cheque_no,
+						"reference_date": self.cheque_date
 						})
 				)
 				
 		if self.tds_amount:
 			gl_entries.append(
 				prepare_gl(self, {"account": self.tds_account,
-						 "credit": flt(self.tds_amount),
-						 "credit_in_account_currency": flt(self.tds_amount),
-						 "cost_center": self.cost_center,
+						"credit": flt(self.tds_amount),
+						"credit_in_account_currency": flt(self.tds_amount),
+						"cost_center": self.cost_center,
+						"reference_no": self.cheque_no,
+						"reference_date": self.cheque_date
 						})
 				)
 		'''
@@ -230,12 +238,14 @@ class EMEPayment(Document):
 
 			gl_entries.append(
 				prepare_gl(self, {"account": d.account,
-						 "credit": flt(d.amount),
-						 "credit_in_account_currency": flt(d.amount),
-						 "cost_center": self.cost_center,
-						 "party_type": party_type,
-						 "party": party,
-						 "remarks": d.remarks
+						"credit": flt(d.amount),
+						"credit_in_account_currency": flt(d.amount),
+						"cost_center": self.cost_center,
+						"party_type": party_type,
+						"party": party,
+						"remarks": d.remarks,
+						"reference_no": self.cheque_no,
+						"reference_date": self.cheque_date
 						})
 				)
 	
@@ -250,21 +260,25 @@ class EMEPayment(Document):
 		if payable_account != self.bank_account:	
 			gl_entries.append(
 				prepare_gl(self, {"account": payable_account,
-				 "credit": flt(self.payable_amount) ,
-				 "credit_in_account_currency": flt(self.payable_amount) ,
-				 "cost_center": self.cost_center,
-				 "party_type": party_type,
-				 "party": party,
+				"credit": flt(self.payable_amount) ,
+				"credit_in_account_currency": flt(self.payable_amount) ,
+				"cost_center": self.cost_center,
+				"party_type": party_type,
+				"party": party,
+				"reference_no": self.cheque_no,
+				"reference_date": self.cheque_date
 				})
 			)
 			
 			gl_entries.append(
 				prepare_gl(self, {"account": payable_account,
-				 "debit": flt(self.payable_amount) ,
-				 "debit_in_account_currency": flt(self.payable_amount) ,
-				 "cost_center": self.cost_center,
-				 "party_type": party_type,
-				 "party": party,
+				"debit": flt(self.payable_amount) ,
+				"debit_in_account_currency": flt(self.payable_amount) ,
+				"cost_center": self.cost_center,
+				"party_type": party_type,
+				"party": party,
+				"reference_no": self.cheque_no,
+				"reference_date": self.cheque_date
 				})
 			) 
 
@@ -276,11 +290,13 @@ class EMEPayment(Document):
 
 		gl_entries.append(
 			prepare_gl(self, {"account": self.bank_account,
-			 "credit": flt(self.payable_amount) ,
-			 "credit_in_account_currency": flt(self.payable_amount) ,
-			 "cost_center": self.cost_center,
-			 "party_type": party_type,
-			 "party": party,
+			"credit": flt(self.payable_amount) ,
+			"credit_in_account_currency": flt(self.payable_amount) ,
+			"cost_center": self.cost_center,
+			"party_type": party_type,
+			"party": party,
+			"reference_no": self.cheque_no,
+			"reference_date": self.cheque_date
 			})
 		)
 
@@ -316,7 +332,7 @@ class EMEPayment(Document):
 						"item_code": None,
 						"poi_name": self.name,
 						"date": frappe.utils.nowdate(),
-			    		"consumed" : 1
+						"consumed" : 1
 						})
 		bud_obj.flags.ignore_permissions = 1
 		bud_obj.submit()

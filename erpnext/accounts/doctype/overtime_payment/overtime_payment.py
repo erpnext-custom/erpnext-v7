@@ -37,6 +37,10 @@ class OvertimePayment(AccountsController):
 		self.post_gl_entry()
 		self.update_overtime_application()
 
+	def on_update_after_submit(self):
+		frappe.db.sql('''update `tabGL Entry` set reference_no="{}", reference_date="{}" 
+			where voucher_no="{}" '''.format(self.cheque_no, self.cheque_date, self.name))
+
 	def on_cancel(self):
 		self.post_gl_entry()
 		self.cancel_budget_entry()
@@ -92,6 +96,8 @@ class OvertimePayment(AccountsController):
 				"cost_center": self.cost_center,
 				"company": self.company,
 				"remarks": "Overtime Payment",
+				"reference_no": self.cheque_no,
+				"reference_date": self.cheque_date
 				})
 			)			
 		gl_entries.append(
@@ -104,6 +110,8 @@ class OvertimePayment(AccountsController):
 				"cost_center": self.cost_center,
 				"company": self.company,
 				"remarks": "Overtime Payment",
+				"reference_no": self.cheque_no,
+				"reference_date": self.cheque_date
 				})
 			)
 		make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)

@@ -115,87 +115,21 @@ def get_gl_entries(filters):
 	group_by_condition = "group by gl.voucher_type, gl.voucher_no, gl.account, gl.cost_center" \
 		if filters.get("group_by_voucher") else "group by gl.name"
 
-	'''
-	gl_entries = frappe.db.sql("""
-		select
-			posting_date,account, party_type,
-			CASE gl.party_type
-				WHEN 'Equipment'
-				THEN (select equipment_number as party from `tabEquipment` where name = gl.party)
-				ELSE
-				gl.party
-			END AS party,
-			CASE gl.voucher_type
-				WHEN 'Payment Entry'
-					THEN (select reference_no as cheque_no from `tabPayment Entry` where name = gl.voucher_no)
-				WHEN 'Journal Entry'
-					THEN (select cheque_no from `tabJournal Entry` where name = gl.voucher_no)
-				WHEN 'Direct Payment'
-					THEN (select cheque_no from `tabDirect Payment` where name = gl.voucher_no)
-				WHEN 'Overtime Payment'
-					THEN (select cheque_no from `tabOvertime Payment` where name = gl.voucher_no)
-				WHEN 'EME Payment'
-					THEN (select cheque_no from `tabEME Payment` where name = gl.voucher_no)
-				ELSE ''
-			END as cheque_no,
-			CASE gl.voucher_type
-				WHEN 'Payment Entry'
-					THEN (select reference_date as cheque_date from `tabPayment Entry` where name = gl.voucher_no)
-				WHEN 'Journal Entry'
-					THEN (select cheque_date from `tabJournal Entry` where name = gl.voucher_no)
-				WHEN 'Direct Payment'
-					THEN (select cheque_date from `tabDirect Payment` where name = gl.voucher_no)
-				WHEN 'Overtime Payment'
-					THEN (select cheque_date from `tabOvertime Payment` where name = gl.voucher_no)
-				WHEN 'EME Payment'
-					THEN (select cheque_date from `tabEME Payment` where name = gl.voucher_no)
-				ELSE ''
-			END as cheque_date,
-			sum(debit) as debit, sum(credit) as credit,
-			voucher_type, voucher_no, cost_center, (select c.branch from `tabCost Center` c where c.name = cost_center) as branch, 
-			project,remarks, against, is_opening {select_fields}
-		from `tabGL Entry` gl
-		where docstatus = 1 and company=%(company)s {conditions}
-		{group_by_condition}
-		order by posting_date, account"""\
-		.format(select_fields=select_fields, conditions=get_conditions(filters),
-			group_by_condition=group_by_condition), filters, as_dict=1)
-	'''
 	gl_entries = frappe.db.sql("""
 		select
 			gl.posting_date, gl.account, gl.party_type,
 			(CASE gl.party_type
-				WHEN 'Equipment' THEN e.equipment_number
+				WHEN 'Equipment' THEN gl.equipment_number
 				ELSE gl.party
 			END) AS party,
-			(CASE
-				WHEN gl.voucher_type = 'Payment Entry' THEN pe.reference_no
-				WHEN gl.voucher_type = 'Journal Entry' THEN je.cheque_no
-				WHEN gl.voucher_type = 'Direct Payment' THEN dp.cheque_no
-				WHEN gl.voucher_type = 'Overtime Payment' THEN op.cheque_no
-				WHEN gl.voucher_type = 'EME Payment' THEN op.cheque_no
-				ELSE ''
-			END) as cheque_no,
-			(CASE
-				WHEN gl.voucher_type = 'Payment Entry' THEN reference_date
-				WHEN gl.voucher_type = 'Journal Entry' THEN je.cheque_date
-				WHEN gl.voucher_type = 'Direct Payment' THEN dp.cheque_date
-				WHEN gl.voucher_type = 'Overtime Payment' THEN op.cheque_date
-				WHEN gl.voucher_type = 'EME Payment' THEN op.cheque_date
-				ELSE ''
-			END) as cheque_date,
+			gl.reference_no as cheque_no,
+			gl.reference_date as cheque_date,
 			sum(gl.debit) as debit, sum(gl.credit) as credit,
 			gl.voucher_type, gl.voucher_no, 
 			gl.cost_center, cc.branch, 
 			gl.project, gl.remarks, gl.against, gl.is_opening {select_fields}
 		from `tabGL Entry` gl
-		left join `tabPayment Entry` pe on gl.voucher_type = 'Payment Entry' and pe.name = gl.voucher_no
-		left join `tabJournal Entry` je on gl.voucher_type = 'Journal Entry' and je.name = gl.voucher_no
-		left join `tabDirect Payment` dp on gl.voucher_type = 'Direct Payment' and dp.name = gl.voucher_no
-		left join `tabOvertime Payment` op on gl.voucher_type = 'Overtime Payment' and op.name = gl.voucher_no
-		left join `tabEME Payment` ep on gl.voucher_type = 'EME Payment' and ep.name = gl.voucher_no
 		left join `tabCost Center` cc on cc.name = gl.cost_center
-		left join `tabEquipment` e on e.name = gl.party
 		{conditions}
 		{group_by_condition}
 		order by gl.posting_date, account"""\

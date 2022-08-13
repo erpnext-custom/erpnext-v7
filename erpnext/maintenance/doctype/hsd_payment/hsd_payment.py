@@ -41,6 +41,10 @@ class HSDPayment(Document):
 		self.adjust_outstanding()
 		self.update_general_ledger()
 
+	def on_update_after_submit(self):
+		frappe.db.sql('''update `tabGL Entry` set reference_no="{}", reference_date="{}" 
+			where voucher_no="{}" '''.format(self.cheque__no, self.cheque_date, self.name))
+
 	def on_cancel(self):
 		if self.clearance_date:
 			frappe.throw("Already done bank reconciliation.")
@@ -75,30 +79,36 @@ class HSDPayment(Document):
 		if cint(self.final_settlement) ==1:
 			gl_entries.append(
 				prepare_gl(self, {"account": self.bank_account,
-					 "credit": flt(self.amount),
-					 "credit_in_account_currency": flt(self.amount),
-					 "cost_center": self.cost_center,
+					"credit": flt(self.amount),
+					"credit_in_account_currency": flt(self.amount),
+					"cost_center": self.cost_center,
 					"party_type": "Supplier",
-                                         "party": self.supplier,
+					"party": self.supplier,
+					"reference_no": self.cheque__no,
+					"reference_date": self.cheque_date
 					})
 				)
 		else:
 			 gl_entries.append(
-                                prepare_gl(self, {"account": self.bank_account,
-                                         "credit": flt(self.amount),
-                                         "credit_in_account_currency": flt(self.amount),
-                                         "cost_center": self.cost_center,
-                                        })
-                                )
+				prepare_gl(self, {"account": self.bank_account,
+						"credit": flt(self.amount),
+						"credit_in_account_currency": flt(self.amount),
+						"cost_center": self.cost_center,
+						"reference_no": self.cheque__no,
+						"reference_date": self.cheque_date
+					})
+				)
 
 		gl_entries.append(
 			prepare_gl(self, {"account": creditor_account,
-					 "debit": flt(self.amount),
-					 "debit_in_account_currency": flt(self.amount),
-					 "cost_center": self.cost_center,
-					 "party_type": "Supplier",
-					 "party": self.supplier,
-					})
+					"debit": flt(self.amount),
+					"debit_in_account_currency": flt(self.amount),
+					"cost_center": self.cost_center,
+					"party_type": "Supplier",
+					"party": self.supplier,
+					"reference_no": self.cheque__no,
+					"reference_date": self.cheque_date
+				})
 			)
 
 		from erpnext.accounts.general_ledger import make_gl_entries
