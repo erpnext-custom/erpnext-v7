@@ -364,6 +364,9 @@ def validate_workflow_states(doc):
 		elif workflow_state == "Verified By Supervisor".lower():
 			if doc.supervisor != frappe.session.user:
 				frappe.throw("Only {0} can submit the Travel Authorization".format(doc.supervisor))
+			# following CEO cond. added by Jai 14 Aug 2022
+			if doc.grade == "CEO":
+				final_approver = frappe.db.get_value("Employee", frappe.db.get_single_value("HR Settings", "hr_approver"), ["user_id","employee_name","designation","name"])
 			officiating = get_officiating_employee(final_approver[3])
 			if officiating:
 				officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
