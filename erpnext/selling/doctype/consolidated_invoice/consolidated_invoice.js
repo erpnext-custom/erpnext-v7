@@ -57,6 +57,9 @@ frappe.ui.form.on('Consolidated Invoice', {
 	cost_center: function(frm){
 		get_invoices(frm);
 	},
+	get_invoice_details: function(frm){
+		get_invoices(frm);
+	},
 	sales_order: function(frm) {
 		if(frm.doc.cost_center){
 		frm.fields_dict['sales_order'].get_query = function(doc) {
