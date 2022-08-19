@@ -647,4 +647,21 @@ cur_frm.fields_dict['items'].grid.get_field('uom').get_query = function(frm, cdt
         }
 }
 
-
+//added by cety to get the cost center from branch
+frappe.ui.form.on("Stock Entry", {
+	branch: function(frm){
+		frappe.call({
+			method: "erpnext.stock.doctype.stock_entry.stock_entry.get_cost_center",
+			args: {
+				"branch": frm.doc.branch
+			},
+			callback: function(r){
+				if (r.message){
+					console.log(r.message);
+					frm.set_value("user_cost_center", r.message);
+				}
+			}
+		})
+	}
+});
+	

@@ -904,3 +904,7 @@ def get_warehouse_details(args):
 
 	return ret
 
+#added by cety
+@frappe.whitelist()
+def get_cost_center(branch):
+    return frappe.db.sql("select name from `tabCost Center` where branch='{}'".format(branch))
