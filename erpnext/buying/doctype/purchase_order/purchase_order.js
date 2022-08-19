@@ -23,6 +23,7 @@ frappe.ui.form.on("Purchase Order", {
                               args: {"user": frappe.session.user},
                               callback(r) {
                                         cur_frm.set_value("branch", r.message.branch);
+										cur_frm.set_value("cost_center", r.message.cost_center); //added ny cety
                              }
                         });
                 }
@@ -52,6 +53,19 @@ frappe.ui.form.on("Purchase Order", {
 		else {
 			frm.set_value("buying_price_list", "Standard Buying")
 		}
+	},
+	branch: function(frm){
+		frappe.call({
+			method: "erpnext.buying.doctype.purchase_order.purchase_order.get_cost_center",
+			args: {
+				'branch': frm.doc.branch,
+			},
+			callback: function(r){
+				if (r.message){
+					frm.set_value("cost_center", r.message);
+				}
+			}
+		})
 	}
 });
 

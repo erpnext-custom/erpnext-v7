@@ -207,6 +207,13 @@ class PurchaseOrder(BuyingController):
 
 		purchase_controller.update_last_purchase_rate(self, is_submit = 1)
 		self.commit_budget()
+		self.check_cost_center() #added by cety
+	
+	#added by cety
+	def check_cost_center(self):
+		for cost in self.items:
+			if self.cost_center != cost.cost_center:
+				frappe.throw("Child table <b>Cost Center</b> and <b>User Cost Center</b> should be same. Please correcr it!")
 
 	def on_cancel(self):
 		check_uncancelled_linked_doc(self.doctype, self.name)
@@ -487,3 +494,8 @@ def get_budget_account(item_code):
 		acc = frappe.db.get_value("Item", item_code, "expense_account")
 
 	return acc
+
+#added by cety
+@frappe.whitelist()
+def get_cost_center(branch):
+    return frappe.db.sql("select name from `tabCost Center` where branch='{}'".format(branch))
