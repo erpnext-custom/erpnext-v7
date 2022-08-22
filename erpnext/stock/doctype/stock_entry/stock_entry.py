@@ -93,13 +93,13 @@ class StockEntry(StockController):
 		self.update_production_order()
 		self.validate_purchase_order()
 		self.make_gl_entries()
-		#added by cety to validate the same cost center in and out child table
-		self.check_cost_center()
+	# 	#added by cety to validate the same cost center in and out child table
+	# 	self.check_cost_center()
 
-	def check_cost_center(self):
-		for cost in self.items:
-			if self.user_cost_center != cost.cost_center:
-				frappe.throw("Child table <b>Cost Center</b> and <b>User Cost Center</b> should be same. Please correct it")
+	# def check_cost_center(self):
+	# 	for cost in self.items:
+	# 		if self.user_cost_center != cost.cost_center:
+	# 			frappe.throw("Child table <b>Cost Center</b> and <b>User Cost Center</b> should be same. Please correct it")
 			
 	def on_cancel(self):
 		self.update_stock_ledger()
