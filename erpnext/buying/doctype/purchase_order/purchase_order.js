@@ -54,19 +54,19 @@ frappe.ui.form.on("Purchase Order", {
 			frm.set_value("buying_price_list", "Standard Buying")
 		}
 	},
-	branch: function(frm){
-		frappe.call({
-			method: "erpnext.buying.doctype.purchase_order.purchase_order.get_cost_center",
-			args: {
-				'branch': frm.doc.branch,
-			},
-			callback: function(r){
-				if (r.message){
-					frm.set_value("cost_center", r.message);
-				}
-			}
-		})
-	}
+	// branch: function(frm){
+	// 	frappe.call({
+	// 		method: "erpnext.buying.doctype.purchase_order.purchase_order.get_cost_center",
+	// 		args: {
+	// 			'branch': frm.doc.branch,
+	// 		},
+	// 		callback: function(r){
+	// 			if (r.message){
+	// 				frm.set_value("cost_center", r.message);
+	// 			}
+	// 		}
+	// 	})
+	// }
 });
 
 function calculate_discount(frm) {
