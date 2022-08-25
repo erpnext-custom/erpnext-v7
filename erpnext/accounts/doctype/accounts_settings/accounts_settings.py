@@ -14,7 +14,6 @@ class AccountsSettings(Document):
 		frappe.db.set_default("auto_accounting_for_stock", self.auto_accounting_for_stock)
 		frappe.db.set_default("display_balances", self.display_balances)
 
-		'''
 		if cint(self.auto_accounting_for_stock):
 			# set default perpetual account in company
 			for company in frappe.db.sql("select name from tabCompany"):
@@ -31,4 +30,3 @@ class AccountsSettings(Document):
 				wh_doc = frappe.get_doc("Warehouse", wh.name)
 				wh_doc.flags.ignore_permissions = True
 				wh_doc.save()
-		'''
