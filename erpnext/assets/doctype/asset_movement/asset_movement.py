@@ -143,19 +143,19 @@ class AssetMovement(Document):
 		if cancel:
 			custodian = self.source_custodian	
 			purpose = "Cancel"
-                        cost_center = self.current_cost_center
+			cost_center = self.current_cost_center
 		else:
 			custodian = self.target_custodian
 			purpose = "Submit"
-                        cost_center = self.target_custodian_cost_center
+			cost_center = self.target_custodian_cost_center
 
 		frappe.db.set_value("Asset", self.asset, "issued_to", custodian)
 		
 		if self.current_cost_center != self.target_custodian_cost_center:
-			branch = frappe.db.get_value("Cost Center", cost_center, "branch")
+			branch = frappe.db.get_value("Cost Center", self.target_custodian_cost_center, "branch")
 			frappe.db.set_value("Asset", self.asset, "cost_center", frappe.db.get_value("Employee", custodian, "cost_center"))
 			frappe.db.set_value("Asset", self.asset, "branch", branch)
-			
+			frappe.msgprint(str(branch))
 			equipment = frappe.db.get_value("Equipment", {"asset_code": self.asset}, "name")
 			if equipment:
 				equip = frappe.get_doc("Equipment", equipment)
@@ -186,11 +186,11 @@ class AssetMovement(Document):
 		frappe.db.set_value("Asset", self.asset, "branch", branch)
 
 		equipment = frappe.db.get_value("Equipment", {"asset_code": self.asset}, "name")
-                if equipment:
-                        save_equipment(equipment, branch, self.posting_date, self.name, purpose)
+		if equipment:
+			save_equipment(equipment, branch, self.posting_date, self.name, purpose)
 
 def save_equipment(equipment, branch, posting_date, ref_doc, purpose):
-                equip = frappe.get_doc("Equipment", equipment)
-                equip.branch = branch
-                equip.create_equipment_history(branch, posting_date, ref_doc, purpose)
-                equip.save()
+	equip = frappe.get_doc("Equipment", equipment)
+	equip.branch = branch
+	equip.create_equipment_history(branch, posting_date, ref_doc, purpose)
+	equip.save()
