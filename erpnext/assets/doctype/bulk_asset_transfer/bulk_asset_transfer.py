@@ -45,19 +45,21 @@ class BulkAssetTransfer(Document):
 		for a in self.items:
 			doc = frappe.get_doc("Asset", a.asset_code)
 			doc.db_set("issued_to", self.custodian)
-
+			doc.db_set("employee_name",self.custodian_name)
 			if a.cost_center != self.custodian_cost_center:
+				
 				doc.db_set("cost_center", self.custodian_cost_center)
 				doc.db_set("branch", self.custodian_branch)
-				equipment = frappe.db.get_value("Equipment", {"asset_code": a.asset_code, "docstatus": 1}, "name")
+				equipment = frappe.db.get_value("Equipment", {"asset_code": a.asset_code}, "name")
 				if equipment:
 					equip = frappe.get_doc("Equipment", equipment)
+					# frappe.throw(str(equip.branch))
 					equip.branch = self.custodian_branch
 					equip.save()
 					#save_equipment(equipment, self.custodian_branch, self.posting_date, self.name, "Submit")
 					#doc.db_set("branch", self.custodian_branch)
 				make_asset_transfer_gl(self, a.asset_code, self.posting_date, a.cost_center, self.custodian_cost_center)
-	
+		
 	def asset_transfer_workflow(self):
 		if self.workflow_state == "Waiting For Verification":
 			if self.purpose == "Custodian":
