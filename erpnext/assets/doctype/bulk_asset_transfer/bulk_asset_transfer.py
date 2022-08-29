@@ -101,6 +101,7 @@ class BulkAssetTransfer(Document):
 			check_valid_asset_transfer(a.asset_code, self.posting_date)
 			doc = frappe.get_doc("Asset", a.asset_code)
 			doc.db_set("issued_to", a.custodian)
+			doc.db_set("employee_name", frappe.db.get_value('Employee',a.custodian,'employee_name'))
 
 			if a.cost_center != self.custodian_cost_center:
 				branch = frappe.db.get_value("Cost Center", a.cost_center, "branch")
