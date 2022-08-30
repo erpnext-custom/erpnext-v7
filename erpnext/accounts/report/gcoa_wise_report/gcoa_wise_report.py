@@ -178,7 +178,7 @@ def from_gl_applicable_for_both(is_inter_company,coa,filters):
 					i_none['amount'] 			+= flt(a.amount)
 	for key, item in inter_company.items():
 		value.data.append(item)
-	if flt(i_none['amount']) > 0:
+	if flt(i_none['amount']) != 0:
 		value.data.append(i_none)
 	return value
 
@@ -245,9 +245,8 @@ def create_transaction(is_monthly_report=None):
 				row.flow 					= a['flow']
 				row.interco 				= a['interco']
 				row.time 					= a['time']
-		if flt(i_none['amount'])  > 0:
-			row 	= doc.append('items',{})
-			row.update(i_none)
+		row 	= doc.append('items',{})
+		row.update(i_none)
 	doc.save(ignore_permissions=True)
 	doc.submit()
 	dhi_setting.save()
