@@ -76,3 +76,4 @@ function calculate_totals(frm) {
         });
 }
 
+

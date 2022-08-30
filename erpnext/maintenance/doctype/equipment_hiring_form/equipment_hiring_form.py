@@ -54,6 +54,7 @@ class EquipmentHiringForm(Document):
 					frappe.throw("Equipment Hiring End date is already after the extension date {}".format(a.hiring_extended_till))
 
 		frappe.db.commit()
+		self.update_hiring_history()
 
 	def validate_date(self):
 		if self.start_date > self.end_date:
@@ -79,3 +80,12 @@ class EquipmentHiringForm(Document):
 		
 		if self.branch != eqp[0].branch:
 			frappe.throw("Cannot use equipments from other branch")
+
+	def update_hiring_history(self):
+		for item in self.ehf_rate:
+			self.append('hiring_rate_history',{
+				"modified_by1": frappe.session.user,
+				"hiring_rate": item.hiring_rate,
+				"from_date": item.from_date,
+				"to_date": item.to_date
+			})
