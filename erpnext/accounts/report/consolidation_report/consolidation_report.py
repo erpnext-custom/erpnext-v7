@@ -21,10 +21,10 @@ def get_data(filters,from_rest_api=None):
 	d = frappe.db.sql('''
 					 SELECT name, from_date, to_date
       					FROM `tabConsolidation Transaction`  
-           				WHERE from_date >= '{}' AND to_date <= '{}' ORDER BY name desc limit 1
+           				WHERE from_date = '{}' AND to_date = '{}' ORDER BY name desc limit 1
 					  '''.format(filters['from_date'],filters['to_date']),as_dict=True)
 	if not d:
-		return
+		return []
 	parent_name = d[0].name
 	from_date = d[0].from_date
 	to_date = d[0].to_date
