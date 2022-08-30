@@ -139,46 +139,46 @@ def from_gl_applicable_for_both(is_inter_company,coa,filters):
 			total_debit 	= flt(flt(a.debit) + flt(a.opening_debit))
 			total_credit 	= flt(flt(a.credit) + flt(a.opening_credit))
 			a['amount'] 	= total_debit - total_credit if coa.root_type in ['Asset','Expense'] else flt(total_credit - total_debit) * -1
-			if a.debit or a.credit or a.opening_debit or a.opening_credit or a.amount:
-				dhi_company_code =''
-				# fetch company code base on party for dhi companies
-				if a.party_type == 'Supplier':
-					dhi_company_code 	= frappe.db.get_value('Supplier',{'name':a.party,'inter_company':1,'disabled':0},['company_code'])
-				elif a.party_type == 'Customer':
-					dhi_company_code 	= frappe.db.get_value('Customer',{'name':a.party,'inter_company':1,'disabled':0},['company_code'])
-				if dhi_company_code:
-					# create row for each dhi companies base company code
-					if dhi_company_code in inter_company.keys():
-						inter_company[dhi_company_code]["opening_debit"] 	+= flt(a.opening_debit)
-						inter_company[dhi_company_code]["opening_credit"] 	+= flt(a.opening_credit)
-						inter_company[dhi_company_code]["debit"] 			+= flt(a.debit)
-						inter_company[dhi_company_code]["credit"] 			+= flt(a.credit)
-						inter_company[dhi_company_code]["amount"] 			+= flt(a.amount)
-					else:
-						inter_company.setdefault(dhi_company_code,{'opening_debit': a.opening_debit,'opening_credit': a.opening_credit,'account':coa.account,
-																	'entity':doc.entity,'segment':doc.segment,'flow':doc.flow,'interco':str('I_'+dhi_company_code),
-																	'time':filters['time'],'debit':a.debit,'credit':a.credit,'amount':a.amount,
-																}) 
-					value['opening_debit'] 		+= flt(a.opening_debit)
-					value['opening_credit'] 	+= flt(a.opening_credit)
-					value['debit'] 				+= flt(a.debit)
-					value['credit'] 			+= flt(a.credit)
-					value['amount'] 			+= flt(a.amount)
-				elif not dhi_company_code:
-					# sum up for non dhi companies as one row
-					value['opening_debit'] 		+= flt(a.opening_debit)
-					value['opening_credit'] 	+= flt(a.opening_credit)
-					value['debit'] 				+= flt(a.debit)
-					value['credit'] 			+= flt(a.credit)
-					value['amount'] 			+= flt(a.amount)
-					i_none['opening_debit'] 	+= flt(a.opening_debit)
-					i_none['opening_credit'] 	+= flt(a.opening_credit)
-					i_none['debit'] 			+= flt(a.debit)
-					i_none['credit'] 			+= flt(a.credit)
-					i_none['amount'] 			+= flt(a.amount)
+			# if a.debit or a.credit or a.opening_debit or a.opening_credit or a.amount:
+			dhi_company_code =''
+			# fetch company code base on party for dhi companies
+			if a.party_type == 'Supplier':
+				dhi_company_code 	= frappe.db.get_value('Supplier',{'name':a.party,'inter_company':1,'disabled':0},['company_code'])
+			elif a.party_type == 'Customer':
+				dhi_company_code 	= frappe.db.get_value('Customer',{'name':a.party,'inter_company':1,'disabled':0},['company_code'])
+			if dhi_company_code:
+				# create row for each dhi companies base company code
+				if dhi_company_code in inter_company.keys():
+					inter_company[dhi_company_code]["opening_debit"] 	+= flt(a.opening_debit)
+					inter_company[dhi_company_code]["opening_credit"] 	+= flt(a.opening_credit)
+					inter_company[dhi_company_code]["debit"] 			+= flt(a.debit)
+					inter_company[dhi_company_code]["credit"] 			+= flt(a.credit)
+					inter_company[dhi_company_code]["amount"] 			+= flt(a.amount)
+				else:
+					inter_company.setdefault(dhi_company_code,{'opening_debit': a.opening_debit,'opening_credit': a.opening_credit,'account':coa.account,
+																'entity':doc.entity,'segment':doc.segment,'flow':doc.flow,'interco':str('I_'+dhi_company_code),
+																'time':filters['time'],'debit':a.debit,'credit':a.credit,'amount':a.amount,
+															}) 
+				value['opening_debit'] 		+= flt(a.opening_debit)
+				value['opening_credit'] 	+= flt(a.opening_credit)
+				value['debit'] 				+= flt(a.debit)
+				value['credit'] 			+= flt(a.credit)
+				value['amount'] 			+= flt(a.amount)
+			elif not dhi_company_code:
+				# sum up for non dhi companies as one row
+				value['opening_debit'] 		+= flt(a.opening_debit)
+				value['opening_credit'] 	+= flt(a.opening_credit)
+				value['debit'] 				+= flt(a.debit)
+				value['credit'] 			+= flt(a.credit)
+				value['amount'] 			+= flt(a.amount)
+				i_none['opening_debit'] 	+= flt(a.opening_debit)
+				i_none['opening_credit'] 	+= flt(a.opening_credit)
+				i_none['debit'] 			+= flt(a.debit)
+				i_none['credit'] 			+= flt(a.credit)
+				i_none['amount'] 			+= flt(a.amount)
 	for key, item in inter_company.items():
 		value.data.append(item)
-	if flt(i_none['amount']) > 0:
+	if flt(i_none['amount']) != 0:
 		value.data.append(i_none)
 	return value
 
