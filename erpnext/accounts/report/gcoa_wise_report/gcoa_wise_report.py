@@ -55,10 +55,7 @@ def from_gl_applicable_for_doc(coa,filters):
 							SUM(CASE WHEN posting_date >= "{0}" AND posting_date <="{1}" THEN debit ELSE 0 END) AS debit,
 							SUM(CASE WHEN posting_date >= "{0}" AND posting_date <="{1}" THEN credit ELSE 0 END) AS credit
 					FROM `tabGL Entry` where account = "{2}"  
-     				AND voucher_type not in ('Purchase Receipt','Stock Reconciliation',
-         			'Issue POL','Asset Movement','Bulk Asset Transfer','Equipment POL Transfer',
-            		'Period Closing Voucher','TDS Remittance')
-              		AND (credit IS NOT NULL OR debit IS NOT NULL)
+     				AND (credit IS NOT NULL OR debit IS NOT NULL)
 					AND posting_date <= '{1}'
                       """.format(filters['from_date'],filters['to_date'],coa.account), as_dict = True):
 		total_debit 	= flt(flt(d.debit) + flt(d.opening_debit))
@@ -108,7 +105,6 @@ def from_gl_applicable_for_both(is_inter_company,coa,filters):
 				AND account = "{2}" 
 				AND (party IS NOT NULL OR party != '')
 				AND (credit IS NOT NULL OR debit IS NOT NULL) 
-				AND voucher_type NOT IN ('Purchase Receipt','Stock Reconciliation','Issue POL','Asset Movement','Bulk Asset Transfer','Equipment POL Transfer','Period Closing Voucher','TDS Remittance')
 				GROUP BY party
 				""".format(filters['from_date'],filters['to_date'],coa.account)
 	else:
@@ -121,7 +117,6 @@ def from_gl_applicable_for_both(is_inter_company,coa,filters):
 			FROM `tabGL Entry` WHERE posting_date <= "{1}" 
 			AND account = "{2}"  
 			AND (credit is not null or debit is not null) 
-			AND voucher_type not in ('Purchase Receipt','Stock Reconciliation','Issue POL','Asset Movement','Bulk Asset Transfer','Equipment POL Transfer')
 			GROUP BY consolidation_party
 			""".format(filters['from_date'],filters['to_date'],coa.account)
 	total_debit = total_credit = 0
