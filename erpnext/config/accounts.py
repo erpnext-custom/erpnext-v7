@@ -686,28 +686,10 @@ def get_data():
 					"name": "Consolidation Transaction",
 					"label": "Consolidation Transaction",
 				},
-				{
-					"type": "report",
-					"name": "Consolidation Report",
-					"doctype": "DHI GCOA Mapper",
-					"is_query_report": True
-				},
-    			{
-					"type": "report",
-					"name": "DHI GCOA Mapper Report",
-					"doctype": "DHI GCOA Mapper",
-					"is_query_report": True
-				},
-       			{
-					"type": "report",
-					"name": "GCOA Wise Report",
-					"doctype": "GCOA Wise Report",
-					"is_query_report": True
-				}
 			]
 		},
         {
-			"label": _("DHI Consolidation"),
+			"label": _("DHI Consolidation Report"),
 			# "icon": "icon-table",
 			"items": [
 				{
