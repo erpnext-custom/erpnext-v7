@@ -706,4 +706,29 @@ def get_data():
 				}
 			]
 		},
+        {
+			"label": _("DHI Consolidation"),
+			# "icon": "icon-table",
+			"items": [
+				{
+					"type": "report",
+					"name": "Consolidation Report",
+					"doctype": "DHI GCOA Mapper",
+					"is_query_report": True
+				},
+    			{
+					"type": "report",
+					"name": "DHI GCOA Mapper Report",
+					"doctype": "DHI GCOA Mapper",
+					"is_query_report": True
+				},
+       			{
+					"type": "report",
+					"name": "GCOA Wise Report",
+					"doctype": "GCOA Wise Report",
+					"is_query_report": True
+				}
+			]
+		},
+
 	]
