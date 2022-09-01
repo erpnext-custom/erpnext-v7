@@ -141,7 +141,7 @@ def from_gl_applicable_for_both(is_inter_company,coa,filters):
 				dhi_company_code 	= frappe.db.get_value('Supplier',{'name':a.party,'inter_company':1,'disabled':0},['company_code'])
 			elif a.party_type == 'Customer':
 				dhi_company_code 	= frappe.db.get_value('Customer',{'name':a.party,'inter_company':1,'disabled':0},['company_code'])
-			if dhi_company_code:
+			if dhi_company_code and is_inter_company:
 				# create row for each dhi companies base company code
 				if dhi_company_code in inter_company.keys():
 					inter_company[dhi_company_code]["opening_debit"] 	+= flt(a.opening_debit)
@@ -159,7 +159,7 @@ def from_gl_applicable_for_both(is_inter_company,coa,filters):
 				value['debit'] 				+= flt(a.debit)
 				value['credit'] 			+= flt(a.credit)
 				value['amount'] 			+= flt(a.amount)
-			elif not dhi_company_code:
+			elif not dhi_company_code and not is_inter_company:
 				# sum up for non dhi companies as one row
 				value['opening_debit'] 		+= flt(a.opening_debit)
 				value['opening_credit'] 	+= flt(a.opening_credit)
