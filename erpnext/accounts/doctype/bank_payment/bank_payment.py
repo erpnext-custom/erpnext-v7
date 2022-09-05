@@ -534,7 +534,7 @@ class BankPayment(Document):
 						if not party:
 							frappe.msgprint("Party missing for Journal Entry {}".format(a.transaction_id))
 				if party and party_type:
-					employee = supplier = ""
+					employee = supplier = customer = "" #customer added by cety
 					debit_amt += flt(b.debit_amount)
 					query = ""
 					if party_type == "Supplier":
@@ -553,6 +553,16 @@ class BankPayment(Document):
 										WHERE e.name = '{party}'
 									""".format(party = party)
 						employee = party
+					#added by cety on 5-09-2022 for customer
+					elif party_type == "Customer":
+						query = """select c.bank_name, c.bank_branch, c.bank_account_type, 
+										c.account_number as bank_account_no, c.name as beneficiary_name,
+										(CASE WHEN c.bank_name = "INR" THEN c.inr_bank_code ELSE NULL END) inr_bank_code,
+										(CASE WHEN c.bank_name = "INR" THEN c.inr_purpose_code ELSE NULL END) inr_purpose_code
+										from `tabCustomer` c
+										WHERE c.name = '{party}'
+									""".format(party = party)
+						customer = party
 					for c in frappe.db.sql(query, as_dict=True):					
 						data.append(frappe._dict({
 							'transaction_type': 'Journal Entry',
@@ -560,6 +570,7 @@ class BankPayment(Document):
 							'transaction_date': a.transaction_date,
 							'employee': employee,
 							'supplier': supplier,
+							'customer': customer, #added by cety
 							'beneficiary_name': c.beneficiary_name,
 							'bank_name': c.bank_name,
 							'bank_branch': c.bank_branch,
