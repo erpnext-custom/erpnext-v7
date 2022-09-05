@@ -88,7 +88,7 @@ class DirectPayment(AccountsController):
                     "cost_center": self.cost_center,
                     "po_no": self.name,
                     "po_date": self.posting_date,
-                    "amount": self.amount,
+                    "amount": a.amount,
                     "poi_name": self.name,
                     "date": frappe.utils.nowdate()
                 })
@@ -101,7 +101,7 @@ class DirectPayment(AccountsController):
                     "cost_center": self.cost_center,
                     "po_no": self.name,
                     "po_date": self.posting_date,
-                    "amount": self.amount,
+                    "amount": a.amount,
                     "pii_name": self.name,
                     "com_ref": bud_obj.name,
                     "date": frappe.utils.nowdate()})
