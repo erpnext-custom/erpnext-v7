@@ -4,8 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
-from frappe.model.document import Document
-from frappe.utils import getdate, cstr, cint, flt, fmt_money, formatdate, nowdate
+from frappe.utils import getdate, cint, flt
 from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.custom_utils import generate_receipt_no, check_future_date, get_branch_cc
 from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
@@ -71,13 +70,14 @@ class MechanicalPayment(AccountsController):
 						t.delivery_note='{0}'".format(d.delivery_note), as_dict=True)		
 				if len(dtl) > 0:
 					for a in dtl:
-                                		frappe.throw("The Delivery Note {0} is already in use with Payment No. {1}.".format(a.dn,a.mno));
+										frappe.throw("The Delivery Note {0} is already in use with Payment No. {1}.".format(a.dn,a.mno));
 
 
 	def on_submit(self):
 		self.make_gl_entry()
 		self.update_ref_doc()
-		self.consume_budget()
+		self.consume_budget() 
+		self.update_job_card()
 
 	def on_cancel(self):	
 		if self.clearance_date:
@@ -92,7 +92,12 @@ class MechanicalPayment(AccountsController):
 			frappe.throw("Net Amount cannot be less than Zero")
 		if self.tds_amount < 0:
 			frappe.throw("TDS Amount cannot be less than Zero")
-			
+	def update_job_card(self): 
+		for ref in self.items: 
+			doc = frappe.get_doc("Job Card", ref.reference_name)
+			doc.mechanical_payment = self.name
+			doc.save(ignore_permissions=True)
+	
 	def update_ref_doc(self, cancel=None):
 		for a in self.items:
 			doc = frappe.get_doc(a.reference_type, a.reference_name)
@@ -218,18 +223,18 @@ class MechanicalPayment(AccountsController):
 					)
 			else:
 				gl_entries.append(
-                                self.get_gl_dict({"account": creditor_account,
-                                                 "debit": flt(self.payable_amount),
-                                                 "debit_in_account_currency": flt(self.payable_amount),
-                                                 "cost_center": self.cost_center,
-                                                 "reference_type": self.doctype,
+								self.get_gl_dict({"account": creditor_account,
+												 "debit": flt(self.payable_amount),
+												 "debit_in_account_currency": flt(self.payable_amount),
+												 "cost_center": self.cost_center,
+												 "reference_type": self.doctype,
 						 "party_type": "Supplier",
 						 "party": self.supplier,
-                                                 "reference_name": self.name,
-                                                 "business_activity": default_ba,
-                                                 "remarks": self.remarks
-                                                })
-                                        )
+												 "reference_name": self.name,
+												 "business_activity": default_ba,
+												 "remarks": self.remarks
+												})
+										)
 				if self.tds_amount:
 					gl_entries.append(
 						self.get_gl_dict({"account": self.tds_account,
@@ -252,49 +257,49 @@ class MechanicalPayment(AccountsController):
 							 "business_activity": default_ba,
 							 "remarks": self.remarks
 							})
-                                	)
+									)
 	
 
 		make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
 	##
-        # Update the Committedd Budget for checking budget availability
-        ##
-        def consume_budget(self):
-                if self.payment_for == "Transporter Payment":
-                        bud_obj = frappe.get_doc({
-                                "doctype": "Committed Budget",
-                                "account": self.transportation_account,
-                                "cost_center": self.cost_center,
-                                "po_no": self.name,
-                                "po_date": self.posting_date,
-                                "amount": self.net_amount,
-                                "poi_name": self.name,
-                                "date": frappe.utils.nowdate()
-                                })
-                        bud_obj.flags.ignore_permissions = 1
-                        bud_obj.submit()
+		# Update the Committedd Budget for checking budget availability
+		##
+	def consume_budget(self):
+		if self.payment_for == "Transporter Payment":
+			bud_obj = frappe.get_doc({
+						"doctype": "Committed Budget",
+						"account": self.transportation_account,
+						"cost_center": self.cost_center,
+						"po_no": self.name,
+						"po_date": self.posting_date,
+						"amount": self.net_amount,
+						"poi_name": self.name,
+						"date": frappe.utils.nowdate()
+						})
+			bud_obj.flags.ignore_permissions = 1
+			bud_obj.submit()
 
-                        consume = frappe.get_doc({
-                                "doctype": "Consumed Budget",
-                                "account": self.transportation_account,
-                                "cost_center": self.cost_center,
-                                "po_no": self.name,
-                                "po_date": self.posting_date,
-                                "amount": self.net_amount,
-                                "pii_name": self.name,
-                                "com_ref": bud_obj.name,
-                                "date": frappe.utils.nowdate()})
-                        consume.flags.ignore_permissions=1
-                        consume.submit()
+			consume = frappe.get_doc({
+					"doctype": "Consumed Budget",
+					"account": self.transportation_account,
+					"cost_center": self.cost_center,
+					"po_no": self.name,
+					"po_date": self.posting_date,
+					"amount": self.net_amount,
+					"pii_name": self.name,
+					"com_ref": bud_obj.name,
+					"date": frappe.utils.nowdate()})
+			consume.flags.ignore_permissions=1
+			consume.submit()
 
 
 
-        ##
-        # Cancel budget check entry
-        ##
-        def cancel_budget_entry(self):
-                frappe.db.sql("delete from `tabCommitted Budget` where po_no = %s", self.name)
-                frappe.db.sql("delete from `tabConsumed Budget` where po_no = %s", self.name)
+		##
+		# Cancel budget check entry
+		##
+		def cancel_budget_entry(self):
+				frappe.db.sql("delete from `tabCommitted Budget` where po_no = %s", self.name)
+				frappe.db.sql("delete from `tabConsumed Budget` where po_no = %s", self.name)
 	
 
 	def get_transactions(self):
@@ -304,12 +309,12 @@ class MechanicalPayment(AccountsController):
 		self.set('items', [])
 
 		total = 0
-                for d in transactions:
-                        d.reference_type = self.payment_for
+		for d in transactions:
+			d.reference_type = self.payment_for
 			d.reference_name = d.name
 			d.allocated_amount = d.outstanding_amount
 			row = self.append('items', {})
-                        row.update(d)
+			row.update(d)
 			total += flt(d.outstanding_amount)
 		self.receivable_amount = total
 		self.actual_amount = total
