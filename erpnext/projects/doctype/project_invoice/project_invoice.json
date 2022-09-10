@@ -316,7 +316,7 @@
    "print_hide_if_no_value": 0, 
    "read_only": 0, 
    "report_hide": 0, 
-   "reqd": 0, 
+   "reqd": 1, 
    "search_index": 0, 
    "set_only_once": 0, 
    "unique": 0
@@ -1521,7 +1521,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2021-11-17 12:59:48.741048", 
+ "modified": "2022-09-10 16:48:41.350188", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Project Invoice", 
