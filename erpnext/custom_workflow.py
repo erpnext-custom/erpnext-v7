@@ -176,7 +176,8 @@ def validate_workflow_states(doc):
 				if officiating[0] != doc.approver:
 					frappe.throw("Only {0} can approve your Overtime Application".format(frappe.bold(officiating[0])))
 			else:
-				frappe.throw("Only {0} can approve your Overtime Application".format(frappe.bold(doc.approver)))
+				if frappe.session.user != final_approver[0]:
+					frappe.throw("Only {0} can approve your Overtime Application".format(frappe.bold(final_approver[0])))
 			#doc.status= "Approved"
 			if doc.doctype == "Overtime Claim":
 				officiating = get_officiating_employee(hr_approver[3])
