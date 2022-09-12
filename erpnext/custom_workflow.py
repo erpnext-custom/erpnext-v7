@@ -169,7 +169,7 @@ def validate_workflow_states(doc):
 			vars(doc)[document_approver[1]] = employee[1]
 
 		elif workflow_state == "Approved".lower():
-			officiating = get_officiating_employee(final_approver[0])
+			officiating = get_officiating_employee(final_approver[3])
 			if officiating:
 				officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
 			if officiating:
