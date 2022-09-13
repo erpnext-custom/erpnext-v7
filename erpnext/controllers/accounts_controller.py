@@ -713,14 +713,14 @@ def get_advance_payment_entries(party_type, party, party_account,
 			select
 				"Payment Entry" as reference_type, t1.name as reference_name,
 				t1.remarks, t2.allocated_amount as amount, t2.name as reference_row,
-				t1.paid_from as advance_account,
+				t1.{1} as advance_account,
 				t2.reference_name as against_order, t1.posting_date
 			from `tabPayment Entry` t1, `tabPayment Entry Reference` t2
 			where
 				t1.name = t2.parent and t1.payment_type = %s
 				and t1.party_type = %s and t1.party = %s and t1.docstatus = 1
 				and t2.reference_doctype = %s {0}
-		""".format(reference_condition),
+		""".format(reference_condition,party_account_field),
 		[payment_type, party_type, party, order_doctype] + order_list, as_dict=1)
 
 	if include_unallocated:

@@ -255,7 +255,7 @@ frappe.ui.form.on('Payment Entry', {
 							frm.set_value("paid_to_account_balance", r.message.account_balance);
 						}
 						frm.set_value("party_balance", r.message.party_balance);
-						frm.events.get_outstanding_documents(frm);
+						// frm.events.get_outstanding_documents(frm);
 						frm.events.hide_unhide_fields(frm);
 						frm.events.set_dynamic_labels(frm);
 						frm.set_party_account_based_on_party = false;
@@ -265,34 +265,47 @@ frappe.ui.form.on('Payment Entry', {
 		}
 	},
 
-	paid_from: function(frm) {
-		if(frm.set_party_account_based_on_party) return;
+	// paid_from: function(frm) {
+	// 	if(frm.set_party_account_based_on_party) return;
 
-		frm.events.set_account_currency_and_balance(frm, frm.doc.paid_from,
-			"paid_from_account_currency", "paid_from_account_balance", function(frm) {
-				if (frm.doc.payment_type == "Receive") {
-					frm.events.get_outstanding_documents(frm);
-				} else if (frm.doc.payment_type == "Pay") {
-					frm.events.paid_amount(frm);
-				}
-			}
-		);
-	},
+	// 	frm.events.set_account_currency_and_balance(frm, frm.doc.paid_from,
+	// 		"paid_from_account_currency", "paid_from_account_balance", function(frm) {
+	// 			if (frm.doc.payment_type == "Receive") {
+	// 				frm.events.get_outstanding_documents(frm);
+	// 			} else if (frm.doc.payment_type == "Pay") {
+	// 				frm.events.paid_amount(frm);
+	// 			}
+	// 		}
+	// 	);
+	// },
 
-	paid_to: function(frm) {
-		if(frm.set_party_account_based_on_party) return;
+	// paid_to: function(frm) {
+	// 	if(frm.set_party_account_based_on_party) return;
 
-		frm.events.set_account_currency_and_balance(frm, frm.doc.paid_to,
-			"paid_to_account_currency", "paid_to_account_balance", function(frm) {
-				if(frm.doc.payment_type == "Pay") {
-					frm.events.get_outstanding_documents(frm);
-				} else if (frm.doc.payment_type == "Receive") {
-					frm.events.received_amount(frm);
-				}
-			}
-		);
-	},
-	pl_cost_center:function(frm) {
+	// 	frm.events.set_account_currency_and_balance(frm, frm.doc.paid_to,
+	// 		"paid_to_account_currency", "paid_to_account_balance", function(frm) {
+	// 			if(frm.doc.payment_type == "Pay") {
+	// 				frm.events.get_outstanding_documents(frm);
+	// 			} else if (frm.doc.payment_type == "Receive") {
+	// 				frm.events.received_amount(frm);
+	// 			}
+	// 		}
+	// 	);
+	// },
+	// pl_cost_center:function(frm) {
+	// 	if(frm.set_party_account_based_on_party) return;
+
+	// 	frm.events.set_account_currency_and_balance(frm, frm.doc.paid_from,
+	// 		"paid_from_account_currency", "paid_from_account_balance", function(frm) {
+	// 			if (frm.doc.payment_type == "Receive") {
+	// 				frm.events.get_outstanding_documents(frm);
+	// 			} else if (frm.doc.payment_type == "Pay") {
+	// 				frm.events.paid_amount(frm);
+	// 			}
+	// 		}
+	// 	);
+	// },
+	get_outstanding_invoice:function(frm) {
 		if(frm.set_party_account_based_on_party) return;
 
 		frm.events.set_account_currency_and_balance(frm, frm.doc.paid_from,
