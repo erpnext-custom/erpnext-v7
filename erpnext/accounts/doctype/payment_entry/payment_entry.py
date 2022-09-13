@@ -140,8 +140,12 @@ class PaymentEntry(AccountsController):
 				frappe.throw(_("Invalid {0}: {1}").format(self.party_type, self.party))
 			
 			if self.party_account:
-				party_account_type = "Receivable" if self.party_type=="Customer" else "Payable"
-				self.validate_account_type(self.party_account, [party_account_type])
+				if frappe.db.get_value('Account',self.party_account,'is_an_advance_account'):
+					party_account_type = ["Receivable", "Payable"]
+					self.validate_account_type(self.party_account, party_account_type)
+				else:
+					party_account_type = "Receivable" if self.party_type=="Customer" else "Payable"
+					self.validate_account_type(self.party_account, [party_account_type])
 					
 	def validate_bank_accounts(self):
 		if self.payment_type in ("Pay", "Internal Transfer"):
@@ -719,6 +723,12 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 		party_account = doc.debit_to
 	elif dt == "Purchase Invoice":
 		party_account = doc.credit_to
+	elif dt == "Sales Order":
+		customer_type = frappe.db.get_value('Customer',doc.customer,'customer_type')
+		if customer_type == 'Domestic Customer':
+			party_account = frappe.db.get_value('Company',doc.company,'advance_domestic')
+		elif customer_type == 'International Customer':
+			party_account = frappe.db.get_value('Company',doc.company,'advance_international')
 	else:
 		party_account = get_party_account(party_type, doc.get(party_type.lower()), doc.company)
 		

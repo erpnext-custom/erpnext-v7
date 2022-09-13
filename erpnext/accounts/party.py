@@ -169,11 +169,9 @@ def get_party_account(party_type, party, company):
 		finally will return default."""
 	if not company:
 		frappe.throw(_("Please select a Company"))
-
 	if party:
 		account = frappe.db.get_value("Party Account",
 			{"parenttype": party_type, "parent": party, "company": company}, "account")
-
 		if not account:
 			party_group_doctype = "Customer Group" if party_type=="Customer" else "Supplier Type"
 			group = frappe.db.get_value(party_type, party, scrub(party_group_doctype))

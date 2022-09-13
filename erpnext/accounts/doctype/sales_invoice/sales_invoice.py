@@ -531,16 +531,14 @@ class SalesInvoice(SellingController):
 		self.make_tax_gl_entries(gl_entries)
 
 		self.make_item_gl_entries(gl_entries)
+		self.other_charge_gl_entry(gl_entries)	
 		
 		self.make_advance_gl_entry(gl_entries)
-	
-		self.other_charge_gl_entry(gl_entries)	
 		# merge gl entries before adding pos entries
 		gl_entries = merge_similar_entries(gl_entries)
 
 		self.make_pos_gl_entries(gl_entries)
 		self.make_gle_for_change_amount(gl_entries)
-
 		self.make_write_off_gl_entry(gl_entries)
 
 		return gl_entries
@@ -579,7 +577,7 @@ class SalesInvoice(SellingController):
 		if self.grand_total:
 			# Didnot use base_grand_total to book rounding loss gle
 			grand_total_in_company_currency = flt(self.grand_total * self.conversion_rate,
-				self.precision("grand_total"))
+				self.precision("grand_total")) - flt(self.total_advance)
 
 			gl_entries.append(
 				self.get_gl_dict({
@@ -846,19 +844,19 @@ class SalesInvoice(SellingController):
 				advance_account_currency = get_account_currency(a.advance_account)
 				allocated_amount = round(flt(a.allocated_amount), 2)
 
-				gl_entries.append(
-					self.get_gl_dict({
-						"account": self.debit_to,
-						"party_type": "Customer",
-						"party": self.customer,
-						"against": a.advance_account,
-						"credit": allocated_amount,
-						"credit_in_account_currency": allocated_amount, 
-						"against_voucher": self.return_against if cint(self.is_return) else self.name,
-						"against_voucher_type": self.doctype,
-						"cost_center": a.advance_cost_center
-					}, advance_account_currency)
-				)
+				# gl_entries.append(
+				# 	self.get_gl_dict({
+				# 		"account": self.debit_to,
+				# 		"party_type": "Customer",
+				# 		"party": self.customer,
+				# 		"against": a.advance_account,
+				# 		"credit": allocated_amount,
+				# 		"credit_in_account_currency": allocated_amount, 
+				# 		"against_voucher": self.return_against if cint(self.is_return) else self.name,
+				# 		"against_voucher_type": self.doctype,
+				# 		"cost_center": a.advance_cost_center
+				# 	}, advance_account_currency)
+				# )
 				gl_entries.append(
 					self.get_gl_dict({
 						"account": a.advance_account,

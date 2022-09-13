@@ -713,6 +713,7 @@ def get_advance_payment_entries(party_type, party, party_account,
 			select
 				"Payment Entry" as reference_type, t1.name as reference_name,
 				t1.remarks, t2.allocated_amount as amount, t2.name as reference_row,
+				t1.paid_from as advance_account,
 				t2.reference_name as against_order, t1.posting_date
 			from `tabPayment Entry` t1, `tabPayment Entry Reference` t2
 			where
