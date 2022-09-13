@@ -640,3 +640,27 @@ frappe.ui.form.on("Sales Invoice","items_on_form_rendered", function(frm, grid_r
         }
    })
 })
+
+cur_frm.set_query("asset", "items", function(doc, cdt, cdn) {
+	var d = locals[cdt][cdn];
+	return {
+		filters: [
+			["Asset", "item_code", "=", d.item_code],
+			["Asset", "docstatus", "=", 1],
+			["Asset", "status", "in", ["Submitted", "Partially Depreciated", "Fully Depreciated"]],
+			["Asset", "company", "=", doc.company]
+		]
+	}
+});
+
+// Show only Income & Expense Accounts under Other Charges
+// Added by SHIV on 2022/09/13
+cur_frm.set_query("account", "payment_deduction_or_lost", function(doc, cdt, cdn) {
+	var d = locals[cdt][cdn];
+	return {
+		filters: [
+			["Account", "is_group", "=", 0],
+			["Account", "root_type", "in", ["Income", "Expense"]],
+		]
+	}
+});
