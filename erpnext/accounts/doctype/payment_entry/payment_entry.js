@@ -292,7 +292,19 @@ frappe.ui.form.on('Payment Entry', {
 			}
 		);
 	},
+	pl_cost_center:function(frm) {
+		if(frm.set_party_account_based_on_party) return;
 
+		frm.events.set_account_currency_and_balance(frm, frm.doc.paid_from,
+			"paid_from_account_currency", "paid_from_account_balance", function(frm) {
+				if (frm.doc.payment_type == "Receive") {
+					frm.events.get_outstanding_documents(frm);
+				} else if (frm.doc.payment_type == "Pay") {
+					frm.events.paid_amount(frm);
+				}
+			}
+		);
+	},
 	set_account_currency_and_balance: function(frm, account, currency_field,
 			balance_field, callback_function) {
 		frappe.call({
@@ -449,9 +461,11 @@ frappe.ui.form.on('Payment Entry', {
 
 	get_outstanding_documents: function(frm) {
 		frm.clear_table("references");
-
+		console.log('here')
 		if(!frm.doc.party) return;
-
+		if (!frm.doc.pl_cost_center && frm.doc.payment_type == 'Receive') 
+			return
+		console.log('here1')
 		frm.events.check_mandatory_to_fetch(frm);
 		var company_currency = frappe.get_doc(":Company", frm.doc.company).default_currency;
 
@@ -463,7 +477,8 @@ frappe.ui.form.on('Payment Entry', {
 					"party_type": frm.doc.party_type,
 					"payment_type": frm.doc.payment_type,
 					"party": frm.doc.party,
-					"party_account": frm.doc.payment_type=="Receive" ? frm.doc.paid_from : frm.doc.paid_to
+					"party_account": frm.doc.payment_type=="Receive" ? frm.doc.paid_from : frm.doc.paid_to,
+					"cost_center":frm.doc.pl_cost_center
 				}
 			},
 			callback: function(r, rt) {

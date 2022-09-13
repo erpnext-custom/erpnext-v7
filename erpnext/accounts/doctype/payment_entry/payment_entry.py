@@ -562,7 +562,7 @@ class PaymentEntry(AccountsController):
 @frappe.whitelist()
 def get_outstanding_reference_documents(args):
 	args = json.loads(args)
-
+	condition = ''
 	party_account_currency = get_account_currency(args.get("party_account"))
 	company_currency = frappe.db.get_value("Company", args.get("company"), "default_currency")
 	
@@ -571,10 +571,11 @@ def get_outstanding_reference_documents(args):
 		
 	negative_outstanding_invoices = get_negative_outstanding_invoices(args.get("party_type"), 
 		args.get("party"), args.get("party_account"), total_field)
-
+	if args.get('cost_center'):
+		condition = " and cost_center = '{}' ".format(args.get('cost_center')) 
 	# Get positive outstanding sales /purchase invoices
 	outstanding_invoices = get_outstanding_invoices(args.get("party_type"), args.get("party"), 
-		args.get("party_account"))
+		args.get("party_account"),condition)
 	
 	for d in outstanding_invoices:
 		d["exchange_rate"] = 1
