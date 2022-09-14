@@ -16,6 +16,7 @@ class MechanicalPayment(AccountsController):
 		self.validate_delivery_note()
 		self.set_missing_values()
 		self.clearance_date = None
+  
 
 	def set_missing_values(self):
 		self.cost_center = get_branch_cc(self.branch)
@@ -37,31 +38,33 @@ class MechanicalPayment(AccountsController):
 
 	def validate_allocated_amount(self):
 		if not self.receivable_amount > 0 and not self.payment_for == "Transporter Payment" and not self.payable_amount:
-			frappe.throw("Amount should be greater than 0")	
+			frappe.throw("Amount should be greater than 0")
 		to_remove = []
 		total = flt(self.receivable_amount)
 		total_actual = 0
 		for d in self.items:
-			allocated = 0
-			if total > 0 and total >= d.outstanding_amount:
-				allocated = d.outstanding_amount
-				total_actual += flt(d.outstanding_amount)
-			elif total > 0 and total < d.outstanding_amount:
-				total_actual += flt(d.outstanding_amount)
-				allocated = total
-			else:
+			if d.reference_type == "Hire Charge Invoice":
 				allocated = 0
-		
-			d.allocated_amount = allocated
-			total-=allocated
-			if d.allocated_amount == 0:
-				to_remove.append(d)
+				if total > 0 and total >= d.outstanding_amount:
+					allocated = d.outstanding_amount
+					total_actual += flt(d.outstanding_amount)
+				elif total > 0 and total < d.outstanding_amount:
+					total_actual += flt(d.outstanding_amount)
+					allocated = total
+				else:
+					allocated = 0
+			
+				d.allocated_amount = allocated
+				total-=allocated
+				if d.allocated_amount == 0:
+					to_remove.append(d)
 
-		[self.remove(d) for d in to_remove]
-		self.actual_amount = total_actual 
-		
-		if self.receivable_amount > self.actual_amount:
-			frappe.throw("Receivable Amount Cannot be grater than Total Outstanding Amount")
+			[self.remove(d) for d in to_remove]
+			self.actual_amount = total_actual 
+			
+			if self.receivable_amount > self.actual_amount:
+				frappe.throw("Receivable Amount Cannot be grater than Total Outstanding Amount")
+   
 	def validate_delivery_note(self):
 		if self.payment_for == "Transporter Payment":
 			for d in self.transporter_payment_item:
