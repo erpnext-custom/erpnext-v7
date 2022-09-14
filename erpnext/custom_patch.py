@@ -2356,12 +2356,12 @@ def update_asset():
 # 		for index, item in enumerate(pr_names):
 # 			print("{} ---- {}".format(item.name, item.status))
 """ Jai, ON 14 Sept, 2022 """
-def update_rental_officials(official='NHDCL1609036', from_date='2022-09-01'):
+def update_rental_officials(official='NHDCL1609036', from_date='2022-09-01', old_official='NHDCL1805132'):
 	# below sql use as guide to get locations
 	# select count(*),location from `tabTenant Rental Officials` r, `tabTenant Information` t where t.name=r.parent and r.rental_official='NHDCL1805132' and t.status='Allocated' group by location order by location;
 	count = 0
-	for d in frappe.db.sql("""select r.* from `tabTenant Rental Officials` r, `tabTenant Information` t where t.name=r.parent and r.rental_official='NHDCL1805132' 
-		and t.location='Gelephu'""", as_dict=1):
+	for d in frappe.db.sql("""select r.* from `tabTenant Rental Officials` r, `tabTenant Information` t where t.name=r.parent and r.rental_official='{}' 
+		and t.location='Gelephu'""".format(old_official), as_dict=1):
 		maxIdx = frappe.db.get_value("Tenant Rental Officials", {'parent':d.parent}, ["max(idx)"])
 		if d.idx == maxIdx:
 			doc = frappe.get_doc("Tenant Information", d.parent)
