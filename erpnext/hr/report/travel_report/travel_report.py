@@ -63,5 +63,4 @@ def get_data(filters):
 	if filters.get("cost_center"):
 		query += " and d.cost_center = \'" + str(filters.cost_center) + "\'"
 	query += " group by tc.name, tc.employee, e.designation, tc.department"
-	frappe.msgprint(str(query))
 	return frappe.db.sql(query)
