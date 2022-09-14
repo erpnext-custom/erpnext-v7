@@ -605,7 +605,6 @@ def get_orders_to_be_billed(party_type, party, party_account_currency, company_c
 		where
 			{party_type} = %s
 			and docstatus = 1
-			and ifnull(status, "") != "Closed"
 			and {ref_field} > advance_paid
 			and abs(100 - per_billed) > 0.01
 		order by
