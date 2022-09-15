@@ -608,7 +608,7 @@ def get_orders_to_be_billed(party_type, party, party_account_currency, company_c
 			and {ref_field} > advance_paid
 			and abs(100 - per_billed) > 0.01
 		order by
-			transaction_date, name
+			transaction_date desc, name
 		""".format(**{
 			"ref_field": ref_field,
 			"voucher_type": voucher_type,
@@ -635,7 +635,7 @@ def get_negative_outstanding_invoices(party_type, party, party_account, total_fi
 		where
 			{party_type} = %s and {party_account} = %s and docstatus = 1 and outstanding_amount < 0
 		order by
-			posting_date, name
+			posting_date desc, name
 		""".format(**{
 			"total_field": total_field,
 			"voucher_type": voucher_type,

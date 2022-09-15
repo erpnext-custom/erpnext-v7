@@ -495,7 +495,7 @@ def get_outstanding_invoices(party_type, party, account, condition=None):
 				or (voucher_type not in ('Journal Entry', 'Payment Entry')))
 		group by voucher_type, voucher_no
 		having (invoice_amount - payment_amount) > 0.005
-		order by posting_date, name""".format(
+		order by posting_date desc, name""".format(
 			dr_or_cr = dr_or_cr,
 			payment_dr_or_cr = payment_dr_or_cr,
 			condition = condition or ""
