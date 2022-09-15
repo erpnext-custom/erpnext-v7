@@ -143,9 +143,9 @@ class TravelClaim(Document):
 			if not i.quarantine:
 				total_count += i.no_days
                         counted = total_count - flt(i.no_days)
-                        #if counted >= 30:
+                        # if counted >= 30:
                         #       counted = 30 
-                        #frappe.msgprint("Testing count {0}, amount {1}, counted {2}".format(total_count, i.amount, counted))
+                        # frappe.msgprint("Testing count {0}, amount {1}, counted {2}".format(total_count, i.amount, counted))
 			if flt(total_count) <= 30:
                                 i.days_allocated = i.no_days
                                 i.half_dsa_days = 0

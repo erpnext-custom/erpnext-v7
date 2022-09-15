@@ -237,6 +237,18 @@ def get_data():
                                         "description": "Process Overtime Payment",
                                         "hide_count": False
                                 },
+								{
+					"type": "doctype",
+					"name": "Expense Allocation",
+					"description": "Expense Allocation",
+					"hide_count": True
+				},
+				{
+					"type": "doctype",
+					"name": "Cost Appropriation",
+					"description": "Cost Appropriation",
+					"hide_count": True
+				},
 			]
 		},
 		{

@@ -109,10 +109,10 @@ frappe.ui.form.on('Travel Authorization', {
 		if(frm.doc.advance_amount && !frm.doc.estimated_amount){
 			msgprint("Total Estimated Amount required for advance request");
 		}
-		if (frm.doc.advance_amount > frm.doc.estimated_amount * 0.9) {
-			msgprint("Advance amount cannot be greater than 90% of the estimated amount");
-			//frm.set_value("advance_amount", 0)
-		}
+		// if (frm.doc.advance_amount > frm.doc.estimated_amount * 0.9) {
+		// 	msgprint("Advance amount cannot be greater than 90% of the estimated amount");
+		// 	//frm.set_value("advance_amount", 0)
+		// }
 		if(frm.doc.currency == "BTN") {
 			frm.set_value("advance_amount_nu", flt(frm.doc.advance_amount))
 		}

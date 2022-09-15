@@ -50,10 +50,10 @@ class TravelAuthorization(Document):
                 """ ++++++++++ Ver 2.0.190419 Begins ++++++++++"""
                 if flt(self.advance_amount) and not flt(self.estimated_amount):
                         frappe.throw(_("Total Estimated Amount required for advance request"), title="Data Missing")
-                elif flt(self.advance_amount) and flt(self.advance_amount) > flt(self.estimated_amount*0.9):
-                        frappe.throw(_("Advance amount cannot be greater than 90% of the estimated amount"), title="Invalid Data")
-                else:
-                        pass
+                # # elif flt(self.advance_amount) and flt(self.advance_amount) > flt(self.estimated_amount*0.9):
+                # #         frappe.throw(_("Advance amount cannot be greater than 90% of the estimated amount"), title="Invalid Data")
+                # else:
+                #         pass
                 """ ++++++++++ Ver 2.0.190419 Ends ++++++++++++"""
         
 	def create_copy(self):

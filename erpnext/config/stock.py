@@ -93,6 +93,11 @@ def get_data():
 			"items": [
 				{
 					"type": "doctype",
+					"name": "Material Return",
+					"description": _("Return materials.")
+				},
+				{
+					"type": "doctype",
 					"name": "Stock Reconciliation",
 					"description": _("Upload stock balance via csv.")
 				},
