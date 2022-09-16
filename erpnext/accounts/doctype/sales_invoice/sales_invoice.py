@@ -24,22 +24,22 @@ form_grid_templates = {
 class SalesInvoice(SellingController):
 	def __init__(self, arg1, arg2=None):
 		super(SalesInvoice, self).__init__(arg1, arg2)
-		self.status_updater = []
-		# self.status_updater = [{
-		# 	'source_dt': 'Sales Invoice Item',
-		# 	'target_field': 'billed_amt',
-		# 	'target_ref_field': 'amount',
-		# 	'target_dt': 'Sales Order Item',
-		# 	'join_field': 'so_detail',
-		# 	'target_parent_dt': 'Sales Order',
-		# 	'target_parent_field': 'per_billed',
-		# 	'source_field': 'amount',
-		# 	'join_field': 'so_detail',
-		# 	'percent_join_field': 'sales_order',
-		# 	'status_field': 'billing_status',
-		# 	'keyword': 'Billed',
-		# 	'overflow_type': 'billing'
-		# }]
+		# self.status_updater = []
+		self.status_updater = [{
+			'source_dt': 'Sales Invoice Item',
+			'target_field': 'billed_amt',
+			'target_ref_field': 'amount',
+			'target_dt': 'Sales Order Item',
+			'join_field': 'so_detail',
+			'target_parent_dt': 'Sales Order',
+			'target_parent_field': 'per_billed',
+			'source_field': 'amount',
+			'join_field': 'so_detail',
+			'percent_join_field': 'sales_order',
+			'status_field': 'billing_status',
+			'keyword': 'Billed',
+			'overflow_type': 'billing'
+		}]
 
 	def set_indicator(self):
 		"""Set indicator for portal"""

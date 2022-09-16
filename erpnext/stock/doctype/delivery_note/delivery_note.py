@@ -21,47 +21,47 @@ form_grid_templates = {
 class DeliveryNote(SellingController):
 	def __init__(self, arg1, arg2=None):
 		super(DeliveryNote, self).__init__(arg1, arg2)
-		self.status_updater = []
-		# self.status_updater = [{
-		# 	'source_dt': 'Delivery Note Item',
-		# 	'target_dt': 'Sales Order Item',
-		# 	'join_field': 'so_detail',
-		# 	'target_field': 'delivered_qty',
-		# 	'target_parent_dt': 'Sales Order',
-		# 	'target_parent_field': 'per_delivered',
-		# 	'target_ref_field': 'qty',
-		# 	'source_field': 'qty',
-		# 	'percent_join_field': 'against_sales_order',
-		# 	'status_field': 'delivery_status',
-		# 	'keyword': 'Delivered',
-		# 	'second_source_dt': 'Sales Invoice Item',
-		# 	'second_source_field': 'qty',
-		# 	'second_join_field': 'so_detail',
-		# 	'overflow_type': 'delivery',
-		# 	'second_source_extra_cond': """ and exists(select name from `tabSales Invoice`
-		# 		where name=`tabSales Invoice Item`.parent and update_stock = 1)"""
-		# },
-		# {
-		# 	'source_dt': 'Delivery Note Item',
-		# 	'target_dt': 'Sales Invoice Item',
-		# 	'join_field': 'si_detail',
-		# 	'target_field': 'delivered_qty',
-		# 	'target_parent_dt': 'Sales Invoice',
-		# 	'target_ref_field': 'qty',
-		# 	'source_field': 'qty',
-		# 	'percent_join_field': 'against_sales_invoice',
-		# 	'overflow_type': 'delivery',
-		# 	'no_tolerance': 1
-		# },
-		# {
-		# 	'source_dt': 'Delivery Note Item',
-		# 	'target_dt': 'Sales Order Item',
-		# 	'join_field': 'so_detail',
-		# 	'target_field': 'returned_qty',
-		# 	'target_parent_dt': 'Sales Order',
-		# 	'source_field': '-1 * qty',
-		# 	'extra_cond': """ and exists (select name from `tabDelivery Note` where name=`tabDelivery Note Item`.parent and is_return=1)"""
-		# }]
+		# self.status_updater = []
+		self.status_updater = [{
+			'source_dt': 'Delivery Note Item',
+			'target_dt': 'Sales Order Item',
+			'join_field': 'so_detail',
+			'target_field': 'delivered_qty',
+			'target_parent_dt': 'Sales Order',
+			'target_parent_field': 'per_delivered',
+			'target_ref_field': 'qty',
+			'source_field': 'qty',
+			'percent_join_field': 'against_sales_order',
+			'status_field': 'delivery_status',
+			'keyword': 'Delivered',
+			'second_source_dt': 'Sales Invoice Item',
+			'second_source_field': 'qty',
+			'second_join_field': 'so_detail',
+			'overflow_type': 'delivery',
+			'second_source_extra_cond': """ and exists(select name from `tabSales Invoice`
+				where name=`tabSales Invoice Item`.parent and update_stock = 1)"""
+		},
+		{
+			'source_dt': 'Delivery Note Item',
+			'target_dt': 'Sales Invoice Item',
+			'join_field': 'si_detail',
+			'target_field': 'delivered_qty',
+			'target_parent_dt': 'Sales Invoice',
+			'target_ref_field': 'qty',
+			'source_field': 'qty',
+			'percent_join_field': 'against_sales_invoice',
+			'overflow_type': 'delivery',
+			'no_tolerance': 1
+		},
+		{
+			'source_dt': 'Delivery Note Item',
+			'target_dt': 'Sales Order Item',
+			'join_field': 'so_detail',
+			'target_field': 'returned_qty',
+			'target_parent_dt': 'Sales Order',
+			'source_field': '-1 * qty',
+			'extra_cond': """ and exists (select name from `tabDelivery Note` where name=`tabDelivery Note Item`.parent and is_return=1)"""
+		}]
 
 	def before_print(self):
 		def toggle_print_hide(meta, fieldname):
