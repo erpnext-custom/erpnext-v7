@@ -109,12 +109,15 @@ class DeliveryNote(SellingController):
 		self.per_delivered = 100
 		make_packing_list(self)
 		self.update_current_stock()
-
+		self.validate_location()
 		if not self.installation_status: self.installation_status = 'Not Installed'
 		# check location base
 		if self.from_warehouse:
 			self.get_distance_and_rate()
-
+	def validate_location(self):
+		if self.required_location:
+			if not self.from_warehouse or not self.location:
+				frappe.throw('Location Details required for this transaction')
 	def get_distance_and_rate(self):
 		if not self.location:
 			frappe.throw('Location Not Selected')
