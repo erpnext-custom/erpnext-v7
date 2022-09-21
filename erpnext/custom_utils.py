@@ -211,12 +211,11 @@ def prepare_gl(d, args):
 # Check budget availability in the budget head
 ##
 def check_budget_available(cost_center, budget_account, transaction_date, amount):
-	if frappe.db.get_value("Account", budget_account, "budget_check"):
+        if frappe.db.get_value("Account", budget_account, "budget_check"):
                 return
         budget_amount = frappe.db.sql("select b.action_if_annual_budget_exceeded as action, ba.budget_check, ba.budget_amount from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and ba.parent = b.name and ba.account=%s and b.cost_center=%s and b.fiscal_year = %s", (budget_account, cost_center, str(transaction_date)[0:4]), as_dict=True)
 	
-        #action = frappe.db.sql("select action_if_annual_budget_exceeded as action from tabBudget where docstatus = 1 and cost_center = \'" + str(cost_center) + "\' and fiscal_year = " + str(transaction_date)[0:4] + " ", as_dict=True)
-	ig_or_stop = budget_amount and budget_amount[0].action or None
+        ig_or_stop = budget_amount and budget_amount[0].action or None
         ig_or_stop_gl = budget_amount and budget_amount[0].budget_check or None
         if ig_or_stop == "Ignore" or ig_or_stop_gl == "Ignore":
                 return

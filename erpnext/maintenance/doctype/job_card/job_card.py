@@ -24,12 +24,12 @@ class JobCard(AccountsController):
 		self.update_breakdownreport()
 		#Amount Segregation
 		cc_amount = {}
-		self.services_amount = self.goods_amount = 0;
+		self.services_amount = self.goods_amount = 0
 		for a in self.items:
 			if cc_amount.has_key(a.which):
 				cc_amount[a.which] = flt(cc_amount[a.which]) + flt(a.charge_amount)
 			else:
-				cc_amount[a.which] = flt(a.charge_amount);
+				cc_amount[a.which] = flt(a.charge_amount)
 		if cc_amount.has_key('Service'):
 			self.services_amount = cc_amount['Service']
 		if cc_amount.has_key('Item'):
@@ -68,6 +68,43 @@ class JobCard(AccountsController):
 			self.make_gl_entry()
     
 		self.update_breakdownreport()
+		self.consume_budget()
+	
+	##
+	# Update the Committedd Budget for checking budget availability
+	##
+	def consume_budget(self):
+		bud_obj = frappe.get_doc({
+			"doctype": "Committed Budget",
+			"account": self.expense_account,
+			"cost_center": self.cost_center,
+			"po_no": self.name,
+			"po_date": self.posting_date,
+			"amount": self.total_amount,
+			"poi_name": self.name,
+			"date": frappe.utils.nowdate()
+		})
+		bud_obj.flags.ignore_permissions = 1
+		bud_obj.submit()
+
+		consume = frappe.get_doc({
+			"doctype": "Consumed Budget",
+			"account": self.expense_account,
+			"cost_center": self.cost_center,
+			"po_no": self.name,
+			"po_date": self.posting_date,
+			"amount": self.total_amount,
+			"pii_name": self.name,
+			"com_ref": bud_obj.name,
+			"date": frappe.utils.nowdate()})
+		consume.flags.ignore_permissions = 1
+		consume.submit()
+	
+	def cancel_budget_entry(self):
+		frappe.db.sql(
+			"delete from `tabCommitted Budget` where po_no = %s", self.name)
+		frappe.db.sql(
+			"delete from `tabConsumed Budget` where po_no = %s", self.name)
 
 	def before_cancel(self):
 		check_uncancelled_linked_doc(self.doctype, self.name)
@@ -82,7 +119,8 @@ class JobCard(AccountsController):
 		if bdr.job_card == self.name:
 			bdr.db_set("job_card", None)
 		if self.owned_by == "Others":
-			self.make_gl_entries()	
+			self.make_gl_entries()
+		self.cancel_budget_entry()
 
 	def get_default_settings(self):
 		goods_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_goods_account")
@@ -130,7 +168,7 @@ class JobCard(AccountsController):
 			je.title = "Job Card (" + self.name + ")"
 			je.voucher_type = 'Maintenance Invoice'
 			je.naming_series = 'Maintenance Invoice'
-			je.remark = 'Payment against : ' + self.name;
+			je.remark = 'Payment against : ' + self.name
 			je.posting_date = self.posting_date
 			je.branch = self.branch
 
@@ -159,7 +197,7 @@ class JobCard(AccountsController):
 					amount = self.goods_amount
 					if a == "Service":
 						amount = self.services_amount
-						account_name = services_account;
+						account_name = services_account
 					if amount != 0:
 						je.append("accounts", {
 								"account": account_name,
@@ -349,7 +387,6 @@ class JobCard(AccountsController):
 		frappe.db.sql("update `tabEquipment Reservation Entry` set to_date = %s, to_time = %s where docstatus = 1 and ehf_name = %s", (self.finish_date, self.job_out_time, self.break_down_report))
 		frappe.db.sql("update `tabEquipment Status Entry` set to_date = %s, to_time = %s where docstatus = 1 and ehf_name = %s", (self.finish_date, self.job_out_time, self.break_down_report))
 		#frappe.db.commit()
-
 	##
 	# Update the job card reference on Break Down Report
 	##
@@ -373,7 +410,7 @@ def make_bank_entry(frm=None):
 		je.title = "Payment for Job Card (" + job.name + ")"
 		je.voucher_type = 'Bank Entry'
 		je.naming_series = 'Bank Receipt Voucher'
-		je.remark = 'Payment Received against : ' + job.name;
+		je.remark = 'Payment Received against : ' + job.name
 		je.posting_date = job.finish_date
 		total_amount = job.total_amount
 		je.branch = job.branch

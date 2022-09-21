@@ -73,33 +73,15 @@ class Budget(Document):
 				acc.db_set("budget_amount", acc.budget_amount)
 
 def validate_expense_against_budget(args):
-
 	args = frappe._dict(args)
+	amount = args.debit_in_account_currency or args.amount
+	acc_type = frappe.db.get_value("Account", args.account, "account_type")
 	if args.against_voucher_type == 'Asset':
 		pass
-	elif frappe.db.get_value("Account", {"name": args.account, "root_type": "Expense"}) or frappe.db.get_value("Account", {"name": args.account, "root_type": "Asset", "account_type": "Fixed Asset"}):
-		if args.debit_in_account_currency:
-                        check_budget_available(args.cost_center, args.account, args.posting_date, flt(args.debit_in_account_currency))
+	elif acc_type in ["Expense Account","Fixed Asset","Temporary"]:
+		check_budget_available(args.cost_center, args.account, args.posting_date, amount)
 	else:
 		pass
-
-		"""if args.account in ['Normal Loss - SMCL', 'Abnormal Loss - SMCL', 'Cost of Goods Manufacture - CDCL', 'Expenses Included In Valuation - CDCL', 'Increase or Decrease in Stock - CDCL', 'Stock Adjustment - CDCL', 'Discount alllowed - CDCL', 'Gain or Loss on Sale of Asset - CDCL', 'Gain or Loss on Sale of Inventory - CDCL', 'Gain or Loss on Foreign Exchange - CDCL']:
-			pass
-		elif str(frappe.db.get_value("Account", args.account, "parent_account")) == "Depreciation & Amortisation - SMCL":
-			pass
-		else:
-			budget_amount = frappe.db.sql("select ba.budget_amount from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and ba.parent = b.name and ba.account=%s and b.cost_center=%s and b.fiscal_year = %s", (args.account, args.cost_center, args.fiscal_year), as_dict=True)
-			if budget_amount:
-				consumed = frappe.db.sql("select SUM(cb.amount) as total from `tabCommitted Budget` cb where cb.docstatus = 1 and cb.cost_center=%s and cb.account=%s and cb.po_date between %s and %s", (args.cost_center, args.account, args.fiscal_year+ "-01-01", args.fiscal_year + "-12-31"), as_dict=True)
-				amount = flt(args.debit) - flt(args.credit)
-				if consumed:
-					amount = flt(amount) + flt(consumed[0].total)
-				if flt(budget_amount[0].budget_amount) < amount:
-					frappe.throw("Not enough budget in " + str(args.account) + " under " + str(args.cost_center) + ". Budget exceeded by " + str((amount - flt(budget_amount[0].budget_amount))))
-			else:
-				if flt(args.debit):
-					frappe.throw("There is no budget in <b>" + str(args.account) + "</b> under <b>" + str(args.cost_center) + "</b>")
-			"""
 
 def compare_expense_with_budget(args, cost_center, budget_amount, action_for, action):
 	actual_expense = get_actual_expense(args, cost_center)
