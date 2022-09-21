@@ -550,19 +550,19 @@ class SalesInvoice(SellingController):
                 	if flt(a.amount) and a.account:
                         	accounts = get_account_currency(a.account)
                         
-                        	gl_entries.append(
-                                	self.get_gl_dict({
-                                        	"account": self.debit_to,
-                                        	"party_type": "Customer",
-                                        	"party": self.customer,
-                                        	"against": accounts,
-                                        	"debit": a.amount,
-                                        	"debit_in_account_currency": a.amount,
-                                        	"against_voucher": self.name,
-                                        	"against_voucher_type": self.doctype,
-						"cost_center": a.cost_center
-                                	}, accounts)
-                        	)
+                        # 	gl_entries.append(
+                        #         	self.get_gl_dict({
+                        #                 	"account": self.debit_to,
+                        #                 	"party_type": "Customer",
+                        #                 	"party": self.customer,
+                        #                 	"against": accounts,
+                        #                 	"debit": a.amount,
+                        #                 	"debit_in_account_currency": a.amount,
+                        #                 	"against_voucher": self.name,
+                        #                 	"against_voucher_type": self.doctype,
+						# "cost_center": a.cost_center
+                        #         	}, accounts)
+                        # 	)
                         	gl_entries.append(
                                 	self.get_gl_dict({
                                         	"account": a.account,
