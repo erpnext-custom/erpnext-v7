@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 import json
-from frappe.utils import flt, cstr, nowdate, nowtime
+from frappe.utils import flt, cstr, now, nowdate, nowtime
 
 class InvalidWarehouseCompany(frappe.ValidationError): pass
 
@@ -192,3 +192,36 @@ def is_group_warehouse(warehouse):
 	if frappe.db.get_value("Warehouse", warehouse, "is_group"):
 		frappe.throw(_("Group node warehouse is not allowed to select for transactions"))
 	
+# Following method created by SHIV on 2022/09/26
+def post_ledger_for_deferred_transactions():
+	dn_list = frappe.db.sql("""select name, posting_date 
+		from `tabDelivery Note` dn
+		where docstatus = 1 
+		and not exists(select 1 from `tabStock Ledger Entry` sle
+			where sle.voucher_type = "Delivery Note" and sle.voucher_no = dn.name)
+		order by dn.posting_date, dn.name""", as_dict=True)
+	for t in dn_list:
+		status = error = ""
+		try:
+			dn = frappe.get_doc("Delivery Note", t.name)
+			dn.update_stock_ledger()
+			dn.make_gl_entries()
+			status = "Successful"
+		except Exception as e:
+			status = "Failed"
+			error = str(e)
+
+		# make Deferred Posting Entry
+		if frappe.db.exists("Deferred Posting Entry", {"voucher_no": t.name}):
+			dle = frappe.get_doc("Deferred Posting Entry", {"voucher_no": t.name})
+		else:
+			dle = frappe.new_doc("Deferred Posting Entry")
+		dle.posting_date = t.posting_date
+		dle.ledger_posted_on = now()
+		dle.voucher_type = "Delivery Note"
+		dle.voucher_no = t.name
+		dle.status = status
+		dle.error = error
+		dle.save(ignore_permissions=True)
+
+		frappe.db.commit()

@@ -232,8 +232,12 @@ class DeliveryNote(SellingController):
 
 		# Updating stock ledger should always be called after updating prevdoc status,
 		# because updating reserved qty in bin depends upon updated delivered qty in SO
-		self.update_stock_ledger()
-		self.make_gl_entries()
+		defer_ledger_posting = cint(frappe.db.get("Stock Settings").get("defer_ledger_posting"))
+		if defer_ledger_posting:
+			pass
+		else:
+			self.update_stock_ledger()
+			self.make_gl_entries()
 
 	def on_cancel(self):
 		check_uncancelled_linked_doc(self.doctype, self.name)
@@ -252,6 +256,9 @@ class DeliveryNote(SellingController):
 		self.make_gl_entries_on_cancel()
 		if self.is_return:
 			self.dupdate_return_status()
+		
+		if frappe.db.exists("Deferred Posting Entry", {"voucher_no": self.name}):
+			frappe.db.sql('delete from `tabDeferred Posting Entry` where voucher_no = "{}"'.format(self.name))
 
 	def dupdate_return_status(self):
 		actual_qty = frappe.db.sql("""
