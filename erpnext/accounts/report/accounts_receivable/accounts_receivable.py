@@ -1,17 +1,5 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd.
 # License: GNU General Public License v3. See license.txt
-'''
---------------------------------------------------------------------------------------------------------------------------
-Version          Author          CreatedOn          ModifiedOn          Remarks
------------- --------------- ------------------ -------------------  -----------------------------------------------------
-1.0		  SSK		                   21/10/2016         Following GL heads are exempted as requested
-                                                                      by Hap Dorji
-                                                                          i) Abnormal Loss - SMCL
-                                                                          ii) Normal Loss - SMCL
-1.0		  SHIV		                   05/09/2017         Project Invoice is introduced.
---------------------------------------------------------------------------------------------------------------------------                                                                          
-'''
-
 from __future__ import unicode_literals
 import frappe
 from frappe import _, scrub
@@ -24,7 +12,7 @@ class ReceivablePayableReport(object):
 		self.age_as_on = getdate(nowdate()) \
 			if self.filters.report_date > getdate(nowdate()) \
 			else self.filters.report_date
-                
+				
 	def run(self, args):
 		party_naming_by = frappe.db.get_value(args.get("naming_by")[0], None, args.get("naming_by")[1])
 		columns = self.get_columns(party_naming_by, args)
@@ -109,55 +97,56 @@ class ReceivablePayableReport(object):
 				dn_quantity = ""
 				outstanding_amount = self.get_outstanding_amount(gle, self.filters.report_date, dr_or_cr)
 				#if outstanding_amount: #abs(outstanding_amount) > 0.1/10**currency_precision:
+				if outstanding_amount  > 0:
+					row = [gle.posting_date, gle.party]
 
-				row = [gle.posting_date, gle.party]
+					# customer / supplier name
+					if party_naming_by == "Naming Series":
+						row += [self.get_party_name(gle.party_type, gle.party)]
+					if gle.voucher_type == "Sales Invoice":
+						for a in frappe.db.sql("""select sii.delivery_note, dn.status, dn.total_quantity 
+									from `tabSales Invoice Item` sii, `tabDelivery Note` dn where sii.parent = '{0}'
+						and sii.delivery_note = dn.name limit 1""".format(gle.voucher_no), as_dict=1):
+							dn_no = a.delivery_note
+							dn_status = a.status
+							dn_quantity = a.total_quantity
 
-				# customer / supplier name
-				if party_naming_by == "Naming Series":
-					row += [self.get_party_name(gle.party_type, gle.party)]
-				if gle.voucher_type == "Sales Invoice":
-					for a in frappe.db.sql("""select sii.delivery_note, dn.status, dn.total_quantity from `tabSales Invoice Item` sii, `tabDelivery Note` dn where sii.parent = '{0}'
-					and sii.delivery_note = dn.name limit 1""".format(gle.voucher_no), as_dict=1):
-						dn_no = a.delivery_note
-						dn_status = a.status
-						dn_quantity = a.total_quantity
+					# get due date
+					due_date = voucher_details.get(gle.voucher_no, {}).get("due_date", "")
+					#if dn_no and dn_status:
+					row += [gle.voucher_type, gle.voucher_no, dn_no, dn_status, dn_quantity, due_date]
 
-				# get due date
-				due_date = voucher_details.get(gle.voucher_no, {}).get("due_date", "")
-				#if dn_no and dn_status:
-				row += [gle.voucher_type, gle.voucher_no, dn_no, dn_status, dn_quantity, due_date]
+					# get supplier bill details
+					if args.get("party_type") == "Supplier":
+						row += [
+							voucher_details.get(gle.voucher_no, {}).get("bill_no", ""),
+							voucher_details.get(gle.voucher_no, {}).get("bill_date", "")
+						]
 
-				# get supplier bill details
-				if args.get("party_type") == "Supplier":
-					row += [
-						voucher_details.get(gle.voucher_no, {}).get("bill_no", ""),
-						voucher_details.get(gle.voucher_no, {}).get("bill_date", "")
-					]
+					# invoiced and paid amounts
+					invoiced_amount = gle.get(dr_or_cr) if (gle.get(dr_or_cr) > 0) else 0
+					paid_amt = invoiced_amount - outstanding_amount
+					row += [invoiced_amount, paid_amt, outstanding_amount]
 
-				# invoiced and paid amounts
-				invoiced_amount = gle.get(dr_or_cr) if (gle.get(dr_or_cr) > 0) else 0
-				paid_amt = invoiced_amount - outstanding_amount
-				row += [invoiced_amount, paid_amt, outstanding_amount]
+					# ageing data
+					entry_date = due_date if self.filters.ageing_based_on == "Due Date" else gle.posting_date
+					row += get_ageing_data(cint(self.filters.range1), cint(self.filters.range2),
+						cint(self.filters.range3), self.age_as_on, entry_date, outstanding_amount)
 
-				# ageing data
-				entry_date = due_date if self.filters.ageing_based_on == "Due Date" else gle.posting_date
-				row += get_ageing_data(cint(self.filters.range1), cint(self.filters.range2),
-					cint(self.filters.range3), self.age_as_on, entry_date, outstanding_amount)
+					if self.filters.get(scrub(args.get("party_type"))):
+						row.append(gle.account_currency)
+					else:
+						row.append(company_currency)
 
-				if self.filters.get(scrub(args.get("party_type"))):
-					row.append(gle.account_currency)
-				else:
-					row.append(company_currency)
+					# customer territory / supplier type
+					if args.get("party_type") == "Customer":
+						row += [self.get_territory(gle.party)]
+					if args.get("party_type") == "Supplier":
+						row += [self.get_supplier_type(gle.party)]
 
-				# customer territory / supplier type
-				if args.get("party_type") == "Customer":
-					row += [self.get_territory(gle.party)]
-				if args.get("party_type") == "Supplier":
-					row += [self.get_supplier_type(gle.party)]
-
-				row.append(gle.remarks)
-				row.append(gle.cost_center)
-				data.append(row)
+					row.append(gle.remarks)
+					row.append(gle.cost_center)
+					data.append(row)
 
 		return data
 
@@ -188,7 +177,7 @@ class ReceivablePayableReport(object):
 
 	def get_outstanding_amount(self, gle, report_date, dr_or_cr):
 		payment_amount = 0.0
-		out_amt = 0;
+		out_amt = 0
 		for e in self.get_gl_entries_for(gle.party, gle.party_type, gle.voucher_type, gle.voucher_no):
 			if getdate(e.posting_date) <= report_date and e.name!=gle.name:
 				payment_amount += (flt(e.credit if gle.party_type == "Customer" else e.debit) - flt(e.get(dr_or_cr)))
@@ -199,14 +188,14 @@ class ReceivablePayableReport(object):
 		# ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
 		# Following condition added by SHIV on 05/09/2017
 		elif gle.voucher_type == "Project Invoice":
-                        out_amt = frappe.db.get_value("Project Invoice", gle.voucher_no, "total_balance_amount")
+						out_amt = frappe.db.get_value("Project Invoice", gle.voucher_no, "total_balance_amount")
 		elif gle.voucher_type == "Job Card":
 			out_amt = frappe.db.get_value("Job Card", gle.voucher_no, "outstanding_amount")
 		elif gle.voucher_type == "Hire Charge Invoice":
 			out_amt = frappe.db.get_value("Hire Charge Invoice", gle.voucher_no, "outstanding_amount")
 		elif gle.voucher_type == "POL":
 			out_amt = frappe.db.get_value("POL", gle.voucher_no, "outstanding_amount")
-                # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+				# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 		else:
 			pass
 		
@@ -252,11 +241,6 @@ class ReceivablePayableReport(object):
 		if not hasattr(self, "gl_entries"):
 			conditions, values = self.prepare_conditions(party_type)
 			date_condition = ""
-			# Ver 1.0 Begins by SSK on 21/10/2016, Following variable is introducted
-                        exempt_gls = ["Abnormal Loss - SMCL","Normal Loss - SMCL"]
-                        exempt_gls = " and account not in ('{0}','{1}')".format(*exempt_gls)
-                        # Ver 1.0 Ends
-                        
 			if self.filters.inter_company_customer:
 				cus_query = " and exists (select 1 from `tabCustomer` as c where c.inter_company = 1 and c.name = `tabGL Entry`.party)"
 			elif self.filters.inter_company_supplier:
@@ -273,29 +257,17 @@ class ReceivablePayableReport(object):
 			else:
 				select_fields = "debit, credit"
 
-                        # Ver 1.0 Begins by SSK on 21/10/2016, Following code commented and the subsequet is added
-                        '''
-                        self.gl_entries = frappe.db.sql("""select name, posting_date, account, party_type, party,
-				voucher_type, voucher_no, against_voucher_type, against_voucher, account_currency, remarks, {0}
-				from `tabGL Entry`
-				where docstatus < 2 and party_type=%s and (party is not null and party != '') {1}
-				{2}
-				order by posting_date, party"""
-				.format(select_fields, conditions, cus_query), values, as_dict=True)
-                        '''
-
 			self.gl_entries = frappe.db.sql("""select posting_date, party_type, party,
 				voucher_type, voucher_no, against_voucher_type, against_voucher, account_currency, '' remarks,cost_center, {0}
 				from `tabGL Entry`
 				where docstatus < 2 and party_type=%s and (party is not null and party != '') {1}
 				{2}
 				{3}
-				{4}
 				and against_voucher_type is not null
 				group by posting_date, party_type, party, voucher_type, voucher_no,
 				against_voucher_type, against_voucher, account_currency, cost_center
 				order by posting_date, party"""
-				.format(select_fields, conditions, cus_query, exempt_gls, date_condition), values, as_dict=True)
+				.format(select_fields, conditions, cus_query, date_condition), values, as_dict=True)
 
 		return self.gl_entries
 
