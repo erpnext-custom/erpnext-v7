@@ -11,6 +11,7 @@ from frappe.utils import flt
 
 class ConsolidatedInvoice(Document):
 	def on_update(self):
+		self.set_total_amount()
 		self.check_duplicate_entries()
 
 	def on_cancel(self):
@@ -18,6 +19,12 @@ class ConsolidatedInvoice(Document):
 			pe = frappe.get_doc("Payment Entry",self.payment_entry)
 			if pe.docstatus != 2:
 				frappe.throw("""Payment Entry <b><a href="#Form/Payment%20Entry/{0}">{0}</a></b> linked with this Consolidated Invoice which is not cancelled.""".format(self.payment_entry))
+
+	def set_total_amount(self):
+		self.total_amount = self.quantity = 0
+		for row in self.items:
+			self.total_amount += flt(row.amount,2)
+			self.quantity += flt(row.accepted_qty)
 
 	def check_duplicate_entries(self):
 		for i in self.get("items"):

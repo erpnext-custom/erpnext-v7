@@ -93,6 +93,24 @@ frappe.ui.form.on('Consolidated Invoice', {
 	}
 });
 
+frappe.ui.form.on('Consolidated Invoice Item', {
+	items_remove: function(frm, cdt, cdn){
+		update_totals(frm);
+	}
+});
+
+var update_totals = function(frm){
+	var items = frm.doc.items || [];
+	var total_amount = 0, quantity = 0;
+
+	items.forEach(function(r){
+		total_amount += flt(r.amount);
+		quantity += flt(r.accepted_qty);
+	})
+	cur_frm.set_value("total_amount", total_amount);
+	cur_frm.set_value("quantity", quantity);
+}
+
 // cur_frm.add_fetch("item_price", "price_list_rate", "rate")
 // cur_frm.add_fetch("item_code", "stock_uom", "uom")
 // cur_frm.add_fetch("item_code", "item_name", "item_name")
@@ -124,6 +142,7 @@ function get_invoices(frm) {
 						row.amount = invoice['amount']
 						row.cost_of_goods = invoice['cost_of_goods']
 						row.qty = invoice['qty']
+						row.accepted_qty = invoice['accepted_qty']
 						row.transportation_cost = invoice['transportation_charges']
 						row.loading_cost = invoice['loading_cost']
 						row.challan_cost = invoice['challan_cost']
