@@ -250,6 +250,7 @@ class TransporterPayment(AccountsController):
 				and a.transport_payment_done = 0
 				and b.parent = a.name
 				and b.cost_center = "{3}"
+				and a.others_equipment = 0
 				and NOT EXISTS(
 					select 1 
 					from `tabTransporter Payment` p, `tabTransporter Payment Item` i
@@ -358,7 +359,6 @@ class TransporterPayment(AccountsController):
 
 		self.total_trip = len(entries)
 		trans_amount    = unload_amount = pol_amount = 0
-
 		# populate items
 		for d in entries:
 			equipment_type = frappe.db.get_value("Equipment", d.equipment,"equipment_type")
