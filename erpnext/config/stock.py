@@ -171,7 +171,19 @@ def get_data():
 					"type": "doctype",
 					"name": "Stock Reconciliation",
 					"description": _("Upload stock balance via csv.")
-				}
+				},
+				{
+					"type": "doctype",
+					"name": "Deferred Posting Entry",
+					"description": _("Deferred Posting Entry.")
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Deferred Posting Status",
+					"doctype": "Deferred Posting Entry",
+					"label": _("Deferred Posting Status.")
+				},
 			]
 		}
 	]
