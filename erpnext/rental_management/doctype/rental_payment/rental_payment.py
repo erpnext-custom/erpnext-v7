@@ -192,7 +192,7 @@ class RentalPayment(AccountsController):
 				ministry_agency = a.ministry_agency
 				flag = 1
 			if a.department != doc.department and a.department:
-				ministry_agency = a.department
+				department = a.department
 				flag = 1
 			if flag:
 				ti = frappe.get_doc("Tenant Information", a.tenant)
