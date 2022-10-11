@@ -297,12 +297,12 @@ class MechanicalPayment(AccountsController):
 
 
 
-		##
-		# Cancel budget check entry
-		##
-		def cancel_budget_entry(self):
-				frappe.db.sql("delete from `tabCommitted Budget` where po_no = %s", self.name)
-				frappe.db.sql("delete from `tabConsumed Budget` where po_no = %s", self.name)
+	##
+	# Cancel budget check entry
+	##
+	def cancel_budget_entry(self):
+			frappe.db.sql("delete from `tabCommitted Budget` where po_no = %s", self.name)
+			frappe.db.sql("delete from `tabConsumed Budget` where po_no = %s", self.name)
 	
 
 	def get_transactions(self):
