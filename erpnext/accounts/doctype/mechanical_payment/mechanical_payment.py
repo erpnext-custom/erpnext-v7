@@ -96,10 +96,11 @@ class MechanicalPayment(AccountsController):
 		if self.tds_amount < 0:
 			frappe.throw("TDS Amount cannot be less than Zero")
 	def update_job_card(self): 
-		for ref in self.items: 
-			doc = frappe.get_doc("Job Card", ref.reference_name)
-			doc.mechanical_payment = self.name
-			doc.save(ignore_permissions=True)
+		for ref in self.items:
+			if ref.reference_type == "Job Card":
+				doc = frappe.get_doc("Job Card", ref.reference_name)
+				doc.mechanical_payment = self.name
+				doc.save(ignore_permissions=True)
 	
 	def update_ref_doc(self, cancel=None):
 		for a in self.items:
