@@ -33,15 +33,15 @@ class OvertimeApplication(Document):
 		self.check_journal()
 		#self.update_salary_structure(cancel = True)	
 	'''def calculate_totals(self):
-                total_hours  = 0
-                for i in self.items:
-                        total_hours += flt(i.number_of_hours)
+				total_hours  = 0
+				for i in self.items:
+						total_hours += flt(i.number_of_hours)
 
-                self.total_hours  = flt(total_hours)
-                self.total_amount = flt(total_hours)*flt(self.rate)
+				self.total_hours  = flt(total_hours)
+				self.total_amount = flt(total_hours)*flt(self.rate)
 
-                if flt(self.total_hours) <= 0:
-                        frappe.throw(_("Total number of hours cannot be nil."),title="Incomlete information")'''
+				if flt(self.total_hours) <= 0:
+						frappe.throw(_("Total number of hours cannot be nil."),title="Incomlete information")'''
 
 	def check_status(self):
 		if self.status != "Approved":
@@ -55,12 +55,12 @@ class OvertimeApplication(Document):
 	##
 	def validate_dates(self):
 		for a in self.items:
-                        if not a.date:
-                                frappe.throw(_("Row#{0} : Data cannot be blank").format(a.idx),title="Invalid Date")
-                                
-			for b in self.items:
-				if a.date == b.date and a.idx != b.idx:
-					frappe.throw("Duplicate Dates in row " + str(a.idx) + " and " + str(b.idx))
+			if not a.date:
+				frappe.throw(_("Row#{0} : Data cannot be blank").format(a.idx),title="Invalid Date")
+								
+		for b in self.items:
+			if a.date == b.date and a.idx != b.idx:
+				frappe.throw("Duplicate Dates in row " + str(a.idx) + " and " + str(b.idx))
 
 	##
 	# Allow only the approver to submit the document
@@ -85,10 +85,10 @@ class OvertimeApplication(Document):
 
 	def calculate_amount(self):
 		holiday_list = get_holiday_list_for_employee(self.employee)
-                amount = 0.0
-                hour = 0.0
+		amount = 0.0
+		hour = 0.0
 		night_shift_bonus = 0.0
-                for d in self.items:
+		for d in self.items:
 			ot_base = 1
 			holiday_bonus = 0
 			d.is_holiday = 0
@@ -104,14 +104,14 @@ class OvertimeApplication(Document):
 		self.total_hours = hour
 		self.total_amount = amount
 		if flt(self.total_amount) <= 0:
-                        frappe.throw(_("Total amount cannot be nil."),title="Incomlete information")
+						frappe.throw(_("Total amount cannot be nil."),title="Incomlete information")
 
 	
 
 	#Update Salary Structure
 	def update_salary_structure(self, cancel=False):
 		if frappe.db.exists("Salary Structure", {"employee": self.employee, "is_active": "Yes"}):
-                	doc = frappe.get_doc("Salary Structure", {"employee": self.employee, "is_active": "Yes"})
+			doc = frappe.get_doc("Salary Structure", {"employee": self.employee, "is_active": "Yes"})
 			frappe.db.sql(""" delete from `tabOvertime Item` where parent = '{0}' and (processed = 1 or reference = '{1}')			""".format(doc.name, self.name))
 			if cancel:
 				frappe.db.sql(""" delete 
@@ -120,11 +120,11 @@ class OvertimeApplication(Document):
 				""".format(self.name, doc.name))
 			else:
 				row = doc.append("ot_items",{})
-                                row.reference    = self.name
-                                row.ot_date      = self.posting_date
-                                row.hourly_rate  = self.rate
-                                row.total_hours  = self.total_hours
-                                row.total_amount = self.total_amount
+				row.reference    = self.name
+				row.ot_date      = self.posting_date
+				row.hourly_rate  = self.rate
+				row.total_hours  = self.total_hours
+				row.total_amount = self.total_amount
 			doc.save(ignore_permissions=True)
 
 		else:
