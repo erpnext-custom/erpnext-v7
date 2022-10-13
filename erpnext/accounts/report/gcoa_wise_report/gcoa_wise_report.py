@@ -48,8 +48,18 @@ def from_gl_applicable_for_doc(coa,filters):
 	value = frappe._dict({'opening_debit':0,'opening_credit':0,'debit':0,'credit':0,'amount':0,'data':[]})
 	doc = frappe.get_doc('DHI Setting')
 	total_debit = total_credit = 0
- 
-	for d in frappe.db.sql("""
+	if coa.root_type in ['Expense','Income']:
+		query = """
+					SELECT  0 as opening_debit,
+							0 AS opening_credit,
+							SUM(debit) AS debit,
+							SUM(credit) AS credit
+					FROM `tabGL Entry` where account = "{2}"
+	 				AND (credit IS NOT NULL OR debit IS NOT NULL)
+					AND posting_date BETWEEN '{0}' AND '{1}'
+					  """.format(filters['from_date'],filters['to_date'],coa.account)
+	else:
+		query = """
 					SELECT  SUM(CASE WHEN posting_date < '{0}' THEN debit ELSE 0 END) AS opening_debit,
 							SUM(CASE WHEN posting_date < '{0}' THEN credit ELSE 0 END) AS opening_credit,
 							SUM(CASE WHEN posting_date >= "{0}" AND posting_date <="{1}" THEN debit ELSE 0 END) AS debit,
@@ -57,7 +67,8 @@ def from_gl_applicable_for_doc(coa,filters):
 					FROM `tabGL Entry` where account = "{2}"
 	 				AND (credit IS NOT NULL OR debit IS NOT NULL)
 					AND posting_date <= '{1}'
-					  """.format(filters['from_date'],filters['to_date'],coa.account), as_dict = True):
+					  """.format(filters['from_date'],filters['to_date'],coa.account)
+	for d in frappe.db.sql(query, as_dict = True):
 		total_debit 	= flt(flt(d.debit) + flt(d.opening_debit))
 		total_credit 	= flt(flt(d.credit) + flt(d.opening_credit))
 		d['amount'] 	= total_debit - total_credit if coa.root_type in ['Asset','Expense'] else flt(total_credit - total_debit) * -1
@@ -94,31 +105,44 @@ def from_gl_applicable_for_both(is_inter_company,coa,filters):
 							})
 	query = ''
 	# construct query base on account type 
-	if coa.account_type in ['Payable','Receivable']:
+	if coa.root_type in ["Expense","Income"]:
 		query = """SELECT 
-					SUM(CASE WHEN posting_date < '{0}' THEN debit ELSE 0 END) AS opening_debit,
-					SUM(CASE WHEN posting_date < '{0}' THEN credit ELSE 0 END) AS opening_credit,
-					SUM(CASE WHEN posting_date >= "{0}" AND posting_date <="{1}" THEN debit ELSE 0 END) AS debit,
-					SUM(CASE WHEN posting_date >= "{0}" AND posting_date <="{1}" THEN credit ELSE 0 END) AS credit, 
-					party, party_type
-				FROM `tabGL Entry` where posting_date <= "{1}" 
-				AND account = "{2}" 
-				AND (party IS NOT NULL OR party != '')
-				AND (credit IS NOT NULL OR debit IS NOT NULL)
-				GROUP BY party
+						0 AS opening_debit,
+						0 AS opening_credit,
+						SUM(debit) AS debit,
+						SUM(credit) AS credit, 
+						consolidation_party AS party, consolidation_party_type AS party_type
+				FROM `tabGL Entry` WHERE posting_date BETWEEN "{0}" AND "{1}" 
+				AND account = "{2}"  
+				AND (credit is not null or debit is not null)
+				GROUP BY consolidation_party
 				""".format(filters['from_date'],filters['to_date'],coa.account)
 	else:
-		query = """SELECT 
-					SUM(CASE WHEN posting_date < '{0}' THEN debit ELSE 0 END) AS opening_debit,
-					SUM(CASE WHEN posting_date < '{0}' THEN credit ELSE 0 END) AS opening_credit,
-					SUM(CASE WHEN posting_date >= "{0}" AND posting_date <="{1}" THEN debit ELSE 0 END) AS debit,
-					SUM(CASE WHEN posting_date >= "{0}" AND posting_date <="{1}" THEN credit ELSE 0 END) AS credit, 
-					consolidation_party AS party, consolidation_party_type AS party_type
-			FROM `tabGL Entry` WHERE posting_date <= "{1}" 
-			AND account = "{2}"  
-			AND (credit is not null or debit is not null)
-   			GROUP BY consolidation_party
-			""".format(filters['from_date'],filters['to_date'],coa.account)
+		if coa.account_type in ['Payable','Receivable']:
+			query = """SELECT 
+						SUM(CASE WHEN posting_date < '{0}' THEN debit ELSE 0 END) AS opening_debit,
+						SUM(CASE WHEN posting_date < '{0}' THEN credit ELSE 0 END) AS opening_credit,
+						SUM(CASE WHEN posting_date >= "{0}" AND posting_date <="{1}" THEN debit ELSE 0 END) AS debit,
+						SUM(CASE WHEN posting_date >= "{0}" AND posting_date <="{1}" THEN credit ELSE 0 END) AS credit, 
+						party, party_type
+					FROM `tabGL Entry` where posting_date <= "{1}" 
+					AND account = "{2}" 
+					AND (party IS NOT NULL OR party != '')
+					AND (credit IS NOT NULL OR debit IS NOT NULL)
+					GROUP BY party
+					""".format(filters['from_date'],filters['to_date'],coa.account)
+		else:
+			query = """SELECT 
+						SUM(CASE WHEN posting_date < '{0}' THEN debit ELSE 0 END) AS opening_debit,
+						SUM(CASE WHEN posting_date < '{0}' THEN credit ELSE 0 END) AS opening_credit,
+						SUM(CASE WHEN posting_date >= "{0}" AND posting_date <="{1}" THEN debit ELSE 0 END) AS debit,
+						SUM(CASE WHEN posting_date >= "{0}" AND posting_date <="{1}" THEN credit ELSE 0 END) AS credit, 
+						consolidation_party AS party, consolidation_party_type AS party_type
+				FROM `tabGL Entry` WHERE posting_date <= "{1}" 
+				AND account = "{2}"  
+				AND (credit is not null or debit is not null)
+				GROUP BY consolidation_party
+				""".format(filters['from_date'],filters['to_date'],coa.account)
 	total_debit = total_credit = 0
 	for a in frappe.db.sql(query,as_dict=True) :
 		if a.debit or a.credit or a.opening_debit or a.opening_credit:
