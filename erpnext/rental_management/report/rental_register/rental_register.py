@@ -22,9 +22,9 @@ def get_columns():
 	("Month") + " :Data:80",
 	("Posting Date") + " :Date:80",
 	("Fiscal Year") + ":Data:80",
-	("Actual Rent Amount") + ":Currency:120",
-	("Adjusted Amount") + ":Currency:100",
-	("Bill Amount") + ":Currency:120",
+	# ("Actual Rent Amount") + ":Currency:120",
+	# ("Adjusted Amount") + ":Currency:100",
+	# ("Bill Amount") + ":Currency:120",
 	("Amount Received") + ":Currency:120",
 	("Pre-rent Received") + ":Currency:120",
 	("Excess Amount Received") + ":Currency:120",
@@ -73,7 +73,11 @@ def get_data(query):
 		if not credit:
 			credit = 0
 
-		row = [d.tenant, d.tenant_name, d.cid, d.dzongkhag, d.dungkhag, d.month, d.posting_date, d.fiscal_year, d.rent_amount, d.adjusted_amount, d.bill_amount,
+		# row = [d.tenant, d.tenant_name, d.cid, d.dzongkhag, d.dungkhag, d.month, d.posting_date, d.fiscal_year, d.rent_amount, d.adjusted_amount, d.bill_amount,
+		# 		d.rent_received, d.pre_rent_amount, d.excess_amount, d.balance_rent, d.discount_amount, d.penalty, d.tds_amount, d.rent_write_off, d.total_amount_received, 
+		# 		credit, d.rental_bill, d.rental_payment, d.docstatus, d.location, d.building_category, d.department, d.block_no, d.flat_no, d.ministry_agency, d.payment_mode,
+		# 		d.rental_official_name, d.town_category]
+		row = [d.tenant, d.tenant_name, d.cid, d.dzongkhag, d.dungkhag, d.month, d.posting_date, d.fiscal_year,
 				d.rent_received, d.pre_rent_amount, d.excess_amount, d.balance_rent, d.discount_amount, d.penalty, d.tds_amount, d.rent_write_off, d.total_amount_received, 
 				credit, d.rental_bill, d.rental_payment, d.docstatus, d.location, d.building_category, d.department, d.block_no, d.flat_no, d.ministry_agency, d.payment_mode,
 				d.rental_official_name, d.town_category]
