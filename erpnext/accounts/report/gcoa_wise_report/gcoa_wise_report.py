@@ -50,14 +50,14 @@ def from_gl_applicable_for_doc(coa,filters):
 	total_debit = total_credit = 0
  
 	for d in frappe.db.sql("""
-                    SELECT  SUM(CASE WHEN posting_date < '{0}' THEN debit ELSE 0 END) AS opening_debit,
+					SELECT  SUM(CASE WHEN posting_date < '{0}' THEN debit ELSE 0 END) AS opening_debit,
 							SUM(CASE WHEN posting_date < '{0}' THEN credit ELSE 0 END) AS opening_credit,
 							SUM(CASE WHEN posting_date >= "{0}" AND posting_date <="{1}" THEN debit ELSE 0 END) AS debit,
 							SUM(CASE WHEN posting_date >= "{0}" AND posting_date <="{1}" THEN credit ELSE 0 END) AS credit
 					FROM `tabGL Entry` where account = "{2}"
-     				AND (credit IS NOT NULL OR debit IS NOT NULL)
+	 				AND (credit IS NOT NULL OR debit IS NOT NULL)
 					AND posting_date <= '{1}'
-                      """.format(filters['from_date'],filters['to_date'],coa.account), as_dict = True):
+					  """.format(filters['from_date'],filters['to_date'],coa.account), as_dict = True):
 		total_debit 	= flt(flt(d.debit) + flt(d.opening_debit))
 		total_credit 	= flt(flt(d.credit) + flt(d.opening_credit))
 		d['amount'] 	= total_debit - total_credit if coa.root_type in ['Asset','Expense'] else flt(total_credit - total_debit) * -1
@@ -105,7 +105,7 @@ def from_gl_applicable_for_both(is_inter_company,coa,filters):
 				AND account = "{2}" 
 				AND (party IS NOT NULL OR party != '')
 				AND (credit IS NOT NULL OR debit IS NOT NULL)
-    			GROUP BY party
+				GROUP BY party
 				""".format(filters['from_date'],filters['to_date'],coa.account)
 	else:
 		query = """SELECT 
@@ -217,8 +217,8 @@ def create_transaction(is_monthly_report=None):
 				''',as_dict=True):
 		filters['gcoa_name'] = d.account_name
 		i_none = frappe._dict({ 'flow':dhi_setting.flow,'interco':dhi_setting.interco,'entity':dhi_setting.entity,
-                         		'time':filters['time'],'segment':dhi_setting.segment,'account':d.account_name,
-      							'account_code':d.account_code,'opening_debit':0,'opening_credit':0,'debit':0,'credit':0,'amount':0})
+						 		'time':filters['time'],'segment':dhi_setting.segment,'account':d.account_name,
+	  							'account_code':d.account_code,'opening_debit':0,'opening_credit':0,'debit':0,'credit':0,'amount':0})
 		for a in get_data(filters,False):
 			if a['interco'] == 'I_NONE':
 				i_none['opening_debit'] 	+= flt(a.opening_debit)

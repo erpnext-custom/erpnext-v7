@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 1, 
- "allow_rename": 0, 
+ "allow_rename": 1, 
  "autoname": "field:company_code", 
  "beta": 0, 
  "creation": "2021-07-19 17:58:48.039165", 
@@ -72,7 +72,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2021-08-10 09:00:24.697970", 
+ "modified": "2022-10-12 11:43:49.982307", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "DHI Company", 
@@ -93,7 +93,7 @@
    "print": 1, 
    "read": 1, 
    "report": 1, 
-   "role": "DHI Consolidation User", 
+   "role": "Consolidation User", 
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
@@ -106,6 +106,6 @@
  "search_fields": "company,company_code", 
  "sort_field": "modified", 
  "sort_order": "DESC", 
- "track_changes": 0, 
+ "track_changes": 1, 
  "track_seen": 0
 }
