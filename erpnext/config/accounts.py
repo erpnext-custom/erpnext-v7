@@ -686,6 +686,11 @@ def get_data():
 					"name": "Consolidation Transaction",
 					"label": "Consolidation Transaction",
 				},
+    {
+					"type": "doctype",
+					"name": "Consolidation Adjustment Entry",
+					"label": "Consolidation Adjustment Entry",
+				},
 			]
 		},
         {
