@@ -34,6 +34,9 @@ def get_columns():
 
 def get_tenant_list(filters):
 	official=''
+	if not filters.get("from_date") or not filters.get("to_date"):
+		frappe.throw("From Date and To Date values required.")
+	
 	if filters.get("rental_official"):
 		if filters.get("rental_official") == 'Dorji Wangmo': 
 			# two dorji wangmo in the system. use the below
