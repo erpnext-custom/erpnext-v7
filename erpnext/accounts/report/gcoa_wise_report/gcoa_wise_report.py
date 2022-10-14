@@ -158,17 +158,17 @@ def from_gl_applicable_for_both(is_inter_company,coa,filters):
 	if flt(i_none['amount']) != 0:
 		value.data.append(i_none)
 	for a in value.data:
-		if flt(a.opening_debit) > flt(a.opening_credit):
-			a.opening_debit 	= flt(a.opening_debit) - flt(a.opening_credit)
-			a.opening_credit 	= 0
-		elif flt(a.opening_credit) > flt(a.opening_debit):
-			a.opening_credit 	= flt(a.opening_credit) - flt(a.opening_debit)
-			a.opening_debit 	= 0
+		if flt(a['opening_debit']) > flt(a['opening_credit']):
+			a['opening_debit'] 	= flt(a['opening_debit']) - flt(a['opening_credit'])
+			a['opening_credit'] 	= 0
+		elif flt(a['opening_credit']) > flt(a['opening_debit']):
+			a['opening_credit'] 	= flt(a['opening_credit']) - flt(a['opening_debit'])
+			a['opening_debit'] 	= 0
 		else:
-			a.opening_credit 	= 0
-			a.opening_debit 	= 0
-		value['opening_debit'] 		+= flt(a.opening_debit)
-		value['opening_credit'] 	+= flt(a.opening_credit)
+			a['opening_credit'] 	= 0
+			a['opening_debit'] 	= 0
+		value['opening_debit'] 		+= flt(a['opening_debit'])
+		value['opening_credit'] 	+= flt(a['opening_credit'])
 	return value
 
 def get_coa(gcoa_account_name):
