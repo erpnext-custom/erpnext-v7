@@ -101,7 +101,6 @@ def from_gl_applicable_for_both(is_inter_company,coa,filters):
 				party, party_type
 			FROM `tabGL Entry` where posting_date <= "{1}" 
 			AND account = "{2}" 
-			AND (party IS NOT NULL OR party != '')
 			AND (credit IS NOT NULL OR debit IS NOT NULL)
 			GROUP BY party
 			""".format(filters['from_date'],filters['to_date'],coa.account)
