@@ -93,18 +93,29 @@ def from_gl_applicable_for_both(is_inter_company,coa,filters):
 							'entity':doc.entity,'segment':doc.segment,'flow':doc.flow,
 							'interco':'I_NONE','time':filters['time'],'debit':0,'credit':0,'amount':0,
 							})
-	query = """SELECT 
-				SUM(CASE WHEN posting_date < '{0}' THEN debit ELSE 0 END) AS opening_debit,
-				SUM(CASE WHEN posting_date < '{0}' THEN credit ELSE 0 END) AS opening_credit,
-				SUM(CASE WHEN posting_date >= "{0}" AND posting_date <="{1}" THEN debit ELSE 0 END) AS debit,
-				SUM(CASE WHEN posting_date >= "{0}" AND posting_date <="{1}" THEN credit ELSE 0 END) AS credit, 
-				party, party_type
-			FROM `tabGL Entry` where posting_date <= "{1}" 
-			AND account = "{2}" 
-			AND (credit IS NOT NULL OR debit IS NOT NULL)
-			GROUP BY party
-			""".format(filters['from_date'],filters['to_date'],coa.account)
-	
+	if coa.account_type in ['Payable','Receivable']:
+		query = """SELECT 
+					SUM(CASE WHEN posting_date < '{0}' THEN debit ELSE 0 END) AS opening_debit,
+					SUM(CASE WHEN posting_date < '{0}' THEN credit ELSE 0 END) AS opening_credit,
+					SUM(CASE WHEN posting_date >= "{0}" AND posting_date <="{1}" THEN debit ELSE 0 END) AS debit,
+					SUM(CASE WHEN posting_date >= "{0}" AND posting_date <="{1}" THEN credit ELSE 0 END) AS credit, 
+					party, party_type
+				FROM `tabGL Entry` where posting_date <= "{1}" 
+				AND account = "{2}" 
+				AND (credit IS NOT NULL OR debit IS NOT NULL)
+				GROUP BY party
+				""".format(filters['from_date'],filters['to_date'],coa.account)
+	else:
+		query = """SELECT 
+					SUM(CASE WHEN posting_date < '{0}' THEN debit ELSE 0 END) AS opening_debit,
+					SUM(CASE WHEN posting_date < '{0}' THEN credit ELSE 0 END) AS opening_credit,
+					SUM(CASE WHEN posting_date >= "{0}" AND posting_date <="{1}" THEN debit ELSE 0 END) AS debit,
+					SUM(CASE WHEN posting_date >= "{0}" AND posting_date <="{1}" THEN credit ELSE 0 END) AS credit, 
+					'' AS party, '' AS party_type
+				FROM `tabGL Entry` where posting_date <= "{1}" 
+				AND account = "{2}" 
+				AND (credit IS NOT NULL OR debit IS NOT NULL)
+				""".format(filters['from_date'],filters['to_date'],coa.account)
 	total_debit = total_credit = 0
 	for a in frappe.db.sql(query,as_dict=True) :
 		if flt(a.opening_debit) > flt(a.opening_credit):
