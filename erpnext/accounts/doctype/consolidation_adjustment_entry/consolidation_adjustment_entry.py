@@ -52,7 +52,7 @@ class ConsolidationAdjustmentEntry(Document):
 		dhi_setting = frappe.get_doc('DHI Setting')
 		year					= getdate(self.to_date).year 
 		month 					= getdate(self.to_date).month
-		time					= str(year) + str(month) if len(str(month)) == 2 else str(year) + '0' + str(month)
+		time					= str(year)+ '0'+ str(month) if len(str(month)) == 2 else str(year) + '00' + str(month)
 		self.total_debit = self.total_credit = 0
 		for item in self.items:
 			item.time = time
