@@ -13,7 +13,7 @@ def execute(filters=None):
 	filter['gcoa_name'] 	= filters.gcoa_name
 	year					= getdate(filters['to_date']).year 
 	month 					= getdate(filters['to_date']).month
-	filter['time'] 			= str(year)+'.'+ '0'+ str(month) if len(str(month)) == 2 else str(year) + '00' + str(month)
+	filter['time'] 			= str(year)+str(month) if len(str(month)) == 2 else str(year) + '0' + str(month)
 	columns 				= get_columns()
 	data 					= get_data(filter,True)
 	return columns, data
@@ -200,7 +200,7 @@ def create_transaction(is_monthly_report=None):
 		filters['to_date'] 	  		= dhi_setting.to_date
 		year						= getdate(dhi_setting.to_date).year 
 		month 						= getdate(dhi_setting.to_date).month
-		filters['time'] 			= str(year) + '0'+ str(month) if len(str(month)) == 2 else str(year) + '00'+ str(month)
+		filters['time'] 			= str(year) + str(month) if len(str(month)) == 2 else str(year) + '0'+ str(month)
 		dhi_setting.manual_pull		= 0
 		dhi_setting.from_date		= None
 		dhi_setting.to_date			= None
