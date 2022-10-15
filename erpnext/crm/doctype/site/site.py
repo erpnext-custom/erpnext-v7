@@ -124,7 +124,7 @@ def change_site_status():
                             	              """.format(ss.change_status, ss.current_status))
                                 if site.enabled == 0:
                                     frappe.db.sql("""update `tabSite` set enabled = 1 where name = '{}'""".format(site.name))
-                        else:
+                        elif today >= datetime.strptime(str(site.construction_end_date),"%Y-%m-%d").date():
                             if ss.currenct_status == "Active":
                                 frappe.db.sql("""
                             	              update `tabSite Status` set current_status = '{}',
