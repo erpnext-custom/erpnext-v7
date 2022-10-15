@@ -203,7 +203,8 @@ scheduler_events = {
 		#"erpnext.hr.hr_custom_functions.post_casual_leaves",
         "erpnext.hr.hr_custom_functions.post_leave_credits",
 		"erpnext.hr.doctype.other_contribution.other_contribution.remove_paid_contribution",
-		"erpnext.custom_functions.check_pending_approvers"
+		"erpnext.custom_functions.check_pending_approvers",
+		"erpnext.crm.doctype.site.site.change_site_status",
 	],
 	"daily_long":[
 		"erpnext.accounts.report.gcoa_wise_report.gcoa_wise_report.create_transaction",
