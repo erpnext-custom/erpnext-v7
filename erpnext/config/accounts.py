@@ -667,7 +667,11 @@ def get_data():
 					"label": "GCOA Mapper To COA",
 					# "hide_count": True
 				},
-				
+				{
+					"type": "doctype",
+					"name": "Consolidation Adjustment Entry",
+					"label": "Consolidation Adjustment Entry",
+				},
 			]
 		},
 		{
