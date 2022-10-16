@@ -13,10 +13,10 @@ frappe.query_reports["DHI GCOA Mapper Report"] = {
 				var inter_company = query_report.filters_by_name["is_inter_company"];
 				if  (query_report.get_values().map.trim() == 'COA Unmapped'){
 					gcoa.toggle(false)
-					inter_company.toggle(false)
+					// inter_company.toggle(true)
 				}else{
 					gcoa.toggle(true)
-					inter_company.toggle(true)
+					// inter_company.toggle(false)
 				}
 				query_report.refresh()
 			}
@@ -30,8 +30,8 @@ frappe.query_reports["DHI GCOA Mapper Report"] = {
 		{
 			"fieldname":"is_inter_company",
 			"label":"Inter Company",
-			"fieldtype":"Select",
-			"options":['\n','Inter Company\n','Non Inter Company']
+			"fieldtype":"Check",
+			"default":1
 		}
 	]
 }
