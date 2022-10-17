@@ -119,17 +119,17 @@ def change_site_status():
                         if datetime.strptime(today(),'%Y-%m-%d').date() >= datetime.strptime(str(site.construction_start_date),"%Y-%m-%d").date() and datetime.strptime(today(),'%Y-%m-%d').date() <= datetime.strptime(str(site.construction_end_date),"%Y-%m-%d").date():
                             if ss.current_status == 'Inactive':
                                 frappe.db.sql("""
-                            	              update `tabSite Status` set current_status = '{}',
-                            	              change_status = '{}'
-                            	              """.format(ss.change_status, ss.current_status))
+                            	              update `tabSite Status` set current_status = 'Active',
+                            	              change_status = 'Deactivate'
+                            	              """)
                                 if site.enabled == 0:
                                     frappe.db.sql("""update `tabSite` set enabled = 1 where name = '{}'""".format(site.name))
                         elif datetime.strptime(today(),'%Y-%m-%d').date() >= datetime.strptime(str(site.construction_end_date),"%Y-%m-%d").date():
                             if ss.current_status == "Active":
                                 frappe.db.sql("""
-                            	              update `tabSite Status` set current_status = '{}',
-                            	              change_status = '{}'
-                            	              """.format(ss.change_status, ss.current_status))
+                            	              update `tabSite Status` set current_status = 'Inactive',
+                            	              change_status = 'Activate'
+                            	              """)
                                 if site.enabled == 1:
                                     frappe.db.sql("""update `tabSite` set enabled = 0 where name = '{}'""".format(site.name))
                             
