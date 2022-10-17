@@ -113,8 +113,8 @@ def change_site_status():
         for site in sites:
             site_status = frappe.db.get_value("Site Status",{"site": site.name},"name")
             if site_status:
+                ss = frappe.get_doc("Site Status",site_status)
                 if ss:
-                    ss = frappe.get_doc("Site Status",site_status)
                     if ss.docstatus == 1:
                         if today >= datetime.strptime(str(site.construction_start_date),"%Y-%m-%d").date() and today <= datetime.strptime(str(site.construction_end_date),"%Y-%m-%d").date():
                             if ss.current_status == 'Inactive':
