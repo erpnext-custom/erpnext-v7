@@ -43,7 +43,7 @@ def get_data(filters):
 		data = frappe.db.sql('''
 						SELECT name as coa_acc
 						FROM `tabAccount` a
-						WHERE NOT EXISTS (	select 1 from `tabDHI GCOA Mapper` b, `tabDHI Mapper Item` c where c.account = a.name {})
+						WHERE NOT EXISTS (select 1 from `tabDHI GCOA Mapper` b, `tabDHI Mapper Item` c where c.account = a.name and b.name = c.parent {})
 						AND a.is_group != 1
 						 '''.format(cond),as_dict=1)
 	return data
