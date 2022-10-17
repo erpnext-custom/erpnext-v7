@@ -116,7 +116,7 @@ def change_site_status():
                 ss = frappe.get_doc("Site Status",site_status)
                 if ss:
                     if ss.docstatus == 1:
-                        if today >= datetime.strptime(str(site.construction_start_date),"%Y-%m-%d").date() and today <= datetime.strptime(str(site.construction_end_date),"%Y-%m-%d").date():
+                        if datetime.strptime(today(),'%Y-%m-%d').date() >= datetime.strptime(str(site.construction_start_date),"%Y-%m-%d").date() and datetime.strptime(today(),'%Y-%m-%d').date() <= datetime.strptime(str(site.construction_end_date),"%Y-%m-%d").date():
                             if ss.current_status == 'Inactive':
                                 frappe.db.sql("""
                             	              update `tabSite Status` set current_status = '{}',
@@ -124,8 +124,8 @@ def change_site_status():
                             	              """.format(ss.change_status, ss.current_status))
                                 if site.enabled == 0:
                                     frappe.db.sql("""update `tabSite` set enabled = 1 where name = '{}'""".format(site.name))
-                        elif today >= datetime.strptime(str(site.construction_end_date),"%Y-%m-%d").date():
-                            if ss.currenct_status == "Active":
+                        elif datetime.strptime(today(),'%Y-%m-%d').date() >= datetime.strptime(str(site.construction_end_date),"%Y-%m-%d").date():
+                            if ss.current_status == "Active":
                                 frappe.db.sql("""
                             	              update `tabSite Status` set current_status = '{}',
                             	              change_status = '{}'
