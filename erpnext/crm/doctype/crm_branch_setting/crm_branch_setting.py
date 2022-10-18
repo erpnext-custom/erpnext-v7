@@ -7,11 +7,15 @@ import frappe
 from frappe import _
 from frappe.utils import cint, flt
 from frappe.model.document import Document
+from frappe.model.naming import make_autoname
 
 class CRMBranchSetting(Document):
 	#Autonaming of doc - added by Kinley Dorji 09/11/2020
 	def autoname(self):
 		self.name = self.branch+" ("+self.product_category+")"
+		if frappe.db.exists("CRM Branch Setting",self.name):
+			self.name = make_autoname(self.branch+" ("+self.product_category+ ") .####")
+      
 
 	def validate(self):
 		self.validate_defaults()
@@ -25,9 +29,15 @@ class CRMBranchSetting(Document):
 
 	#Edited to allow multiple branches but with unique product category - Kinley Dorji 09/11/2020 
 	def validate_defaults(self):
-		if frappe.db.exists("CRM Branch Setting", {"name": ("!=", self.name), "branch": self.branch, "product_category": self.product_category}): 
-			old_name = frappe.db.get_value("CRM Branch Setting", {"name": ("!=", self.name), "branch": self.branch}, "name")
-			frappe.throw(_("Branch already exists as <b>{0}</b> with Product Category as <b>{1}</b>").format(old_name, self.product_category))
+		if frappe.db.exists("CRM Branch Setting", {"name": ("!=", self.name), "branch": self.branch, "product_category": self.product_category}):
+			for doc in frappe.db.sql("""select name from `tabCRM Branch Setting` where name != '{}' and branch = '{}' and product_category = '{}'""".format(self.name, self.branch, self.product_category),as_dict=1):
+				# old_name = frappe.db.get_value("CRM Branch Setting", {"name": ("!=", self.name), "branch": self.branch}, "name")
+				old_name = doc.name
+				old_doc = frappe.get_doc("CRM Branch Setting",old_name)
+				for a in old_doc.items:
+					for b in self.items:
+						if a.item == b.item:
+							frappe.throw(_("Branch already exists as <b>{0}</b> for item {1} with Product Category as <b>{2}</b>").format(old_name, b.item, self.product_category))
 		elif cint(self.has_common_pool) and not cint(self.lead_time): 
 			frappe.throw(_("Lead Time is mandatory for branches with common pool facility"))
 	
