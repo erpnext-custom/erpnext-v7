@@ -184,7 +184,7 @@ class SellingController(StockController):
 				il.append(frappe._dict({
 					'warehouse': d.warehouse,
 					'item_code': d.item_code,
-					'qty': d.qty,
+					'qty': d.qty if d.parenttype != "Delivery Note" else d.stock_qty,
 					'uom': d.stock_uom,
 					'stock_uom': d.stock_uom,
 					'batch_no': cstr(d.get("batch_no")).strip(),
@@ -300,7 +300,6 @@ class SellingController(StockController):
 							"actual_qty": -1*flt(d.qty),
 							"incoming_rate": return_rate
 						}))
-
 		self.make_sl_entries(sl_entries)
 
 def check_active_sales_items(obj):

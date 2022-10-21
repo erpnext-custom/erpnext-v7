@@ -86,7 +86,6 @@ erpnext.stock.DeliveryNoteController = erpnext.selling.SellingController.extend(
 		var aii_enabled = cint(sys_defaults.auto_accounting_for_stock)
 		cur_frm.fields_dict["items"].grid.set_column_disp(["expense_account", "cost_center"], aii_enabled);
 	},
-
 	make_sales_invoice: function() {
 		frappe.model.open_mapped_doc({
 			method: "erpnext.stock.doctype.delivery_note.delivery_note.make_sales_invoice",
@@ -284,4 +283,16 @@ frappe.ui.form.on("Delivery Note", "onload", function(frm) {
 			}
 		};
 	});
+});
+
+frappe.ui.form.on("Delivery Note Item", {
+	"qty": function(frm, cdt, cdn){
+		var d = locals[cdt][cdn];
+		if(d.uom){
+			frappe.model.set_value(cdt, cdn, 'stock_qty', d.qty*d.conversion_factor);
+		}
+		else{
+			frappe.model.set_value(cdt, cdn, 'stock_qty', d.qty);
+		}
+	}
 });

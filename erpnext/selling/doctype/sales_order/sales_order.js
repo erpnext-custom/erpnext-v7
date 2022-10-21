@@ -331,12 +331,13 @@ cur_frm.cscript.selling_price_template = function(doc) {
              name: doc.selling_price_template
         },
         callback: function(r) {
-           if(r.message)  { 
+           if(r.message)  {
                 cur_frm.clear_table("items");
                 var new_row = frappe.model.add_child(cur_frm.doc, "Sales Order Item", "items");
                 new_row.item_code = r.message[0]['item_code'];
                 new_row.item_name = r.message[0]['item_name'];
                 new_row.uom = r.message[0]['uom'];
+				new_row.conversion_factor = r.message[0]['conversion_factor'];
                 new_row.stock_uom = r.message[0]['stock_uom'];
                 new_row.qty = 0;
                 new_row.rate = r.message[0]['rate_amount'];
@@ -359,6 +360,35 @@ cur_frm.cscript.selling_price_template = function(doc) {
 	}
 }
 
+cur_frm.fields_dict['items'].grid.get_field('uom').get_query = function(frm, cdt, cdn) {
+	var d = locals[cdt][cdn];
+	return {
+			query: "erpnext.controllers.queries.get_item_uom",
+			filters: {'item_code': d.item_code}
+	}
+}
 
-
-
+frappe.ui.form.on("Sales Order Item", {
+	"uom": function(frm, cdt, cdn){
+		var d = locals[cdt][cdn];
+		cur_frm.call({
+			method: "erpnext.selling.doctype.sales_order.sales_order.get_conversion_factor",
+			args: {"uom":d.uom,
+			"item_code": d.item_code		
+			},
+			callback: function(r){
+				if(r.message){
+					console.log(r.message)
+					frappe.model.set_value(cdt, cdn, 'conversion_factor', r.message)
+					frappe.model.set_value(cdt, cdn, 'stock_qty', d.qty*r.message)
+				}
+			}
+		});
+	},
+	"qty": function(frm, cdt, cdn){
+		var d = locals[cdt][cdn];
+		if(d.uom){
+			frappe.model.set_value(cdt, cdn, 'stock_qty', d.qty*d.conversion_factor)
+		}
+	}
+});

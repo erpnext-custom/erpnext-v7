@@ -316,6 +316,7 @@ class SalesOrder(SellingController):
 		mcount = month_map[reference_doc.recurring_type]
 		self.set("delivery_date", get_next_date(reference_doc.delivery_date, mcount,
 						cint(reference_doc.repeat_on_day_of_month)))
+  
 
 def get_list_context(context=None):
 	from erpnext.controllers.website_list_for_contact import get_list_context
@@ -668,3 +669,9 @@ def get_supplier(doctype, txt, searchfield, start, page_len, filters):
 def update_status(status, name):
 	so = frappe.get_doc("Sales Order", name)
 	so.update_status(status)
+
+
+#added by cety to get conversion factor
+@frappe.whitelist()
+def get_conversion_factor(uom, item_code):
+	return frappe.db.sql("select conversion_factor from `tabUOM Conversion Detail` where parent='{}' and uom='{}'".format(item_code, uom))

@@ -4,7 +4,22 @@
 frappe.ui.form.on('Stock Price Template', {
 	refresh: function(frm) {
 
-	}
+	},
+    //added by cety
+    "item_code": function(frm){
+		frappe.call({
+				method: "erpnext.stock.doctype.stock_price_template.stock_price_template.get_conversion_factor",
+				args: {
+				"item_code": frm.doc.item_code		
+				},
+				callback: function(r){
+					if(r.message){
+						console.log(r.message)
+						frm.set_value('uom', r.message)
+					}
+				}
+		});
+	},
 });
 
 //set material name based on material code
