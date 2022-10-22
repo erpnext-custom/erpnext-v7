@@ -7,6 +7,53 @@ from frappe.utils.data import get_first_day, get_last_day, add_years, getdate, n
 from erpnext.custom_utils import get_branch_cc
 import csv
 
+def correct_transportation_rate():
+	for p in ['PRO221000171','PRO221000174','PRO221000175','PRO221000177','PRO221000218','PRO221000232','PRO221000285',
+			'PRO221000292','PRO221000296','PRO221000306','PRO221000364','PRO221000388','PRO221000389','PRO221000396',
+			'PRO221000400','PRO221000401','PRO221000407','PRO221000426','PRO221000433','PRO221000434','PRO221000438',
+			'PRO221000439','PRO221000440','PRO221000441','PRO221000443','PRO221000484','PRO221000490','PRO221000509',
+			'PRO221000525','PRO221000526','PRO221000589','PRO221000675','PRO221000684','PRO221000692','PRO221000743',
+			'PRO221000744','PRO221000785','PRO221000789','PRO221000816','PRO221000840']:
+		print(p)
+
+		#doc = frappe.get_doc('Production',{'name':'PRO221000002'})
+		#doc.validate_transportation()
+		#doc.save(ignore_permissions=1)
+		#print(doc.name)
+
+def deliivery_note_issue():
+	for d in frappe.db.sql('''
+							select name from `tabDelivery Note` where docstatus = 1
+							 and name in ('DN21022568','DN21120886','DN21122302',
+							 'DN21123891','DN21127115','DN21127617',
+							 'DN21128057','DN22052132','DN22052576','DN22053682',
+							 'DN22053811','DN22057966','DN22058406','DN22064108',
+							 'DN22069683','DN22077903','DN22088527',
+							 'DN22092037','DN22093375')''',as_dict=1):
+		doc = frappe.get_doc('Delivery Note',d.name)
+		# print('here')
+		doc.cancel()
+		frappe.db.commit()
+	print('done')
+	
+def update_customer_account():
+	international_acc = 'Sundry Debtors - International - SMCL'
+	domestic_acc = 'Sundry Debtors - Domestic - SMCL'
+	company = 'State Mining Corporation Ltd'
+	doc_company = 'Sundry Debtors - Inter-company - SMCL'
+	for a in frappe.db.get_list('Customer',filters={'disabled':0},fields=['name']):
+		doc = frappe.get_doc('Customer',a.name)
+		doc.set('accounts',[])
+		row = doc.append('accounts',{})
+		row.company = company
+		if doc.customer_type == 'International Customer':
+			row.account = international_acc
+		elif doc.customer_type == 'Domestic Customer':
+			if doc.inter_company:
+				row.account = doc_company
+			else:
+				row.account = domestic_acc
+		doc.save()
 # ticket 2011 by SHIV, mistake in warehouse PRO220201128
 def prd_cancel20220725():
 	doc = frappe.get_doc("Production", "PRO220201128")

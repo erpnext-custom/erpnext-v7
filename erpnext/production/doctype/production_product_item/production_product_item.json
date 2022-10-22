@@ -572,7 +572,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 0, 
    "collapsible": 0, 
    "fieldname": "rate", 
@@ -597,7 +597,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 0, 
    "collapsible": 0, 
    "fieldname": "amount", 
@@ -622,7 +622,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 0, 
    "collapsible": 0, 
    "fieldname": "transporter_rate", 
@@ -886,7 +886,7 @@
  "issingle": 0, 
  "istable": 1, 
  "max_attachments": 0, 
- "modified": "2021-06-01 22:17:34.917811", 
+ "modified": "2022-10-20 17:22:07.493014", 
  "modified_by": "Administrator", 
  "module": "Production", 
  "name": "Production Product Item", 
