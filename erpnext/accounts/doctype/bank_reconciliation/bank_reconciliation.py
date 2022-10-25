@@ -126,9 +126,9 @@ class BankReconciliation(Document):
                                 net_amount as amount,
                                 posting_date, customer as against_account, clearance_date
                         from `tabMechanical Payment`
-                        where '{0}' IN (expense_account, outgoing_account)
+                        where '{0}' IN (expense_account, outgoing_account, income_account)
                         and docstatus = 1
-                        and posting_date >= '{1}' and posting_date <= '{2}'
+                        and posting_date between '{1}' and '{2}'
                         {3}
                 """.format(self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
 
