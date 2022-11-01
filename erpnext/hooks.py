@@ -172,7 +172,8 @@ scheduler_events = {
 		"erpnext.assets.doctype.asset.asset.sync_cc_branch",
 		#"erpnext.maintenance.doctype.equipment.equipment.sync_branch_asset",
 		"erpnext.selling.doctype.customer.customer.check_cc_branch",
-		#"erpnext.hr.doctype.leave_application.leave_application.check_cancelled_leaves"    # Ver 2.0.19025, commented by SHIV on 25/02/2019 
+		#"erpnext.hr.doctype.leave_application.leave_application.check_cancelled_leaves"    # Ver 2.0.19025, commented by SHIV on 25/02/2019
+		"erpnext.rental_management.doctype.tenant_information.tenant_information.escalation_notify",
 	],
 	"daily": [
 		#"erpnext.stock.reorder_item.reorder_item",
@@ -185,7 +186,8 @@ scheduler_events = {
 		"erpnext.hr.doctype.officiating_employee.officiating_employee.check_off_exp",
 		"erpnext.maintenance.maintenance_utils.check_hire_end",
                 "erpnext.hr.hr_custom_functions.post_leave_credits",
-		"erpnext.custom_functions.check_pending_approvers"
+		"erpnext.custom_functions.check_pending_approvers",
+		"erpnext.rental_management.doctype.tenant_information.tenant_information.escalation_notify",
 	],
 }
 

@@ -226,6 +226,44 @@ class TenantInformation(Document):
 			cus.branch = self.branch
 			cus.save()
 
+	def escalation_notify():
+		# escalation_date = add_days(nowdate(), 14)
+		escalation_date = getdate('2023-07-01')
+		escalation_list = frappe.db.sql("""select name,from_date,official,(select user_id from tabEmployee where name=x.official) as user 
+			from (
+				select t.name,c.from_date,(select rental_official from `tabTenant Rental Officials` where parent=t.name order by from_date desc limit 1) as official 
+				from `tabTenant Information` t, `tabTenant Rental Charges` c 
+				where t.name=c.parent and t.status='Allocated' and c.from_date='{}'
+			) as x""".format(escalation_date), as_dict=1)
+		
+		if not len(escalation_list): return
+		new_list = frappe._dict()
+		for d in escalation_list:
+			new_list.setdefault(d['user'], []).append(d)
+		recipients = tenants = ''
+		for key, item in new_list.items():
+			# recipients = key
+			recipients = 'jairajrai1@gmail.com'
+			for j in item:
+				tenants += str(j.name) + "<br>"
+			""" send mail """
+			sub = 'Test Server: Rent Escalation Notification'
+			msg = """ 
+				<p>Following tenants rent escalation starts on {1}.</p>
+				<b>{0}</b>
+				""".format(tenants, escalation_date)
+
+			try:
+				frappe.sendmail(
+						recipients=recipients,
+						sender=None,
+						subject=sub,
+						message=msg
+					)
+			except:
+				pass
+				
+			
 @frappe.whitelist()
 def get_distinct_structure_no():
 	data = []
