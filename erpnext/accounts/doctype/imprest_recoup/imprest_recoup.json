@@ -1072,7 +1072,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2021-12-09 11:54:44.970471", 
+ "modified": "2022-08-31 10:35:05.781725", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Imprest Recoup", 
@@ -1081,7 +1081,7 @@
  "permissions": [
   {
    "amend": 1, 
-   "apply_user_permissions": 1, 
+   "apply_user_permissions": 0, 
    "cancel": 1, 
    "create": 1, 
    "delete": 0, 
