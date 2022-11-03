@@ -173,7 +173,7 @@ scheduler_events = {
 		#"erpnext.maintenance.doctype.equipment.equipment.sync_branch_asset",
 		"erpnext.selling.doctype.customer.customer.check_cc_branch",
 		#"erpnext.hr.doctype.leave_application.leave_application.check_cancelled_leaves"    # Ver 2.0.19025, commented by SHIV on 25/02/2019
-		"erpnext.rental_management.doctype.tenant_information.tenant_information.escalation_notify",
+		
 	],
 	"daily": [
 		#"erpnext.stock.reorder_item.reorder_item",
