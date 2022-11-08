@@ -18,7 +18,7 @@ def execute(filters=None):
 def get_data(query, filters):
 	data = []
 	datas = frappe.db.sql(query, as_dict=True)
-	ini = su = cm = co = ad = av = 0
+	ini = su = cm = co = ad = ads = av = adj = 0
 	for d in datas:
 		if filters.group_by_account:
 			d.cost_center = ""
@@ -46,6 +46,8 @@ def get_data(query, filters):
 			"business_activity": d.business_activity,
 			"initial": flt(d.initial_budget),
 			"supplementary": supplement,
+			"adjustment_add": d.added,
+			"adjustment_sent": d.deducted,
 			"adjustment": adjustment,
 			"committed": committed,
 			"consumed": consumed,
@@ -56,7 +58,9 @@ def get_data(query, filters):
 		su+=supplement
 		cm+=committed
 		co+=consumed
-		ad+=adjustment
+		ad+=flt(d.added)
+		ads+=flt(d.deducted)
+		adj+=adjustment
 		av+=available
 
 	row = {
@@ -64,7 +68,9 @@ def get_data(query, filters):
 		"cost_center": "",
 		"initial": ini,
 		"supplementary": su,
-		"adjustment": ad,
+		"adjustment_add": ad,
+		"adjustment_sent": ads,
+		"adjustment": adj,
 		"committed": cm,
 		"consumed": co,
 		"available": av
@@ -162,6 +168,18 @@ def get_columns():
 		{
 		  "fieldname": "supplementary",
 		  "label": "Supplementary Budget",
+		  "fieldtype": "Currency",
+		  "width": 130
+		},
+		{
+		  "fieldname": "adjustment_add",
+		  "label": "Budget Added",
+		  "fieldtype": "Currency",
+		  "width": 130
+		},
+		{
+		  "fieldname": "adjustment_sent",
+		  "label": "Budget Sent",
 		  "fieldtype": "Currency",
 		  "width": 130
 		},
