@@ -92,7 +92,7 @@ class BankPayment(Document):
 			if now_time >= from_time and now_time <= to_time:
 				pass
 			else:
-				frappe.throw("<b>Inter Bank Transaction</b> are only allowed between from <b>{}</b> till <b>{} </b>!".format(start_time, end_time), title="Transaction Restricted!")
+				frappe.throw("<b>Inter Bank Transaction</b> are only allowed between <b>{}</b> till <b>{} </b>!".format(from_time, to_time), title="Transaction Restricted!")
 
 
 	def get_bank_available_balance(self):
