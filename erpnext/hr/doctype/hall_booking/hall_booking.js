@@ -5,6 +5,16 @@ frappe.ui.form.on('Hall Booking', {
 		if(!frm.doc.posting_date) {
 			frm.set_value("posting_date", get_today())
 		}
+		frm.events.show_general_ledger(frm);
+		if (frm.doc.docstatus==1) {
+			frm.add_custom_button(__('Payment'),function(){
+				frappe.model.open_mapped_doc({
+					method: "erpnext.hr.doctype.hall_booking.hall_booking.make_direct_payment",
+					frm: cur_frm
+				})
+			},__("Payment"));
+		}
+
 	},
 	"rate": function(frm) {
 		calculate_amount(frm);
@@ -14,7 +24,31 @@ frappe.ui.form.on('Hall Booking', {
 	},
 	"to_date": function(frm) {
 		calculate_amount(frm);	
-	}
+	},
+	function(frm) {
+		calculate_amount(frm);	
+	},
+	show_general_ledger: function(frm) {
+		if(frm.doc.docstatus==1) {
+			frm.add_custom_button(__('Ledger'), function() {
+				frappe.route_options = {
+					"voucher_no": frm.doc.name,
+					"from_date": frm.doc.posting_date,
+					"to_date": frm.doc.posting_date,
+					"company": frm.doc.company,
+					group_by_voucher: 0
+				};
+				frappe.set_route("query-report", "General Ledger");
+			}, "icon-table");
+		}
+	},
+	make_direct_payment: function() {
+		frappe.model.open_mapped_doc({
+			method: "erpnext.hr.doctype.hall_booking.hall_booking.make_direct_payment",
+			frm: cur_frm
+		})
+	},
+
 });
 
 
