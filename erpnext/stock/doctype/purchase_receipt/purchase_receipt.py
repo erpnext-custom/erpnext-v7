@@ -232,7 +232,11 @@ class PurchaseReceipt(BuyingController):
 				ae.received_date = self.posting_date
 				ae.ref_doc = self.name
 				ae.branch = frappe.db.get_value("Cost Center", a.cost_center, "branch")
-				ae.submit()
+				ae.cost_center = a.cost_center
+				ae.warehouse = a.warehouse
+				ae.child_ref = a.name
+				ae.submit()    
+				a.db_set("asset_received_entries",ae.name)
 
 	##
 	#  Delete asset entries
