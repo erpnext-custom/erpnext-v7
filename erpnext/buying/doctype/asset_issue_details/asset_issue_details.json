@@ -414,7 +414,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 0, 
    "collapsible": 0, 
    "fieldname": "purchase_receipt", 
@@ -874,7 +874,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2022-11-14 16:58:23.237125", 
+ "modified": "2022-11-24 21:34:34.630757", 
  "modified_by": "Administrator", 
  "module": "Buying", 
  "name": "Asset Issue Details", 
