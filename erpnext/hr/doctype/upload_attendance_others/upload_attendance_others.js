@@ -29,10 +29,10 @@ erpnext.hr.MRAttendanceControlPanel = frappe.ui.form.Controller.extend({
 		window.location.href = repl(frappe.request.url +
 			'?cmd=%(cmd)s&fiscal_year=%(fiscal_year)s&month=%(month)s&branch=%(branch)s&unit=%(unit)s', {
 				cmd: "erpnext.hr.doctype.upload_attendance_others.upload_attendance_others.get_template",
-				branch: this.frm.doc.branch,
+				branch: encodeURIComponent(this.frm.doc.branch),
 				fiscal_year: this.frm.doc.fiscal_year,
 				month: this.frm.doc.month,
-				unit: this.frm.doc.unit,
+				unit: encodeURIComponent(this.frm.doc.unit),
 			});
 	},
 
