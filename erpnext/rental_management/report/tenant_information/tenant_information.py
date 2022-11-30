@@ -11,24 +11,26 @@ def execute(filters=None):
 
 
 def get_data(filters):
-        cond = get_conditions(filters)
+	cond = get_conditions(filters)
 	rent_amount_date = filters.fiscal_year + "-" + filters.month + "-" + "05"
-        query = """select ti.branch, ti.tenant_name, ti.cid, ti.customer_code, ti.dzongkhag, ti.location,
-                ti.town_category, ti.building_classification, ti.building_category, ti.block_no,
-                ti.flat_no, ti.structure_no, ti.ministry_agency, ti.department, ti.designation, ti.employee_id, ti.grade, ti.mobile_no, 
-                ti.dob, ti.date_of_appointment, ti.pf_account_no, ti.floor_area, 
-                ti.rate_per_sq_ft, trc.rental_amount, ti.security_deposit, ti.receipt_no, ti.receipt_date, ti.house_no, ti.area, ti.repayment_period, 
-                ti.original_monthly_instalment, ti.allocated_date, ti.status, ti.surrendered_date 
-                from `tabTenant Information` ti, `tabTenant Rental Charges` trc where trc.parent = ti.name and ti.docstatus = 1 {0}""".format(cond)
+	query = """select ti.branch, ti.tenant_name, ti.cid, ti.customer_code, ti.dzongkhag, ti.location,
+			ti.town_category, ti.building_classification, ti.building_category, ti.block_no,
+			ti.flat_no, ti.structure_no, ti.ministry_agency, ti.department, ti.designation, ti.employee_id, ti.grade, ti.mobile_no, 
+			ti.dob, ti.date_of_appointment, ti.pf_account_no, ti.floor_area, 
+			ti.rate_per_sq_ft, trc.rental_amount, ti.security_deposit, ti.receipt_no, ti.receipt_date, ti.house_no, ti.area, ti.repayment_period, 
+			ti.original_monthly_instalment, ti.allocated_date, ti.status, ti.surrendered_date 
+			from `tabTenant Information` ti, `tabTenant Rental Charges` trc where trc.parent = ti.name and ti.docstatus = 1 {0}""".format(cond)
 
 	query += " and \'{0}\' between trc.from_date and trc.to_date".format(rent_amount_date)
 
-	if filters.rental_status:
+	if filters.rental_status == 'Allocated':
+			query += " and (exists(select 1 from `tabRental Bill` rb where rb.docstatus=1 and rb.tenant=ti.name and rb.fiscal_year='{1}' and rb.month='{2}') or ti.status = '{0}')".format(filters.rental_status,filters.fiscal_year,filters.month)
+	elif filters.rental_status:
 			query += " and ti.status = '{0}'".format(filters.rental_status)
 	
 	if filters.block_no:
-			query += " and ti.block_no = '{0}'".format(filters.block_no)
-        return frappe.db.sql(query)
+		query += " and ti.block_no = '{0}'".format(filters.block_no)
+	return frappe.db.sql(query)
 
 def get_conditions(filters):
 	condition = ""
