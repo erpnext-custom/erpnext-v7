@@ -52,6 +52,7 @@ class UtilityBill(Document):
                 failed += 1
             elif a.payment_status == "Success":
                 success += 1
+            last_pi_number = a.pi_number
         if success > 0 and failed > 0:
             self.payment_status = "Partial Payment"
         elif failed == 0 and success > 0:
@@ -60,9 +61,10 @@ class UtilityBill(Document):
             self.payment_status = "Payment Failed"
 
         if self.payment_status =="Payment Failed":
-            for a in self.item:
-                frappe.msgprint("Utility Payment failed with following response from Bank")
-                frappe.msgprint(" Customer Code: <b>{}</b> , Response: <b>{}</b>".format(a.consumer_code, a.payment_response_msg))
+            pi_pre = str(last_pi_number[0:10])
+            pi_post = int(last_pi_number[10:])
+            frappe.db.sql("update `tabSeries` set current = {} where name = '{}'".format(pi_post+1, pi_pre))
+            frappe.db.commit()
             frappe.throw("Please try to process the bill after sometime")
         
     def calculate_tds_net(self):
