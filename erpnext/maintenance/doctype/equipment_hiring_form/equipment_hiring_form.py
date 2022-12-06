@@ -26,7 +26,7 @@ class EquipmentHiringForm(Document):
 				`tabJournal Entry Account` as ea on e.name = ea.parent inner join \
 				`tabEquipment Hiring Form` as eq on ea.reference_name = eq.name where \
 				e.branch = \'" + str(self.branch) + "\' and ea.party = \'" + str(self.customer) + "\' \
-				and eq.payment_completed = 1 and eq.docstatus= 1"
+				and eq.payment_completed = 1 and eq.docstatus = 1 and e.docstatus < 2"
 				dtl = frappe.db.sql(query, as_dict=True)
 				if dtl[0]['count'] > 0:
 					frappe.throw("There are previous advance balance. Please fetch those advances");
