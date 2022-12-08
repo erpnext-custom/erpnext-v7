@@ -21,6 +21,8 @@ from frappe.desk.notifications import clear_doctype_notifications
 from frappe.model.naming import make_autoname
 from erpnext.custom_autoname import get_auto_name
 from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date, check_budget_available
+from frappe.utils import formatdate, format_datetime, getdate, get_datetime, nowdate, flt, cstr, add_days, today
+from datetime import datetime
 
 form_grid_templates = {
 	"items": "templates/form_grid/item_grid.html"
@@ -499,3 +501,47 @@ def get_budget_account(item_code):
 # @frappe.whitelist()
 # def get_cost_center(branch):
 #     return frappe.db.sql("select name from `tabCost Center` where branch='{}'".format(branch))
+
+@frappe.whitelist()
+def notify_due_date():
+    flag = frappe.db.get_single_value("Stock Settings", "due_date_notify")
+    if flag == 1:
+        rep_list = []
+        due_d = ''
+        item_code = ''
+        item_name = ''
+        po_name = ''
+        po_list = frappe.db.sql("""
+								select po.name, poi.schedule_date, poi.warehouse, w.email_id, poi.item_code, poi.item_name
+								from `tabPurchase Order` po, `tabPurchase Order Item` poi, `tabWarehouse` w 
+								where po.name = poi.parent
+								and w.name = poi.warehouse
+								and po.docstatus = 1
+        					""", as_dict=1)
+        if po_list:
+            days_before = frappe.db.get_single_value("Stock settings", "notify_before")
+            d1 = datetime.strptime(str(nowdate()),"%Y-%m-%d")
+            for a in po_list:
+                if a.schedule_date != None:
+                    d2 = datetime.strptime(str(a.schedule_date), "%Y-%m-%d")
+                    day = d2 - d1
+                    if int(days_before) == int(day.days):
+                        item_code = a.item_code
+                        item_name = a.item_name
+                        po_name = a.name
+                        due_d = str(a.schedule_date)
+                        rep_list.append(a.email_id)
+                        
+        if len(rep_list) > 0:
+            msg = """"Dear Sir/Madam,<br>Delivery Due date for Purchase Order """ +po_name+ """ with Item Code """+ item_code + """, Item Name """+ item_name +""" is in next two days i.e.""" + due_d
+            print(msg)
+            try:
+                frappe.sendmail(
+					recipients = rep_list,
+					subject = "Delivery Due Date",
+					message = msg
+				)
+                print(_("Email Sent"))
+            except frappe.OutgoingEmailError:
+                pass
+        

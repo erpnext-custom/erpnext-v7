@@ -168,6 +168,11 @@ doc_events = {
 }
 
 scheduler_events = {
+    "cron": {
+		"0 0 * * *": [
+      		"erpnext.buying.doctype.purchase_order.purchase_order.notify_due_date",
+		]
+	},
 	"hourly": [
 		"erpnext.controllers.recurring_document.create_recurring_documents",
 		"erpnext.stock.doctype.item.item.sync_item_code",
@@ -191,6 +196,7 @@ scheduler_events = {
 		#"erpnext.hr.hr_custom_functions.post_casual_leaves",
 		"erpnext.hr.hr_custom_functions.post_leave_credits",
 		"erpnext.custom_functions.check_pending_approvers",
+		# "erpnext.buying.doctype.purchase_order.purchase_order.notify_due_date",
 	],
 	"daily_long":[
 		"erpnext.accounts.report.gcoa_wise_report.gcoa_wise_report.create_transaction",
