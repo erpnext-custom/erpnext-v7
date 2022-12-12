@@ -166,8 +166,7 @@ def from_gl_applicable_for_both(is_inter_company,coa,filters):
 				i_none['amount'] 			+= flt(a.amount)
 	for key, item in inter_company.items():
 		value.data.append(item)
-	if flt(i_none['amount']) != 0:
-		value.data.append(i_none)
+	value.data.append(i_none)
 	for a in value.data:
 		if flt(a['opening_debit']) > flt(a['opening_credit']):
 			a['opening_debit'] 	= flt(a['opening_debit']) - flt(a['opening_credit'])
