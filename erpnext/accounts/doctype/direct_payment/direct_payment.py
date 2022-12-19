@@ -234,7 +234,7 @@ class DirectPayment(AccountsController):
                
     def add_tds_gl_entries(self, gl_entries):
         if flt(self.tds_amount) > 0:
-            if self.payment_type == "Received":
+            if self.payment_type == "Receive":
                 gl_entries.append(
                     self.get_gl_dict({
                         "account": self.tds_account,
