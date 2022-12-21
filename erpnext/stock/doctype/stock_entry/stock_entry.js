@@ -9,7 +9,8 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 																			warehouse.
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 */
-cur_frm.add_fetch("item_code", "item_group", "item_group")
+cur_frm.add_fetch("item_code", "item_group", "item_group");
+cur_frm.add_fetch("branch", "cost_center", "cost_center");
 
 frappe.provide("erpnext.stock");
 
@@ -324,6 +325,25 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 	source_mandatory: ["Material Issue", "Material Transfer", "Subcontract", "Material Transfer for Manufacture"],
 	target_mandatory: ["Material Receipt", "Material Transfer", "Subcontract", "Material Transfer for Manufacture"],
 
+	// added by Jai
+	branch: function (doc) {
+		this.set_cost_center_in_children(doc.items, "cost_center", doc.cost_center);
+	},
+
+	set_cost_center_in_children: function(child_table, cc_field, cost_center){
+		this.autofill_cost_center(child_table, cc_field, cost_center);
+	},
+
+	autofill_cost_center: function (child_table, cc_field, cost_center) {
+		if (cost_center && child_table && child_table.length) {
+			let doctype = child_table[0].doctype;
+			$.each(child_table || [], function(i, item) {
+				frappe.model.set_value(doctype, item.name, cc_field, cost_center);
+			});
+			refresh_field("items");
+		}
+	},
+	
 	from_warehouse: function (doc) {
 		var me = this;
 		this.set_warehouse_if_different("s_warehouse", doc.from_warehouse, function (row) {
