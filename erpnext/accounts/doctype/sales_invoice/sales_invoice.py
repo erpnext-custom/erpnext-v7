@@ -4,8 +4,7 @@
 from __future__ import unicode_literals
 import frappe
 import frappe.defaults
-from frappe.utils import cint, flt, datetime
-from frappe.utils.data import get_first_day, get_last_day, add_years, date_diff, today, get_first_day, get_last_day
+from frappe.utils import cint, flt
 from frappe import _, msgprint, throw
 from erpnext.accounts.party import get_party_account, get_due_date
 from erpnext.controllers.stock_controller import update_gl_entries_after
@@ -17,8 +16,7 @@ from erpnext.accounts.utils import get_account_currency
 from erpnext.stock.doctype.delivery_note.delivery_note import update_billed_amount_based_on_so
 from erpnext.assets.doctype.asset.depreciation \
 	import get_disposal_account_and_cost_center, get_gl_entries_on_asset_disposal
-from frappe.model.naming import make_autoname
-from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
+from erpnext.custom_utils import check_future_date
 
 form_grid_templates = {
 	"items": "templates/form_grid/item_grid.html"
@@ -108,7 +106,7 @@ class SalesInvoice(SellingController):
 		self.check_advance_amount()
 		if not self.recurring_id:
 			frappe.get_doc('Authorization Control').validate_approving_authority(self.doctype,
-			 	self.company, self.base_grand_total, self)
+				 self.company, self.base_grand_total, self)
 
 		self.check_ba()
 		self.check_prev_docstatus()
@@ -650,6 +648,8 @@ class SalesInvoice(SellingController):
 		self.make_advance_gl_entry(gl_entries)
 
 		self.make_loading_gl_entry(gl_entries)
+  
+		self.make_challon_cost_gl_entry(gl_entries)
 
 		self.make_void_gl_entry(gl_entries)
 		
@@ -660,17 +660,16 @@ class SalesInvoice(SellingController):
 		self.make_gle_for_change_amount(gl_entries)
 
 		self.make_write_off_gl_entry(gl_entries)
-		#if self.name =="SI19030062":
-		#	frappe.throw("{0}".format(gl_entries))
+		# frappe.msgprint(str(gl_entries))
 		return gl_entries
 
 	def make_customer_gl_entry(self, gl_entries):
 		if self.grand_total:
 			# Didnot use base_grand_total to book rounding loss gle
-			grand_total_in_company_currency = flt(flt(self.grand_total * self.conversion_rate) + flt(self.total_loading_amount * self.conversion_rate) - flt(self.void_amount * self.conversion_rate),
+			# grand_total_in_company_currency = flt(flt(self.grand_total * self.conversion_rate) + flt(self.total_loading_amount * self.conversion_rate) - flt(self.void_amount * self.conversion_rate),self.precision("grand_total"))
+			grand_total_in_company_currency = flt(self.grand_total * self.conversion_rate,
 				self.precision("grand_total"))
-			#grand_total_in_company_currency = flt(self.grand_total * self.conversion_rate,
-			#	self.precision("grand_total"))
+   
 			grand_total = flt(self.grand_total) + flt(self.total_loading_amount) + flt(self.void_amount)
 			cost_center = frappe.db.get_value("Branch", self.branch, "cost_center")
 						
@@ -702,7 +701,8 @@ class SalesInvoice(SellingController):
 						"credit": flt(tax.base_tax_amount_after_discount_amount),
 						"credit_in_account_currency": flt(tax.base_tax_amount_after_discount_amount) \
 							if account_currency==self.company_currency else flt(tax.tax_amount_after_discount_amount),
-						"cost_center": tax.cost_center
+						"cost_center": tax.cost_center,
+						"business_activity": self.business_activity,
 					}, account_currency)
 				)
 
@@ -727,8 +727,8 @@ class SalesInvoice(SellingController):
 						self.get_gl_dict({
 							"account": item.income_account,
 							"against": self.customer,
-							"credit": item.base_net_amount,
-							"credit_in_account_currency": item.base_net_amount \
+							"credit": self.base_total,
+							"credit_in_account_currency": self.base_total \
 								if account_currency==self.company_currency else item.net_amount,
 							"cost_center": item.cost_center,
 							"business_activity": item.business_activity,
@@ -843,32 +843,32 @@ class SalesInvoice(SellingController):
 							}, account_currency)
 						)
 
-					if self.total_loading_amount:
-						gl_entries.append(
-							self.get_gl_dict({
-								"account": item.income_account,
-								"credit": flt(self.rate_per_unit * item.delivered_qty * self.conversion_rate) ,
-								"credit_in_account_currency": flt(self.rate_per_unit * item.delivered_qty * self.conversion_rate) \
-									if self.party_account_currency==self.company_currency else flt(self.rate_per_unit * item.delivered_qty),
-								"business_activity": item.business_activity,
-								"cost_center": item.cost_center
-							}, self.party_account_currency)
-						)
+					# if self.total_loading_amount:
+					# 	gl_entries.append(
+					# 		self.get_gl_dict({
+					# 			"account": item.income_account,
+					# 			"credit": flt(self.rate_per_unit * item.delivered_qty * self.conversion_rate) ,
+					# 			"credit_in_account_currency": flt(self.rate_per_unit * item.delivered_qty * self.conversion_rate) \
+					# 				if self.party_account_currency==self.company_currency else flt(self.rate_per_unit * item.delivered_qty),
+					# 			"business_activity": item.business_activity,
+					# 			"cost_center": item.cost_center
+					# 		}, self.party_account_currency)
+					# 	)
 
-					if self.void_amount:
-						void_account = frappe.db.get_single_value("Sales Accounts Settings", "void_account")
-						if not void_account:
-							frappe.throw("Setup Void Account in Sales Accounts Settings")	
-						gl_entries.append(
-							self.get_gl_dict({
-								"account": void_account,
-								"debit": flt(self.void_rate * .01 * flt(item.amount + flt(self.rate_per_unit * item.delivered_qty)) * self.conversion_rate) ,
-								"debit_in_account_currency": flt(self.void_rate * .01 * (item.amount + flt(self.rate_per_unit * item.delivered_qty)) * self.conversion_rate) \
-									if self.party_account_currency==self.company_currency else flt(self.void_rate * .01 * (item.amount + flt(self.rate_per_unit * item.delivered_qty))),
-								"business_activity": item.business_activity,
-								"cost_center": item.cost_center
-							}, self.party_account_currency)
-						)
+					# if self.void_amount:
+					# 	void_account = frappe.db.get_single_value("Sales Accounts Settings", "void_account")
+					# 	if not void_account:
+					# 		frappe.throw("Setup Void Account in Sales Accounts Settings")	
+					# 	gl_entries.append(
+					# 		self.get_gl_dict({
+					# 			"account": void_account,
+					# 			"debit": flt(self.void_rate * .01 * flt(item.amount + flt(self.rate_per_unit * item.delivered_qty)) * self.conversion_rate) ,
+					# 			"debit_in_account_currency": flt(self.void_rate * .01 * (item.amount + flt(self.rate_per_unit * item.delivered_qty)) * self.conversion_rate) \
+					# 				if self.party_account_currency==self.company_currency else flt(self.void_rate * .01 * (item.amount + flt(self.rate_per_unit * item.delivered_qty))),
+					# 			"business_activity": item.business_activity,
+					# 			"cost_center": item.cost_center
+					# 		}, self.party_account_currency)
+					# 	)
 
 		# expense account gl entries
 		if cint(frappe.defaults.get_global_default("auto_accounting_for_stock")) \
@@ -1020,10 +1020,30 @@ class SalesInvoice(SellingController):
 						if self.party_account_currency==self.company_currency else self.total_loading_amount,
 					"against_voucher": self.return_against if cint(self.is_return) else self.name,
 					"business_activity": self.business_activity,
-					"against_voucher_type": self.doctype
+					"against_voucher_type": self.doctype,
+					"cost_center": self.items[0].cost_center
 				}, self.party_account_currency)
 			)
-
+   
+	def make_challon_cost_gl_entry(self, gl_entries):
+		if self.challan_cost:
+			challon_cost_account = frappe.db.get_single_value("Sales Accounts Settings", "challan_account")
+			if not challon_cost_account:
+				frappe.throw("Setup Loading Account in Sales Accounts Settings")
+			gl_entries.append(
+				self.get_gl_dict({
+					"account": challon_cost_account,
+					"party_type": "Customer",
+					"party": self.customer,
+					"against": self.against_income_account,
+					"credit": flt(self.challan_cost),
+					"against_voucher": self.return_against if cint(self.is_return) else self.name,
+					"business_activity": self.business_activity,
+					"against_voucher_type": self.doctype,
+     				"cost_center": self.items[0].cost_center
+				}, self.party_account_currency)
+			)
+   
 	def make_void_gl_entry(self, gl_entries):
 		if self.void_amount:
 			void_account = frappe.db.get_single_value("Sales Accounts Settings", "void_account")
