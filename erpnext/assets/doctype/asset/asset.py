@@ -5,8 +5,8 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from frappe.utils.data import get_first_day, get_last_day, add_days
-from frappe.utils import flt, add_months, cint, nowdate, getdate, get_last_day
+from frappe.utils.data import get_last_day, add_days
+from frappe.utils import flt, add_months, cint, get_last_day
 from frappe.model.document import Document
 from erpnext.accounts.doctype.purchase_invoice.purchase_invoice import get_fixed_asset_account
 from erpnext.assets.doctype.asset.depreciation \
@@ -32,8 +32,8 @@ class Asset(Document):
 		get_depreciation_accounts(self)
 
 	def check_asset_values(self):
-                if (flt(self.residual_value) + flt(self.opening_accumulated_depreciation) + flt(self.expected_value_after_useful_life)) > flt(self.gross_purchase_amount):
-                        frappe.throw("Gross Amount should be >= (Opening + Useful Life + Residual)")
+		if (flt(self.residual_value) + flt(self.opening_accumulated_depreciation) + flt(self.expected_value_after_useful_life)) > flt(self.gross_purchase_amount):
+				frappe.throw("Gross Amount should be >= (Opening + Useful Life + Residual)")
 
 	def on_submit(self):
 		self.make_opening_accumulated_gl_entry()
@@ -63,7 +63,7 @@ class Asset(Document):
 
 
 	def on_update_after_submit(self):
-                self.set_status()
+		self.set_status()
 
 	def validate_item(self):
 		item = frappe.db.get_value("Item", self.item_code,
@@ -175,7 +175,7 @@ class Asset(Document):
 								"accumulated_depreciation_income_tax": income_accumulated_depreciation
 							})
 							dep_done = 1
-			
+				
 						if dep_done == 1 and income_tax_amount == 0:
 							break
 						else:
@@ -186,7 +186,21 @@ class Asset(Document):
 								"accumulated_depreciation_amount": flt(self.gross_purchase_amount) - flt(self.residual_value) - flt(self.expected_value_after_useful_life),
 								"accumulated_depreciation_income_tax": income_accumulated_depreciation
 							})
-					
+		last_row = self.schedules[-1]
+		# last_depreciation_amount = flt(self.gross_purchase_amount) - flt(self.expected_value_after_useful_life) - flt(last_row.accumulated_depreciation_amount)
+		last_depreciation_amount = flt(self.gross_purchase_amount) - flt(last_row.accumulated_depreciation_amount)
+
+		if last_depreciation_amount > 1:
+			# last_depreciation_income_tax = flt(self.gross_purchase_amount) - flt(self.expected_value_after_useful_life) - flt(last_row.accumulated_depreciation_income_tax)   
+			last_depreciation_income_tax = flt(self.gross_purchase_amount) - flt(last_row.accumulated_depreciation_income_tax)   
+			self.append("schedules", {
+				"schedule_date": get_last_day(add_days(schedule_date, 30)),
+				"depreciation_amount": last_depreciation_amount,
+				"depreciation_income_tax": last_depreciation_income_tax,
+    										# if last_depreciation_income_tax > 1 else income_tax_amount,
+				"accumulated_depreciation_amount": flt(last_depreciation_amount) + flt(last_row.accumulated_depreciation_amount),
+				"accumulated_depreciation_income_tax": flt(last_depreciation_income_tax) + flt(last_row.accumulated_depreciation_income_tax) if last_depreciation_income_tax > 1 else income_accumulated_depreciation
+			})
 
 	def get_depreciation_amount(self, depreciable_value, num_days=1):
 		if self.depreciation_method == "Straight Line":
@@ -219,8 +233,8 @@ class Asset(Document):
 		for d in self.get("schedules"):
 			if d.journal_entry:
 				je = frappe.get_doc("Journal Entry", d.journal_entry)
-                                if je.docstatus == 1:
-                                        je.cancel()
+				if je.docstatus == 1:
+					je.cancel()
 				d.db_set("journal_entry", None)
 
 		self.db_set("value_after_depreciation",
@@ -231,12 +245,12 @@ class Asset(Document):
 		if not status:
 			status = self.get_status()
 		disable_depreciation = 0
-                if status not in ["Submitted", "Partially Depreciated"]:
-                        disable_depreciation = 1
-                if self.asset_status in ["Auctioned", "Marked for Auction"]:
-                        disable_depreciation = 1
-                self.db_set("status", status)
-                self.db_set("disable_depreciation", disable_depreciation)
+		if status not in ["Submitted", "Partially Depreciated"]:
+			disable_depreciation = 1
+		if self.asset_status in ["Auctioned", "Marked for Auction"]:
+			disable_depreciation = 1
+		self.db_set("status", status)
+		self.db_set("disable_depreciation", disable_depreciation)
 
 	def get_status(self):
 		'''Returns status based on whether it is draft, submitted, scrapped or depreciated'''
@@ -293,16 +307,17 @@ class Asset(Document):
 				"business_activity": self.business_activity,
                                 "cost_center": self.cost_center
                                 })
+   
 			#debit account update
-                        je.append("accounts", {
-                                "account": self.credit_account,
-                                "debit_in_account_currency": self.opening_accumulated_depreciation,
-                                "reference_type": "Asset",
-                                "reference_name": self.name,
+			je.append("accounts", {
+				"account": self.credit_account,
+				"debit_in_account_currency": self.opening_accumulated_depreciation,
+				"reference_type": "Asset",
+				"reference_name": self.name,
 				"business_activity": self.business_activity,
-                                "cost_center": self.cost_center
-                                })
-                        je.submit();
+				"cost_center": self.cost_center
+			})
+			je.submit()
 
 
 	def make_asset_gl_entry(self):
