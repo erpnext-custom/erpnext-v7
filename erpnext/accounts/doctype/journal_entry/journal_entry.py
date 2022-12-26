@@ -30,45 +30,44 @@ class JournalEntry(AccountsController):
 
         # Ver 1.0 by SSK on 09/08/2016, autoname() method is added
 	def autoname(self):
-                series_seq = ""
-                if self.voucher_type == 'Journal Entry':
-                        series_seq = 'JEJV'
-                elif self.voucher_type == 'Bank Entry':
-                        if self.naming_series == 'Bank Payment Voucher':
-                                series_seq = 'JEBP'
-                        elif self.naming_series == 'Bank Receipt Voucher':
-                                series_seq = 'JEBR'
-                        else:
-                                series_seq = 'JEBE'
-                elif self.voucher_type == 'Cash Entry':
-                        if self.naming_series == 'Cash Payment Voucher':
-                                series_seq = 'JECP'
-                        elif self.naming_series == 'Cash Receipt Voucher':
-                                series_seq = 'JECR'
-                        else:
-                                series_seq = 'JECA'
-                elif self.voucher_type == 'Debit Note':
-                        series_seq = 'JEDN'
-                elif self.voucher_type == 'Credit Note':
-                        series_seq = 'JECN'
-                elif self.voucher_type == 'Contra Entry':
-                        series_seq = 'JECE'
-                elif self.voucher_type == 'Excise Entry':
-                        series_seq = 'JEEE'
-                elif self.voucher_type == 'Write Off Entry':
-                        series_seq = 'JEWE'
-                elif self.voucher_type == 'Opening Entry':
-                        series_seq = 'JEOP'
-                elif self.voucher_type == 'Depreciation Entry':
-                        series_seq = 'JEDE'
-                elif self.voucher_type == 'Maintenance Invoice':
-                        series_seq = 'JEMA'
-                elif self.voucher_type == 'Hire Invoice':
-                        series_seq = 'JEHI'
+		series_seq = ""
+		if self.voucher_type == 'Journal Entry':
+				series_seq = 'JEJV'
+		elif self.voucher_type == 'Bank Entry':
+				if self.naming_series == 'Bank Payment Voucher':
+						series_seq = 'JEBP'
+				elif self.naming_series == 'Bank Receipt Voucher':
+						series_seq = 'JEBR'
+				else:
+						series_seq = 'JEBE'
+		elif self.voucher_type == 'Cash Entry':
+				if self.naming_series == 'Cash Payment Voucher':
+						series_seq = 'JECP'
+				elif self.naming_series == 'Cash Receipt Voucher':
+						series_seq = 'JECR'
+				else:
+						series_seq = 'JECA'
+		elif self.voucher_type == 'Debit Note':
+				series_seq = 'JEDN'
+		elif self.voucher_type == 'Credit Note':
+				series_seq = 'JECN'
+		elif self.voucher_type == 'Contra Entry':
+				series_seq = 'JECE'
+		elif self.voucher_type == 'Excise Entry':
+				series_seq = 'JEEE'
+		elif self.voucher_type == 'Write Off Entry':
+				series_seq = 'JEWE'
+		elif self.voucher_type == 'Opening Entry':
+				series_seq = 'JEOP'
+		elif self.voucher_type == 'Depreciation Entry':
+				series_seq = 'JEDE'
+		elif self.voucher_type == 'Maintenance Invoice':
+				series_seq = 'JEMA'
+		elif self.voucher_type == 'Hire Invoice':
+				series_seq = 'JEHI'
 		else:
 			series_seq = 'JEJE'
-
-                self.name = make_autoname(str(series_seq) + '.YY.MM.#####')
+			self.name = make_autoname(str(series_seq) + '.YY.MM.#####')
 
 	def get_feed(self):
 		return self.voucher_type
@@ -164,13 +163,13 @@ class JournalEntry(AccountsController):
     # consolidation end here
 	def validate_party(self):
 		for d in self.get("accounts"):
-                        if d.party_check == 1:
-                                account_type = frappe.db.get_value("Account", d.account, "account_type")
-                                if account_type in ["Receivable", "Payable", "Expense Account", "Income Account"]:
-                                        if not (d.party_type and d.party) and account_type in ["Receivable", "Payable"]:
-                                                frappe.throw(_("Row {0}: Party Type and Party is required for Receivable / Payable account {1}").format(d.idx, d.account))
-                                elif d.party_type and d.party:
-                                        frappe.throw(_("Row {0}: Party Type and Party is only applicable against Receivable / Payable account").format(d.idx))
+			if d.party_check == 1:
+				account_type = frappe.db.get_value("Account", d.account, "account_type")
+				if account_type in ["Receivable", "Payable", "Expense Account", "Income Account"]:
+					if not (d.party_type and d.party) and account_type in ["Receivable", "Payable"]:
+						frappe.throw(_("Row {0}: Party Type and Party is required for Receivable / Payable account {1}").format(d.idx, d.account))
+				elif d.party_type and d.party:
+					frappe.throw(_("Row {0}: Party Type and Party is only applicable against Receivable / Payable account").format(d.idx))
 
 	def check_credit_limit(self):
 		customers = list(set([d.party for d in self.get("accounts")
@@ -471,9 +470,9 @@ class JournalEntry(AccountsController):
 				currency = party_account_currency
 		# Ver 20160713.1 added by SSK
 		# Calculating Total Amounts for bank entryies even without party details
-                elif self.voucher_type == "Bank Entry":
-                        total_amount = bank_amount
-                        currency = bank_account_currency
+		elif self.voucher_type == "Bank Entry":
+			total_amount = bank_amount
+			currency = bank_account_currency
                         
 		self.set_total_amount(total_amount, currency)
 
@@ -484,56 +483,55 @@ class JournalEntry(AccountsController):
 
 	def make_gl_entries(self, cancel=0, adv_adj=0):
 		from erpnext.accounts.general_ledger import make_gl_entries
-
 		gl_map = []
 		for d in self.get("accounts"):
 			if d.debit or d.credit:
-                                if d.party_check:
-                                        gl_map.append(
-                                                self.get_gl_dict({
-                                                        "account": d.account,
-                                                        "party_type": d.party_type,
-                                                        "party": d.party,
-                                                        "against": d.against_account,
-                                                        "debit": flt(d.debit, d.precision("debit")),
-                                                        "credit": flt(d.credit, d.precision("credit")),
-                                                        "account_currency": d.account_currency,
-                                                        "debit_in_account_currency": flt(d.debit_in_account_currency, d.precision("debit_in_account_currency")),
-                                                        "credit_in_account_currency": flt(d.credit_in_account_currency, d.precision("credit_in_account_currency")),
-                                                        "against_voucher_type": d.reference_type,
-                                                        "against_voucher": d.reference_name,
-                                                        "remarks": self.remark,
-                                                        "cost_center": d.cost_center,
-                                                        "project": d.project,
-                                                        "party_check": 1,
-														"business_activity": d.business_activity,
-														"consolidation_party_type":d.consolidation_party_type,
-														"consolidation_party":d.consolidation_party 
-                                                })
-                                        )
-                                else:
-                                        gl_map.append(
-                                                self.get_gl_dict({
-                                                        "account": d.account,
-                                                        "party_type": d.party_type,
-                                                        "party": d.party,
-                                                        "against": d.against_account,
-                                                        "debit": flt(d.debit, d.precision("debit")),
-                                                        "credit": flt(d.credit, d.precision("credit")),
-                                                        "account_currency": d.account_currency,
-                                                        "debit_in_account_currency": flt(d.debit_in_account_currency, d.precision("debit_in_account_currency")),
-                                                        "credit_in_account_currency": flt(d.credit_in_account_currency, d.precision("credit_in_account_currency")),
-                                                        "against_voucher_type": d.reference_type,
-                                                        "against_voucher": d.reference_name,
-                                                        "remarks": self.remark,
-                                                        "cost_center": d.cost_center,
-                                                        "project": d.project,
-														"business_activity": d.business_activity, 
-                                                        "party_check": d.party_check,
-														"consolidation_party_type":d.consolidation_party_type,
-														"consolidation_party":d.consolidation_party
-                                                })
-                                        )                                        
+				if d.party_check:
+					gl_map.append(
+						self.get_gl_dict({
+							"account": d.account,
+							"party_type": d.party_type,
+							"party": d.party,
+							"against": d.against_account,
+							"debit": flt(d.debit, d.precision("debit")),
+							"credit": flt(d.credit, d.precision("credit")),
+							"account_currency": d.account_currency,
+							"debit_in_account_currency": flt(d.debit_in_account_currency, d.precision("debit_in_account_currency")),
+							"credit_in_account_currency": flt(d.credit_in_account_currency, d.precision("credit_in_account_currency")),
+							"against_voucher_type": d.reference_type,
+							"against_voucher": d.reference_name,
+							"remarks": self.remark,
+							"cost_center": d.cost_center,
+							"project": d.project,
+							"party_check": 1,
+							"business_activity": d.business_activity,
+							"consolidation_party_type":d.consolidation_party_type,
+							"consolidation_party":d.consolidation_party 
+						})
+					)
+				else:
+					gl_map.append(
+						self.get_gl_dict({
+							"account": d.account,
+							"party_type": d.party_type,
+							"party": d.party,
+							"against": d.against_account,
+							"debit": flt(d.debit, d.precision("debit")),
+							"credit": flt(d.credit, d.precision("credit")),
+							"account_currency": d.account_currency,
+							"debit_in_account_currency": flt(d.debit_in_account_currency, d.precision("debit_in_account_currency")),
+							"credit_in_account_currency": flt(d.credit_in_account_currency, d.precision("credit_in_account_currency")),
+							"against_voucher_type": d.reference_type,
+							"against_voucher": d.reference_name,
+							"remarks": self.remark,
+							"cost_center": d.cost_center,
+							"project": d.project,
+							"business_activity": d.business_activity, 
+							"party_check": d.party_check,
+							"consolidation_party_type":d.consolidation_party_type,
+							"consolidation_party":d.consolidation_party
+						})
+					)                                        
 
 		if gl_map:
 			make_gl_entries(gl_map, cancel=cancel, adv_adj=adv_adj)
@@ -618,64 +616,65 @@ class JournalEntry(AccountsController):
         # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
         # Folowing method is created by SHIV on 04/09/2017
 	def update_project_advance(self):
-                reference_list = dict()
+		reference_list = dict()
 
-                for d in self.accounts:
-                        if d.reference_type=="Project Advance" and d.reference_name and d.credit:
-                                if d.reference_name in reference_list:
-                                        reference_list.update({d.reference_name: flt(reference_list[d.reference_name])+flt(d.credit)})
-                                else:
-                                        reference_list.update({d.reference_name: flt(d.credit)})
+		for d in self.accounts:
+			if d.reference_type=="Project Advance" and d.reference_name and d.credit:
+				if d.reference_name in reference_list:
+					reference_list.update({d.reference_name: flt(reference_list[d.reference_name])+flt(d.credit)})
+				else:
+					reference_list.update({d.reference_name: flt(d.credit)})
 
-                if reference_list:
-                        for key, value in reference_list.iteritems():
-                                amt = 0.00
-                                amt = frappe.db.sql("""select sum(ifnull(credit,0)) as amt
-                                        from `tabJournal Entry Account`
-					where reference_type = %s and
-					reference_name = %s and docstatus = 1 and
-					parent <> %s""", ("Project Advance", key, self.name) ,as_dict=1)[0].amt
+				if reference_list:
+					for key, value in reference_list.iteritems():
+						amt = 0.00
+						amt = frappe.db.sql("""
+						select sum(ifnull(credit,0)) as amt
+						from `tabJournal Entry Account`
+						where reference_type = %s and
+						reference_name = %s and docstatus = 1 and
+						parent <> %s""", ("Project Advance", key, self.name) ,as_dict=1)[0].amt
 
-                                if value:
-                                        frappe.db.sql("""
-                                                update `tabProject Advance`
-                                                set received_amount = {0},
-                                                balance_amount = {1}-ifnull(adjustment_amount,0)
-                                                where name = '{2}'
-                                        """.format(flt(amt)+flt(value), flt(amt)+flt(value), key))
+				if value:
+					frappe.db.sql("""
+					update `tabProject Advance`
+					set received_amount = {0},
+					balance_amount = {1}-ifnull(adjustment_amount,0)
+					where name = '{2}'
+					""".format(flt(amt)+flt(value), flt(amt)+flt(value), key))
         # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
         
 	def validate_expense_claim(self):
-                entry_balance = 0.00
-                sanctiond_amount = 0.00
-                reimbursed_amount = 0.00
-                expense_check = 0
-                pending_amount = 0.00
-                
+		entry_balance = 0.00
+		sanctiond_amount = 0.00
+		reimbursed_amount = 0.00
+		expense_check = 0
+		pending_amount = 0.00
+        
 		for d in self.accounts:
 			if d.reference_type=="Expense Claim":
-                                expense_check = 1
+				expense_check = 1
 				sanctioned_amount, reimbursed_amount = frappe.db.get_value("Expense Claim",
 					d.reference_name, ("total_sanctioned_amount", "total_amount_reimbursed"))
 				pending_amount = flt(sanctioned_amount) - flt(reimbursed_amount)
 				
 				# Ver 1.0 Begins, added by SSK on 29/08/2016, Following condition is commented and the subsequent code is added
-				#if d.debit > pending_amount:
+				# if d.debit > pending_amount:
 				#	frappe.throw(_("Row No {0}: Amount cannot be greater than Pending Amount against Expense Claim {1}. Pending Amount is {2}".format(d.idx, d.reference_name, pending_amount)))
-                                # Ver 1.0 Ends
-                                
-                                if d.debit:
-                                        if d.account == 'Sundry Creditors - Employee - SMCL':
-                                                entry_balance = flt(entry_balance) + 0
-                                        else:
-                                                entry_balance = flt(entry_balance) + flt(d.debit)
-                                elif d.credit and d.account == 'Advance to Employee-Travel - SMCL':
-                                        entry_balance = flt(entry_balance) - flt(d.credit)
+							# Ver 1.0 Ends
+							
+				if d.debit:
+					if d.account == 'Sundry Creditors - Employee - SMCL':
+						entry_balance = flt(entry_balance) + 0
+					else:
+						entry_balance = flt(entry_balance) + flt(d.debit)
+				elif d.credit and d.account == 'Advance to Employee-Travel - SMCL':
+					entry_balance = flt(entry_balance) - flt(d.credit)
 
-                if expense_check:
-                        if entry_balance > pending_amount:
-				#frappe.msgprint(str(entry_balance))
-                                frappe.throw(_("Amount cannot be greater than Pending Amount {0}.".format(pending_amount)))
+			if expense_check:
+				if entry_balance > pending_amount:
+					#frappe.msgprint(str(entry_balance))
+					frappe.throw(_("Amount cannot be greater than Pending Amount {0}.".format(pending_amount)))
 
 	def validate_credit_debit_note(self):
 		if self.stock_entry:
@@ -747,18 +746,18 @@ def get_default_bank_cash_sales_account(company, account_type=None, mode_of_paym
 		if account_type=="Bank":
 			account = frappe.db.get_value("Company", company, "default_bank_sales_account")
 			if not account:
-                                account = frappe.db.get_value("Company", company, "default_bank_account")
-                                if not account:
-                                        account = frappe.db.get_value("Account",
-                                                        {"company": company, "account_type": "Bank", "is_group": 0})
+				account = frappe.db.get_value("Company", company, "default_bank_account")
+				if not account:
+					account = frappe.db.get_value("Account",
+						{"company": company, "account_type": "Bank", "is_group": 0})
 
 		elif account_type=="Cash":
 			account = frappe.db.get_value("Company", company, "default_cash_sales_account")
 			if not account:
-                                account = frappe.db.get_value("Company", company, "default_cash_account")
-                                if not account:
-                                        account = frappe.db.get_value("Account",
-                                                        {"company": company, "account_type": "Cash", "is_group": 0})
+				account = frappe.db.get_value("Company", company, "default_cash_account")
+				if not account:
+					account = frappe.db.get_value("Account",
+						{"company": company, "account_type": "Cash", "is_group": 0})
 
 	if account:
 		account_details = frappe.db.get_value("Account", account,
@@ -964,6 +963,18 @@ def get_outstanding(args):
 			"party_type": party_type,
 			"party": invoice.get(scrub(party_type))
 		}
+  
+@frappe.whitelist()
+def get_parent_cost_center(branch):
+    parent_cc = frappe.get_value("Branch", {'name': branch}, ['cost_center'])
+    parent_cc = frappe.get_value("Cost Center", {'name': parent_cc}, ['parent_cost_center'])
+    con = True
+    while con:
+        parent_cc = frappe.get_value("Cost Center", {'name': parent_cc}, ['parent_cost_center'])
+        if parent_cc == 'Regional Office - NRDCL' or 'Corporate Head Office - NRDCL':
+           con = False 
+           
+    return parent_cc
 
 @frappe.whitelist()
 def get_party_account_and_balance(company, party_type, party):

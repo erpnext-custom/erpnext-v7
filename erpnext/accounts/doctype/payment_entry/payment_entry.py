@@ -75,6 +75,8 @@ class PaymentEntry(AccountsController):
 		self.set_title()
 		self.set_remarks()
 		
+		# self.get_account_by_branch(filters)
+		
 	def on_submit(self):
 		self.setup_party_account_field()
 		if self.difference_amount:
@@ -87,7 +89,7 @@ class PaymentEntry(AccountsController):
 		
 	def on_cancel(self):
 		if self.clearance_date:
-                        frappe.throw("Already done bank reconciliation.")
+			frappe.throw("Already done bank reconciliation.")
 
 		self.setup_party_account_field()
 		self.make_gl_entries(cancel=1)
@@ -314,9 +316,9 @@ class PaymentEntry(AccountsController):
                 '''
 		# Following line is added
 		if self.payment_type == "Receive":
-                        self.difference_amount = self.total_allocated_amount - self.paid_amount
-                else:
-                        self.difference_amount = self.paid_amount - self.total_allocated_amount
+			self.difference_amount = self.total_allocated_amount - self.paid_amount
+		else:
+			self.difference_amount = self.paid_amount - self.total_allocated_amount
 		# Ver 1.0 Ends
 		
 		#for d in self.get("deductions"):
@@ -410,9 +412,8 @@ class PaymentEntry(AccountsController):
 			if self.payment_type=="Receive":
 				against_account = self.paid_to
 			else:
-				 against_account = self.paid_from
-			
-				
+				against_account = self.paid_from
+    
 			party_gl_dict = self.get_gl_dict({
 				"account": self.party_account,
 				"party_type": self.party_type,
@@ -427,16 +428,16 @@ class PaymentEntry(AccountsController):
 			
 			for d in self.get("references"):
 				inv = frappe.get_doc(d.reference_doctype, d.reference_name)
-                                if self.payment_type == "Pay":
+				if self.payment_type == "Pay":
 					if d.reference_doctype == "Purchase Invoice":
 						cc  = inv.buying_cost_center
 					else:
 						cc  = self.pl_cost_center
-                                else:
-                                        # Ver 3.0 Begins, following line replaced by subsequent, by SHIV on 2018/10/30
-                                        #cc  = frappe.db.get_value(doctype="Cost Center",filters={"branch": inv.branch},fieldname="name", as_dict=False)
-                                        cc  = frappe.db.get_value(doctype="Branch",filters={"name": inv.branch},fieldname="cost_center", as_dict=False)
-                                        # Ver 3.0 Ends
+				else:
+						# Ver 3.0 Begins, following line replaced by subsequent, by SHIV on 2018/10/30
+						#cc  = frappe.db.get_value(doctype="Cost Center",filters={"branch": inv.branch},fieldname="name", as_dict=False)
+						cc  = frappe.db.get_value(doctype="Branch",filters={"name": inv.branch},fieldname="cost_center", as_dict=False)
+						# Ver 3.0 Ends
 				gle = party_gl_dict.copy()
 				gle.update({
 					"against_voucher_type": d.reference_doctype,
@@ -469,9 +470,9 @@ class PaymentEntry(AccountsController):
 				
 	def add_bank_gl_entries(self, gl_entries):
 		total_deductions = 0
-                for d in self.get("deductions"):
-                        if d.amount:
-                                total_deductions += flt(d.amount)
+		for d in self.get("deductions"):
+			if d.amount:
+					total_deductions += flt(d.amount)
 
 		if self.payment_type in ("Pay", "Internal Transfer"):
 			if frappe.get_value("Account", self.paid_from, "report_type") == "Profit and Loss":	
@@ -543,20 +544,20 @@ class PaymentEntry(AccountsController):
 					frappe.throw(_("Currency for {0} must be {1}").format(d.account, self.company_currency))
 
 				dr_or_cr = "debit"
-                                dr_or_cr_cur = "debit_in_account_currency"
-                                if flt(d.amount) < 0:
-                                        amount = -1 * flt(d.amount)
-                                        dr_or_cr = "credit"
-                                        dr_or_cr_cur = "credit_in_account_currency"
-                                else:
-                                        amount = flt(d.amount)
+				dr_or_cr_cur = "debit_in_account_currency"
+				if flt(d.amount) < 0:
+					amount = -1 * flt(d.amount)
+					dr_or_cr = "credit"
+					dr_or_cr_cur = "credit_in_account_currency"
+				else:
+					amount = flt(d.amount)
 	
 				account_type = frappe.db.get_value("Account", d.account, "account_type")
 
                                 # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
                                 # Following code added by SHIV on 31/07/2018
 				if account_type != "Payable" and account_type != "Receivable" and d.party:
-                                        frappe.throw(_("Row#{0} : Party is not allowed against Non-payable or Non-receivable accounts.").format(d.idx), title="Invalid Data")
+					frappe.throw(_("Row#{0} : Party is not allowed against Non-payable or Non-receivable accounts.").format(d.idx), title="Invalid Data")
 				# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 				
 				if account_type == "Payable" or account_type == "Receivable":
@@ -844,11 +845,9 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 
 	# bank or cash
 	if dt =="Sales Invoice":
-                bank = get_default_bank_cash_sales_account(doc.company, "Bank", mode_of_payment=doc.get("mode_of_payment"), 
-                        account=bank_account)
+		bank = get_default_bank_cash_sales_account(doc.company, "Bank", mode_of_payment=doc.get("mode_of_payment"), account=bank_account)
 	else:
-                bank = get_default_bank_cash_account(doc.company, "Bank", mode_of_payment=doc.get("mode_of_payment"), 
-                        account=bank_account)
+		bank = get_default_bank_cash_account(doc.company, "Bank", mode_of_payment=doc.get("mode_of_payment"), account=bank_account)
 
 	
 	paid_amount = received_amount = 0
@@ -866,17 +865,17 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 	ba = get_default_ba()
 	cc = get_branch_cc(doc.branch)
 	if dt == "Sales Invoice":
-                bank_acc = frappe.db.get_value("Branch", doc.branch, "revenue_bank_account")
+		bank_acc = frappe.db.get_value("Branch", doc.branch, "revenue_bank_account")
 		ba = doc.business_activity
 	elif dt == "Sales Order":
-                bank_acc = frappe.db.get_value("Branch", doc.branch, "revenue_bank_account")
+		bank_acc = frappe.db.get_value("Branch", doc.branch, "revenue_bank_account")
 		ba = get_default_ba()
-        elif dt == "Purchase Invoice":
-                bank_acc = frappe.db.get_value("Branch", doc.branch, "expense_bank_account")
+	elif dt == "Purchase Invoice":
+		bank_acc = frappe.db.get_value("Branch", doc.branch, "expense_bank_account")
 		ba = doc.business_activity
 		cc = doc.buying_cost_center
-        else:
-                bank_acc = bank.account
+	else:
+		bank_acc = bank.account
 
 	pe = frappe.new_doc("Payment Entry")
 	pe.payment_type = payment_type
@@ -900,13 +899,13 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 	if dt == "Sales Order" or dt == "Purchase Order":
 		pe.so_reference = doc.name
 
-        # Ver 2.0 Begins, Following code added SHIV on 03/01/2018
-        if party_currency and bank.account_currency:
-                pe.party_currency = party_currency
-                party_exchange_rate = get_exchange_rate(party_currency, bank.account_currency)
-                if party_exchange_rate:
-                        pe.party_exchange_rate = party_exchange_rate
-                        pe.party_paid_amount = (paid_amount / party_exchange_rate)
+		# Ver 2.0 Begins, Following code added SHIV on 03/01/2018
+		if party_currency and bank.account_currency:
+			pe.party_currency = party_currency
+			party_exchange_rate = get_exchange_rate(party_currency, bank.account_currency)
+			if party_exchange_rate:
+					pe.party_exchange_rate = party_exchange_rate
+					pe.party_paid_amount = (paid_amount / party_exchange_rate)
         # Ver 2.0 Ends
 
 	pe.append("references", {
@@ -945,4 +944,52 @@ def make_bank_payment(source_name, target_doc=None):
 	    },
 	}, target_doc, ignore_permissions=True)
 	return doc
+
+def get_account_by_branch(filters):
+	if not filters.get("branch"):
+		frappe.msgprint(_("Please select <b>Paid From Branch</b> first"))
+	data = []
+	data = frappe.db.sql("""
+    	SELECT 
+     		a.name, 
+       		a.bank_name, 
+         	a.bank_branch, 
+          	a.bank_account_type, 
+           	a.bank_account_no
+		FROM `tabAccount` a
+			WHERE a.bank_name is NOT NULL
+			AND a.bank_branch is NOT NULL
+			AND a.bank_account_type is NOT NULL
+			AND a.bank_account_no is NOT NULL
+			AND 
+   				(EXISTS 
+       				(SELECT 1
+						FROM `tabBranch` b 
+						INNER JOIN `tabBranch Bank Account` ba 
+						ON b.name = ba.parent
+						WHERE b.name = '{0}'
+						AND ba.account = a.name)
+					OR 
+					EXISTS (SELECT 1
+						FROM `tabBranch` 
+						WHERE name = "{0}"
+						AND {1} = a.name)
+				)
+	""".format(filters.get("branch"), filters.get("account_type")))
+
+	if filters.get("branch") and not data:
+		expense_bank_account = frappe.db.get_value("Branch", filters.get("branch"), filters.get("account_type"))
+		if not expense_bank_account:
+			frappe.msgprint(_("Default <b>Expense Bank Account</b> is not set for this branch"))
+		else:
+			account = frappe.db.get("Account", expense_bank_account)
+			if not account.bank_name:
+				frappe.msgprint(_('<b>Bank Name</b> is not set for {}').format(frappe.get_desk_link("Account", expense_bank_account)))
+			elif not account.bank_branch:
+				frappe.msgprint(_("""<b>Bank Account's Branch</b> is not set for {} """).format(frappe.get_desk_link("Account", expense_bank_account)))
+			elif not account.bank_account_no:
+				frappe.msgprint(_('<b>Bank Account No.</b> is not set for {}').format(frappe.get_desk_link("Account", expense_bank_account)))
+			elif not account.bank_account_type:
+				frappe.msgprint(_('<b>Bank Account Type</b> is not set for {}').format(frappe.get_desk_link("Account", expense_bank_account)))
+	return data
 # ePayment Ends

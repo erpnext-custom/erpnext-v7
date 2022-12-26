@@ -48,22 +48,47 @@ frappe.ui.form.on('Payment Entry', {
 			}
 		}); */
 
-		frm.set_query("paid_to", function() {
-			/*var account_types = in_list(["Receive", "Internal Transfer"], frm.doc.payment_type) ?
-	 			["Bank", "Cash"] : party_account_type;
+		// frm.set_query("paid_to", function() {
+		// 	/*var account_types = in_list(["Receive", "Internal Transfer"], frm.doc.payment_type) ?
+	 	// 		["Bank", "Cash"] : party_account_type;
 
-			 * Show both payables and receivable accounts
-			 */
-			var account_types = ["Payable","Receivable", "Bank", "Cash"]
+		// 	 * Show both payables and receivable accounts
+		// 	 */
+		// 	var account_types = ["Payable","Receivable", "Bank", "Cash"]
 
-			return {
-				filters: {
-					"account_type": ["in", account_types],
-					"is_group": 0,
-					"company": frm.doc.company
-				}
+		// 	return {
+		// 		filters: {
+		// 			"account_type": ["in", account_types],
+		// 			"is_group": 0,
+		// 			"company": frm.doc.company
+		// 		}
+		// 	}
+		// });
+		
+
+		frm.set_query("paid_from", function() {
+			if (frm.doc.naming_series == "Bank Payment Voucher" && frm.doc.payment_type == "Pay"){
+				return {
+					query: "erpnext.accounts.doctype.bank_payment.common.get_account_by_branch_set_query",
+					filters: {
+						branch: frm.doc.branch,
+						account_type: "expense_bank_account"
+					}
+				};
 			}
-		});
+		})
+
+		frm.set_query("paid_to", function() {
+			if (frm.doc.naming_series == "Bank Receipt Voucher" && frm.doc.payment_type == "Receive"){
+				return {
+					query: "erpnext.accounts.doctype.bank_payment.common.get_account_by_branch_set_query",
+					filters: {
+						branch: frm.doc.branch,
+						account_type: "revenue_bank_account"
+					}
+				};
+			}
+		})
 
 		frm.set_query("account", "deductions", function() {
 			return {
@@ -238,14 +263,22 @@ frappe.ui.form.on('Payment Entry', {
 			frm.add_custom_button(__('Ledger'), function() {
 				frappe.route_options = {
 					"voucher_no": frm.doc.name,
-					"from_date": frm.doc.posting_date,
-					"to_date": frm.doc.posting_date,
-					"company": frm.doc.company,
+					"from_date": frm.doc.from_date,
+					"to_date": frm.doc.to_date,
+					// "company": frm.doc.company,
 					group_by_voucher: 0
 				};
 				frappe.set_route("query-report", "General Ledger");
 			}, "icon-table");
 		}
+	},
+
+	branch: function(frm){
+		set_paid_from_and_to(frm)			
+	},
+
+	mode_of_payment: function(frm){
+		set_paid_from_and_to(frm);
 	},
 
 	payment_type: function(frm) {
@@ -311,8 +344,7 @@ frappe.ui.form.on('Payment Entry', {
 	},
 
 	paid_from: function(frm) {
-		if(frm.set_party_account_based_on_party) return;
-
+		if(frm.set_party_account_based_on_party) {return};
 		frm.events.set_account_currency_and_balance(frm, frm.doc.paid_from,
 			"paid_from_account_currency", "paid_from_account_balance", function(frm) {
 				if (frm.doc.payment_type == "Receive") {
@@ -330,9 +362,9 @@ frappe.ui.form.on('Payment Entry', {
 		frm.events.set_account_currency_and_balance(frm, frm.doc.paid_to,
 			"paid_to_account_currency", "paid_to_account_balance", function(frm) {
 				if(frm.doc.payment_type == "Pay") {
-					frm.events.get_outstanding_documents(frm);
+					// frm.events.get_outstanding_documents(frm);
 				} else if (frm.doc.payment_type == "Receive") {
-					frm.events.received_amount(frm);
+					// frm.events.received_amount(frm);
 				}
 			}
 		);
@@ -476,12 +508,12 @@ frappe.ui.form.on('Payment Entry', {
 		frm.set_value("base_received_amount",
 			flt(frm.doc.received_amount) * flt(frm.doc.target_exchange_rate));
 
-		if(frm.doc.payment_type == "Pay")
-			frm.events.allocate_party_amount_against_ref_docs(frm, frm.doc.received_amount);
-		else
-			frm.events.set_difference_amount(frm);
+		// if(frm.doc.payment_type == "Pay")
+		// 	frm.events.allocate_party_amount_against_ref_docs(frm, frm.doc.received_amount);
+		// else
+		// 	frm.events.set_difference_amount(frm);
 
-		frm.set_paid_amount_based_on_received_amount = false;
+		// frm.set_paid_amount_based_on_received_amount = false;
 	},
 
 	reset_received_amount: function(frm) {
@@ -494,10 +526,10 @@ frappe.ui.form.on('Payment Entry', {
 			frm.set_value("actual_receivable_amount", frm.doc.base_paid_amount - frm.doc.tds_amount);
 		}
 
-		if(frm.doc.payment_type == "Receive")
-			frm.events.allocate_party_amount_against_ref_docs(frm, frm.doc.paid_amount);
-		else
-			frm.events.set_difference_amount(frm);
+		// if(frm.doc.payment_type == "Receive")
+		// 	frm.events.allocate_party_amount_against_ref_docs(frm, frm.doc.paid_amount);
+		// else
+		// 	frm.events.set_difference_amount(frm);
 	},
 
 	get_outstanding_documents: function(frm) {
@@ -788,7 +820,7 @@ frappe.ui.form.on('Payment Entry', {
 				frm.reload_doc();
 			}
 		});
-	}
+	},
 });
 
 
@@ -847,8 +879,8 @@ frappe.ui.form.on('Payment Entry Deduction', {
 	// Following code added by SHIV on 31/07/2018
 	deductions_add: function(frm, cdt, cdn){
 		var child = locals[cdt][cdn];
-		//frappe.model.set_value(cdt, cdn, "party_type", frm.doc.party_type);
-		//frappe.model.set_value(cdt, cdn, "party", frm.doc.party);
+		frappe.model.set_value(cdt, cdn, "party_type", frm.doc.party_type);
+		frappe.model.set_value(cdt, cdn, "party", frm.doc.party);
 	}
 	// +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 })
@@ -904,9 +936,7 @@ frappe.ui.form.on("Payment Entry", "onload", function(frm) {
       //make pay_to_recd_from editable
          frm.toggle_reqd("pay_to_recd_from", 1);
       } 
-
-})
-
+});
 
 frappe.ui.form.on("Payment Entry", "onload", function(frm){
     cur_frm.set_query("select_cheque_lot", function(){
@@ -945,6 +975,41 @@ var create_custom_buttons = function(frm){
 				})
 			});
 		}
+	}
+},
+
+set_paid_from_and_to = function(frm){
+	var account_type = undefined;
+	if (frm.doc.naming_series = "Bank Payment Voucher"){
+		account_type = "expense_bank_account"
+	} else if(frm.doc.naming_series = 'Bank Receipt Voucher'){
+		account_type = "revenue_bank_account"
+	}
+	if (frm.doc.mode_of_payment === "Bank Payment" && account_type !== undefined && frm.doc.branch){
+		return frappe.call({
+			method: "erpnext.accounts.doctype.bank_payment.common.get_account_by_branch_frappe_call",
+			args: {
+				branch: frm.doc.branch,
+				account_type: account_type
+			},
+			callback: function(r) {
+				if(r.message.length === 1){
+					if(frm.doc.naming_series = "Bank Payment Voucher"){
+						frm.set_value("paid_from", r.message[0][0]);
+					} else if(frm.doc.naming_series = 'Bank Receipt Voucher'){
+						frm.set_value("paid_to", r.message[0][0]);
+					}
+				} else {
+					frm.doc.paid_from = undefined;
+					frm.doc.paid_to = undefined;
+					frm.refresh_fields()
+				}
+			}
+		});	
+	} else {
+		frm.doc.paid_from = undefined;
+		frm.doc.paid_to = undefined;
+		frm.refresh_fields()
 	}
 }
 /* ePayment Ends */

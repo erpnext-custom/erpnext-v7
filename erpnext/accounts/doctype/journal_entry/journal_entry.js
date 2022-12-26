@@ -76,6 +76,40 @@ frappe.ui.form.on("Journal Entry", {
 	multi_currency: function(frm) {
 		erpnext.journal_entry.toggle_fields_based_on_currency(frm);
 	},
+
+	branch: function(frm){
+		if (frm.doc.branch == undefined || frm.doc.voucher_type != 'Bank Entry'){
+			return;
+		} else {
+			frm.doc.voucher_type = "Journal Entry"
+			frm.doc.accounts.forEach((acc) => {
+				acc.account = ""
+				frm.refresh_fields();
+			});
+		}
+	},
+
+	voucher_type: function(frm){
+		console.log(frm.doc.voucher_type)
+		if (frm.doc.branch == undefined || frm.doc.voucher_type != 'Bank Entry' && (frm.doc.naming_series != 'Bank Payment Voucher' || 
+		frm.doc.naming_series != 'Bank Receipt Voucher')){
+			frm.doc.accounts.forEach((acc) => {
+				acc.account = ""
+				frm.refresh_fields();
+			});
+			console.log(frm.doc.voucher_type, "inside", frm.doc.naming_series,frm.doc.branch)
+			return;
+		}
+		console.log(frm.doc.voucher_type, "outside")
+		set_accounts(frm);
+    },
+
+	naming_series: function(frm){
+		if (frm.doc.voucher_type != 'Bank Entry'){
+			return;
+		}
+		set_accounts(frm);
+	},
 	
 	get_series: function(frm) {
 		return frappe.call({
@@ -87,6 +121,39 @@ frappe.ui.form.on("Journal Entry", {
 		});
 	}
 })
+
+function set_accounts(frm){
+	frappe.call({
+		method: "erpnext.accounts.doctype.journal_entry.journal_entry.get_parent_cost_center",
+		args: { branch : frm.doc.branch},
+		callback: function(r) {
+			if(r.message) {
+				if (r.message == 'Corporate Head Office - NRDCL'){
+					return;
+				}
+				frm.doc.accounts.forEach((acc) => {
+					if (frm.doc.naming_series == 'Bank Payment Voucher'){
+						frappe.model.get_value('Branch', {'name': frm.doc.branch}, 'expense_bank_account',
+							function(d) {
+								acc.account = d.expense_bank_account
+								frm.refresh_fields();
+						});
+					}else if (frm.doc.naming_series == 'Bank Receipt Voucher'){
+						frappe.model.get_value('Branch', {'name': frm.doc.branch}, 'revenue_bank_account',
+						function(d) {
+							acc.account = d.revenue_bank_account					
+							frm.refresh_fields();
+						});
+					} else {
+						acc.account = ""					
+						frm.refresh_fields();
+					}
+				});
+				frm.refresh_fields();
+			}
+		}
+	});
+}
 
 erpnext.accounts.JournalEntry = frappe.ui.form.Controller.extend({
 	onload: function() {
