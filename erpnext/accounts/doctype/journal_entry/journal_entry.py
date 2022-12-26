@@ -28,7 +28,7 @@ class JournalEntry(AccountsController):
 	def __init__(self, arg1, arg2=None):
 		super(JournalEntry, self).__init__(arg1, arg2)
 
-        # Ver 1.0 by SSK on 09/08/2016, autoname() method is added
+	# Ver 1.0 by SSK on 09/08/2016, autoname() method is added
 	def autoname(self):
 		series_seq = ""
 		if self.voucher_type == 'Journal Entry':
