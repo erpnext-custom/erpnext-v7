@@ -723,12 +723,23 @@ class SalesInvoice(SellingController):
 					asset.set_status("Sold" if self.docstatus==1 else None)
 				else:
 					account_currency = get_account_currency(item.income_account)
+					# gl_entries.append(
+					# 	self.get_gl_dict({
+					# 		"account": item.income_account,
+					# 		"against": self.customer,
+					# 		"credit": self.base_total,
+					# 		"credit_in_account_currency": self.base_total \
+					# 			if account_currency==self.company_currency else item.net_amount,
+					# 		"cost_center": item.cost_center,
+					# 		"business_activity": item.business_activity,
+					# 	}, account_currency)
+					# )
 					gl_entries.append(
 						self.get_gl_dict({
 							"account": item.income_account,
 							"against": self.customer,
-							"credit": self.base_total,
-							"credit_in_account_currency": self.base_total \
+							"credit": self.base_net_total,
+							"credit_in_account_currency": self.base_net_total \
 								if account_currency==self.company_currency else item.net_amount,
 							"cost_center": item.cost_center,
 							"business_activity": item.business_activity,
