@@ -728,7 +728,7 @@ class SalesInvoice(SellingController):
 						if self.base_net_total > 0:
 							amount = self.base_net_total
 						else:
-							amount = self.total
+							amount = self.base_total
 					else:
 						amount = item.net_amount
 					# gl_entries.append(
