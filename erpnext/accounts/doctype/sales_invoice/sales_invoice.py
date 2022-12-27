@@ -727,7 +727,7 @@ class SalesInvoice(SellingController):
 						self.get_gl_dict({
 							"account": item.income_account,
 							"against": self.customer,
-							"credit": self.base_total,
+							"credit": self.base_net_total,
 							"credit_in_account_currency": self.base_net_total \
 								if account_currency==self.company_currency else item.net_amount,
 							"cost_center": item.cost_center,
