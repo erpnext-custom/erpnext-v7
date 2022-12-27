@@ -277,8 +277,12 @@ frappe.ui.form.on('Payment Entry', {
 		set_paid_from_and_to(frm)			
 	},
 
-	mode_of_payment: function(frm){
-		set_paid_from_and_to(frm);
+	naming_series: function(frm){
+		if(frm.doc.naming_series == "Bank Payment Voucher"){
+			frm.set_value("payment_type", "Pay");
+		} else if (frm.doc.naming_series == "Bank Receipt Voucher") {
+			frm.set_value("payment_type", "Receive");
+		}
 	},
 
 	payment_type: function(frm) {
@@ -362,9 +366,9 @@ frappe.ui.form.on('Payment Entry', {
 		frm.events.set_account_currency_and_balance(frm, frm.doc.paid_to,
 			"paid_to_account_currency", "paid_to_account_balance", function(frm) {
 				if(frm.doc.payment_type == "Pay") {
-					// frm.events.get_outstanding_documents(frm);
+					frm.events.get_outstanding_documents(frm);
 				} else if (frm.doc.payment_type == "Receive") {
-					// frm.events.received_amount(frm);
+					frm.events.received_amount(frm);
 				}
 			}
 		);
@@ -985,7 +989,7 @@ set_paid_from_and_to = function(frm){
 	} else if(frm.doc.naming_series = 'Bank Receipt Voucher'){
 		account_type = "revenue_bank_account"
 	}
-	if (frm.doc.mode_of_payment === "Bank Payment" && account_type !== undefined && frm.doc.branch){
+	if (account_type !== undefined && frm.doc.branch !== undefined){
 		return frappe.call({
 			method: "erpnext.accounts.doctype.bank_payment.common.get_account_by_branch_frappe_call",
 			args: {
