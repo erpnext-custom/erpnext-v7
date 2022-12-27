@@ -67,7 +67,7 @@ frappe.ui.form.on('Payment Entry', {
 		
 
 		frm.set_query("paid_from", function() {
-			if (frm.doc.naming_series == "Bank Payment Voucher" && frm.doc.payment_type == "Pay"){
+			if (frm.doc.naming_series == "Bank Payment Voucher"){
 				return {
 					query: "erpnext.accounts.doctype.bank_payment.common.get_account_by_branch_set_query",
 					filters: {
@@ -79,7 +79,7 @@ frappe.ui.form.on('Payment Entry', {
 		})
 
 		frm.set_query("paid_to", function() {
-			if (frm.doc.naming_series == "Bank Receipt Voucher" && frm.doc.payment_type == "Receive"){
+			if (frm.doc.naming_series == "Bank Receipt Voucher"){
 				return {
 					query: "erpnext.accounts.doctype.bank_payment.common.get_account_by_branch_set_query",
 					filters: {
@@ -270,18 +270,6 @@ frappe.ui.form.on('Payment Entry', {
 				};
 				frappe.set_route("query-report", "General Ledger");
 			}, "icon-table");
-		}
-	},
-
-	branch: function(frm){
-		set_paid_from_and_to(frm)			
-	},
-
-	naming_series: function(frm){
-		if(frm.doc.naming_series == "Bank Payment Voucher"){
-			frm.set_value("payment_type", "Pay");
-		} else if (frm.doc.naming_series == "Bank Receipt Voucher") {
-			frm.set_value("payment_type", "Receive");
 		}
 	},
 
@@ -731,7 +719,6 @@ frappe.ui.form.on('Payment Entry', {
 		})*/
 
 		frm.set_value("difference_amount", difference_amount);
-
 		frm.events.hide_unhide_fields(frm);
 	},
 
@@ -825,6 +812,27 @@ frappe.ui.form.on('Payment Entry', {
 			}
 		});
 	},
+
+	branch: function(frm){
+		// frm.set_value("naming_series", "Journal Voucher");
+		set_paid_from_and_to(frm)			
+	},
+
+	naming_series: function(frm){
+		if(frm.doc.naming_series == "Bank Payment Voucher"){
+			frm.set_value("payment_type", "Pay");
+			frm.set_value("naming_series", "Bank Payment Voucher");
+		}
+		if (frm.doc.naming_series == "Bank Receipt Voucher") {
+			frm.set_value("payment_type", "Receive");
+			frm.set_value("naming_series", "Bank Receipt Voucher");
+		}
+	},
+
+	payment_type: function(frm) {
+		set_paid_from_and_to(frm);
+	},
+
 });
 
 
@@ -983,6 +991,7 @@ var create_custom_buttons = function(frm){
 },
 
 set_paid_from_and_to = function(frm){
+	
 	var account_type = undefined;
 	if (frm.doc.naming_series = "Bank Payment Voucher"){
 		account_type = "expense_bank_account"
@@ -998,10 +1007,14 @@ set_paid_from_and_to = function(frm){
 			},
 			callback: function(r) {
 				if(r.message.length === 1){
-					if(frm.doc.naming_series = "Bank Payment Voucher"){
-						frm.set_value("paid_from", r.message[0][0]);
-					} else if(frm.doc.naming_series = 'Bank Receipt Voucher'){
+					if(frm.doc.naming_series == 'Bank Receipt Voucher'){
 						frm.set_value("paid_to", r.message[0][0]);
+						frm.set_value("paid_from", "");
+					}		
+					if(frm.doc.naming_series == "Bank Payment Voucher"){
+						frm.set_value("paid_from", r.message[0][0]);
+						frm.set_value("paid_to", "");
+
 					}
 				} else {
 					frm.doc.paid_from = undefined;
