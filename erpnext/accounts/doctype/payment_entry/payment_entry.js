@@ -815,6 +815,8 @@ frappe.ui.form.on('Payment Entry', {
 
 	branch: function(frm){
 		// frm.set_value("naming_series", "Journal Voucher");
+		frm.set_value("payment_type", "Pay");
+
 		set_paid_from_and_to(frm)			
 	},
 
@@ -901,27 +903,24 @@ frappe.ui.form.on('Payment Entry Deduction', {
 //custom Scripts
 //Assign pay_to_recd_from from party
 cur_frm.cscript.party = function(doc) {
-       //Set item table read only
-       cur_frm.set_value("pay_to_recd_from", cur_frm.doc.party);
-       refresh_field("pay_to_recd_from");
+	//Set item table read only
+	cur_frm.set_value("pay_to_recd_from", cur_frm.doc.party);
+	refresh_field("pay_to_recd_from");
 }
 
 frappe.ui.form.on("Payment Entry", "select_cheque_lot", function(frm) {
      if(frm.doc.select_cheque_lot) {
-frappe.call({
-    method: "erpnext.accounts.doctype.cheque_lot.cheque_lot.get_cheque_no_and_date",
-    args: {
-        'name': frm.doc.select_cheque_lot
-        },
-    callback: function(r){
-           if (r.message) {
-               cur_frm.set_value("reference_no", r.message[0].reference_no);
-               cur_frm.set_value("reference_date", r.message[1].reference_date);
-           }
-       }
-});
-
-
+		frappe.call({
+			method: "erpnext.accounts.doctype.cheque_lot.cheque_lot.get_cheque_no_and_date",
+			args: {
+			'name': frm.doc.select_cheque_lot
+		},
+		callback: function(r){
+			if (r.message) {
+				cur_frm.set_value("reference_no", r.message[0].reference_no);
+				cur_frm.set_value("reference_date", r.message[1].reference_date);
+			}
+		}});
      }
 })
 
