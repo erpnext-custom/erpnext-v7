@@ -94,7 +94,17 @@ def check_item_code(doctype, txt, searchfield, start, page_len, filters):
     if filters.get('item_code'):
         cond += " ar.item_code = '{}'".format(filters.get('item_code'))
         cond += " and ar.cost_center = '{}'".format(filters.get("cost_center"))
-    query = "select ar.ref_doc from `tabAsset Received Entries` ar where {cond}".format(cond=cond)
+    query = """select ar.ref_doc 
+				from `tabAsset Received Entries` ar 
+				where {cond}
+				and not exists(
+					select 1 
+					from `tabAsset Issue Details` aid
+					where aid.purchase_receipt = ar.ref_doc
+					and aid.docstatus != 2
+					and (select sum(ad.qty) from `tabAsset Issue Details` ad where ad.docstatus != 2 and ad.purchase_receipt = ar.ref_doc and ad.item_code = '{item}') < ar.qty
+				)
+			""".format(cond=cond, item=filters.get('item_code'))
     
     return frappe.db.sql(query)
 
