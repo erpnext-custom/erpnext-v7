@@ -8,7 +8,6 @@ frappe.query_reports["Asset Balance Report"] = {
 			"label": __("Branch"),
 			"fieldtype": "Link",
 			"options": "Branch",
-			"reqd": 1,
 		},
 		{
 			"fieldname": "from_date",

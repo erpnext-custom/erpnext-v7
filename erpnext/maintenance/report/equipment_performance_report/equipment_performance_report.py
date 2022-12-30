@@ -134,6 +134,7 @@ def get_data(filters):
                 total_exp = flt(eq_ex) + flt(gross_pay) +  flt(le) + flt(tc) + flt(ot)
 		revn = revenue(filters, eq.name, eq.branch, date, filter_date)
 		rate, bench, total_hc = benchmark(filters, eq.equipment_type, eq.equipment_model)
+                frappe.msgprint("kk:{}".format(rate))
 		ex = flt(revn) - flt(total_exp)
 		util_percent = 0.0
                 if total_hc != 0.0:
