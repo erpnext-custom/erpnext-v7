@@ -74,9 +74,13 @@ class JobCard(AccountsController):
 	# Update the Committedd Budget for checking budget availability
 	##
 	def consume_budget(self):
+		maintenance_account = frappe.db.get_single_value("Maintenance Accounts Settings", "maintenance_expense_account")
+		if self.expense_account:
+			maintenance_account = self.expense_account
+
 		bud_obj = frappe.get_doc({
 			"doctype": "Committed Budget",
-			"account": self.expense_account,
+			"account": maintenance_account,
 			"cost_center": self.cost_center,
 			"po_no": self.name,
 			"po_date": self.posting_date,
@@ -89,7 +93,7 @@ class JobCard(AccountsController):
 
 		consume = frappe.get_doc({
 			"doctype": "Consumed Budget",
-			"account": self.expense_account,
+			"account": maintenance_account,
 			"cost_center": self.cost_center,
 			"po_no": self.name,
 			"po_date": self.posting_date,
