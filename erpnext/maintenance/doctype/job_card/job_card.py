@@ -37,6 +37,14 @@ class JobCard(AccountsController):
 		self.total_amount = flt(self.services_amount) + flt(self.goods_amount)
 		self.outstanding_amount = self.total_amount
 
+		if not self.repair_type:
+			frappe.throw("Specify whether the maintenance is Major or Minor")
+		if not self.finish_date:
+			frappe.throw("Please enter Job Out Date")
+		else:
+			if self.finish_date < self.posting_date:
+				frappe.throw("Job Out Date should be greater than or equal to Job In Date")
+
 	def validate_owned_by(self):
 		if self.owned_by == "Own Company" and self.cost_center == self.customer_cost_center:
 			self.owned_by = "Own Branch"
@@ -46,14 +54,8 @@ class JobCard(AccountsController):
 	def on_submit(self):
 		self.validate_owned_by()
 		self.check_items()
-		if not self.repair_type:
-			frappe.throw("Specify whether the maintenance is Major or Minor")
-		if not self.finish_date:
-			frappe.throw("Please enter Job Out Date")
-		else:
-			if self.finish_date < self.posting_date:
-				frappe.throw("Job Out Date should be greater than or equal to Job In Date")
-			self.update_reservation()
+		
+		self.update_reservation()
 		#self.check_items()
 		# commented by JRR
 		""" if self.owned_by == "Own Branch":
