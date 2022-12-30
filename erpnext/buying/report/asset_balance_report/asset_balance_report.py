@@ -16,27 +16,28 @@ def get_data(filters=None):
     return frappe.db.sql("""
 				SELECT t.item_code, i.item_name, i.asset_category, t.cost_center, t.warehouse,
 				SUM(IFNULL(t.received_qty,0)) total_qty,
-				SUM(IFNULL(t.issued_qty,0)) issued_qty,
-				SUM(IFNULL(t.received_qty,0))-SUM(IFNULL(t.issued_qty,0)) balance_qty,
-				GROUP_CONCAT(IF(IFNULL(t.received_qty, 0)-IFNULL(t.issued_qty, 0) > 0, CONCAT('<a href="desk#Form/Purchase Receipt/',t.ref_doc,'">',t.ref_doc,'(',IFNULL(t.received_qty,0)-IFNULL(t.issued_qty, 0),')','</a>'),NULL)) purchase_receipt
+				IFNULL(t.issued_qty,0) issued_qty,
+				SUM(IFNULL(t.received_qty,0))-IFNULL(t.issued_qty,0) balance_qty,
+				GROUP_CONCAT(IF(IFNULL(t.received_qty, 0)-IFNULL(t.issued_qty, 0) > 0, 
+				CONCAT('<a href="desk#Form/Purchase Receipt/',t.ref_doc,'">',t.ref_doc,'(',IFNULL(t.received_qty,0)-IFNULL(t.issued_qty, 0),')','</a>'),NULL)) purchase_receipt
 				FROM(
-				SELECT ar.item_code, ar.ref_doc, ar.cost_center, (select distinct pr.warehouse from `tabPurchase Receipt Item` pr where pr.parent = ar.ref_doc) as warehouse,
-					SUM(ar.qty) received_qty,
+				SELECT ar.item_code, ar.ref_doc, ar.cost_center, ar.warehouse,ar.branch,
+					ar.qty received_qty,
 					IFNULL((SELECT SUM(ai.qty)
 						FROM `tabAsset Issue Details` ai
 						WHERE ai.item_code = ar.item_code
 						AND ai.issued_date BETWEEN '{from_date}' AND '{to_date}' 
-						AND ai.purchase_receipt = ar.ref_doc
+						AND ai.branch = ar.branch
 						AND ai.docstatus = 1
 						),0) issued_qty
 				FROM `tabAsset Received Entries` ar
 				WHERE ar.received_date BETWEEN '{from_date}' AND '{to_date}'
 				AND ar.docstatus = 1
 				{cond}
-				GROUP BY ar.item_code, ar.ref_doc
 				) AS t, `tabItem` i
 				WHERE i.name = t.item_code
-				GROUP BY  t.item_code, i.item_name
+				GROUP BY t.branch, t.item_code, i.item_name
+				order by t.cost_center
 			""".format(from_date=filters.get("from_date"), to_date=filters.get("to_date"), cond = conditions), as_dict=True)
  
 def get_conditions(filters):
