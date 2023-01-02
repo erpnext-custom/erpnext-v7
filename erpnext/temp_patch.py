@@ -6,6 +6,24 @@ from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years, getdate, nowdate, add_days
 from erpnext.custom_utils import get_branch_cc
 
+# DNs cancelled but SLEs not removed, by SHIV on 2023/01/02
+def cancel_dn_20230102():
+	qry = """select name, docstatus from `tabDelivery Note`
+		where name in ('DN22052132','DN22052576','DN22053682','DN22053811','DN22057966',
+		'DN22058406','DN22064108','DN22069683','DN22077903','DN22088527',
+		'DN22092037','DN22093375','DN22096268','DN22097461','DN22098630')
+		order by name
+	"""
+	counter = 0
+	for i in frappe.db.sql(qry, as_dict=True):
+		counter += 1
+		print(counter, i.name, i.docstatus)
+		if cint(i.docstatus) == 1:
+			print("Cancelling...")
+			doc = frappe.get_doc("Delivery Note", i.name)
+			doc.cancel()
+			frappe.db.commit()
+
 # update SWSS for all the Salary Structures, by SHIV on 2021/02/17
 def update_swss_for_all_salary_structures(debug=1):
         count = 0
