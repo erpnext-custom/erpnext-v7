@@ -7,6 +7,29 @@ from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_days
 from erpnext.custom_utils import get_year_start_date, get_year_end_date
 
+
+# approve all the leaves waiting for approval from backend
+def submit_leaves_waiting_approval(debug=1):
+	qry = """select * from `tabLeave Application` 
+		where from_date <= '2022-12-31' and to_date >= '2022-01-01'
+		and docstatus = 0 and status = 'Approved'
+		and lower(workflow_state) like '%waiting%'
+		order by name
+	"""
+	counter = 0
+	for i in frappe.db.sql(qry, as_dict=True):
+		counter += 1
+		doc = frappe.get_doc("Leave Application", i.name)
+		print(counter, i.name, i.employee, i.employee_name)
+		if not debug:
+			print("Submitting...")
+			try:
+				doc.description = "Nil" if not doc.description else doc.description
+				doc.save(ignore_permissions=True)
+				doc.submit()
+			except Exception as e:
+				print(str(e))
+
 # following method created by SHIV on 2022/04/27
 def mpi_2021():
 	li = frappe.db.sql("""
