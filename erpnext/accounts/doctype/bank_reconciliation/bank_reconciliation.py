@@ -53,7 +53,7 @@ class BankReconciliation(Document):
 			select 
 				"Payment Entry" as payment_document, name as payment_entry, 
 				reference_no as cheque_number, reference_date as cheque_date, 
-				if(paid_from=%s, paid_amount, received_amount) as amount, 
+				if(paid_from=%s, paid_amount, actual_receivable_amount) as amount, 
 				posting_date, party as against_account, clearance_date
 			from `tabPayment Entry`
 			where
