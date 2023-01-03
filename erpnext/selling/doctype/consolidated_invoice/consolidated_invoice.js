@@ -15,13 +15,14 @@ frappe.ui.form.on('Consolidated Invoice', {
 					};
 					frappe.set_route("List", "Payment Entry");
 				}, __("View"));
-			} else {
 				frm.add_custom_button("Receive Payment", function() {
 					frappe.model.open_mapped_doc({
 						method: "erpnext.selling.doctype.consolidated_invoice.consolidated_invoice.make_payment_entry",
 						frm: cur_frm
 					})
 				}, __("Payment"));
+			} else {
+				//
 			}
 		}
 
