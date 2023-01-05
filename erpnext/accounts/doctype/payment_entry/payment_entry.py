@@ -62,6 +62,7 @@ class PaymentEntry(AccountsController):
 		check_future_date(self.posting_date)
 		self.setup_party_account_field()
 		self.set_missing_values()
+		self.validate_actual_amount()
 		self.validate_payment_type()
 		self.validate_party_details()
 		self.validate_bank_accounts()
@@ -85,7 +86,11 @@ class PaymentEntry(AccountsController):
 		self.update_advance_paid()
 		if self.consolidated_invoice_id:
 			ci = frappe.get_doc("Consolidated Invoice",self.consolidated_invoice_id)
-			ci.db_set("payment_entry",self.name)
+			if ci.payment_entry:
+				payment_entry = ci.payment_entry+", "+self.name
+				ci.db_set("payment_entry",payment_entry)
+			else:
+				ci.db_set("payment_entry",self.name)
 		
 	def on_cancel(self):
 		if self.clearance_date:
@@ -94,6 +99,19 @@ class PaymentEntry(AccountsController):
 		self.setup_party_account_field()
 		self.make_gl_entries(cancel=1)
 		self.update_advance_paid()
+		if self.consolidated_invoice_id:
+			ci = frappe.get_doc("Consolidated Invoice",self.consolidated_invoice_id)
+			if ci.payment_entry:
+				id = 0
+				for a in str(ci.payment_entry).split(", "):
+					if a != self.name:
+						if id == 0:
+							payment_entry = a
+						else:
+							payment_entry += ", "+a
+				ci.db_set("payment_entry",payment_entry)
+			else:
+				ci.db_set("payment_entry",self.name)
 							
 	def set_missing_values(self):
 		if not self.business_activity:
@@ -132,8 +150,8 @@ class PaymentEntry(AccountsController):
 			
 		self.party_account_currency = self.paid_from_account_currency \
 			if self.payment_type=="Receive" else self.paid_to_account_currency
-			
-		self.set_missing_ref_details()			
+		if not self.consolidated_invoice_id:
+			self.set_missing_ref_details()			
 	
 	def set_missing_ref_details(self):
 		for d in self.get("references"):
@@ -144,6 +162,10 @@ class PaymentEntry(AccountsController):
 				for field, value in ref_details.items():
 					if not d.get(field):
 						d.set(field, value)
+
+	def validate_actual_amount(self):
+		if flt(self.paid_amount,2) > flt(self.actual_amount,2):
+			frappe.throw("Paid Amount cannot be greater than Actual Payable Amount.")
 						
 	def validate_payment_type(self):
 		if self.payment_type not in ("Receive", "Pay", "Internal Transfer"):
@@ -890,6 +912,7 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 		if payment_type=="Receive" else bank.account_currency
 	pe.paid_to_account_currency = party_account_currency if payment_type=="Pay" else bank.account_currency
 	pe.paid_amount = paid_amount
+	pe.actual_amount = paid_amount
 	pe.received_amount = received_amount
 	pe.actual_receivable_amount = received_amount
 	pe.branch = doc.branch	

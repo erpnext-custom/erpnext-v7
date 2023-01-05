@@ -486,6 +486,38 @@ frappe.ui.form.on('Payment Entry', {
 		// Ver 2.0 Ends
 		
 		frm.trigger("reset_received_amount");
+		if(frm.doc.actual_amount == 0){
+			var actual_amt = 0
+			frm.doc.references.forEach(function(d) {
+				actual_amt+=flt(d.total_amount,2)
+			})
+			cur_frm.set_value("actual_amount", flt(actual_amt,2))
+			cur_frm.refresh_fields("")
+		}
+		if(frm.doc.paid_amount > frm.doc.actual_amount) {
+			cur_frm.set_value("paid_amount", frm.doc.actual_amount)
+			msgprint("Paid Amount cannot be greater than the Total Payable Amount")
+		}
+		else {
+			var total = frm.doc.paid_amount
+			frm.doc.references.forEach(function(d) {
+				var allocated = 0
+				if (total > 0 && total >= d.total_amount ) {
+					allocated = d.total_amount
+				}
+				else if(total > 0 && total < d.total_amount) {
+					allocated = total
+				}
+				else {
+					allocated = 0
+				}
+			
+				d.allocated_amount = flt(allocated,2)
+				d.outstanding_amount = flt(flt(d.total_amount,2) - flt(allocated,2),2)
+				total-=flt(allocated,2)
+			})
+			cur_frm.refresh_field("references")
+		}
 	},
 
 	received_amount: function(frm) {

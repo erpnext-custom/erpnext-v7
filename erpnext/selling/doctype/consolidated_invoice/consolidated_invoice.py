@@ -16,9 +16,23 @@ class ConsolidatedInvoice(Document):
 
 	def on_cancel(self):
 		if self.payment_entry:
-			pe = frappe.get_doc("Payment Entry",self.payment_entry)
-			if pe.docstatus != 2:
-				frappe.throw("""Payment Entry <b><a href="#Form/Payment%20Entry/{0}">{0}</a></b> linked with this Consolidated Invoice which is not cancelled.""".format(self.payment_entry))
+			pes = str(self.payment_entry).split(", ")
+			for a in pes:
+				pe = frappe.get_doc("Payment Entry",a)
+				if pe.docstatus != 2:
+					frappe.throw("""Payment Entry <b><a href="#Form/Payment%20Entry/{0}">{0}</a></b> linked with this Consolidated Invoice which is not cancelled.""".format(a))
+
+	def check_partial_pe(self):
+		total_amount = 0
+		show_button = 0
+		for a in self.items:
+			total_amount += flt(a.amount,2)
+		paid_amount = frappe.db.sql("""
+			select sum(ifnull(paid_amount,0)) from `tabPayment Entry` where consolidated_invoice_id = '{}' and docstatus < 2
+        """.format(self.name))[0][0]
+		if total_amount != flt(paid_amount,2):
+			show_button = 1
+		return show_button
 
 	def set_total_amount(self):
 		self.total_amount = self.quantity = 0
@@ -66,15 +80,13 @@ def get_invoices(name, from_date, to_date, customer, cost_center):
 def make_payment_entry(source_name, target_doc=None): 
 	def set_missing_values(source, target):
 		from erpnext.accounts.doctype.payment_entry.payment_entry import get_account_details
+		exclude = []
 		target.naming_series = "Journal Voucher"
 		target.branch = frappe.db.get_value("Branch",{"cost_center":source.cost_center},"name")
 		target.payment_type = "Receive"
 		target.party_type = "Customer"
 		target.party = source.customer
 		target.actual_receivable_amount = source.total_amount
-		target.total_amount = source.total_amount
-		target.paid_amount = source.total_amount
-		target.total_allocated_amount = source.total_amount
 		target.consolidated_invoice_id = source.name
 		target.paid_from = source.debit_to
 		target.paid_to = frappe.db.get_value("Branch",frappe.db.get_value("Branch",{"cost_center":source.cost_center},"name"),"revenue_bank_account")
@@ -88,17 +100,42 @@ def make_payment_entry(source_name, target_doc=None):
 		if source.customer:
 			target.customer_dzongkhag = frappe.db.get_value("Customer",source.customer,"dzongkhag")
 			target.customer_location = frappe.db.get_value("Customer",source.customer,"location")
+		# excluded = frappe.db.sql("""
+		# 	select per.reference_name from `tabPayment Entry Reference` per, `tabPayment Entry` pe where per.parent = pe.name and pe.consolidated_invoice_id = '{}'
+		# 	and pe.docstatus < 2
+        # """)
+		# paid_amount = frappe.db.sql("""
+		# 	select sum(ifnull(pe.paid_amount,0)) from `tabPayment Entry` pe where pe.consolidated_invoice_id = '{}'
+		# 	and pe.docstatus = 1
+        # """.format(source.name))[0][0]
+		# if excluded:
+		# 	for a in excluded:
+		# 		exclude.append(a)
 		target.pl_cost_center = source.cost_center
+		total_amount = outstanding_amount = 0
 		if len(source.items) > 0:
 			for a in source.items:
-				row = target.append("references",{})
-				row.reference_doctype = "Sales Invoice"
-				row.reference_name = a.invoice_no
-				row.due_date = frappe.db.get_value("Sales Invoice",a.invoice_no,"due_date")
-				row.total_amount = flt(a.amount)
-				row.outstanding_amount = flt(a.amount)
-				row.allocated_amount = flt(a.amount)
-				row.exchange_rate = 1
+				# if a.invoice_no not in exclude:
+				allocated_amount = frappe.db.sql("""
+					select sum(ifnull(per.allocated_amount,0)) from `tabPayment Entry` pe, `tabPayment Entry Reference` per where per.parent = pe.name and pe.consolidated_invoice_id = '{}'
+					and pe.docstatus = 1 and per.reference_name = '{}'
+        		""".format(source.name, a.invoice_no))[0][0]
+				if flt(a.amount,2) > flt(allocated_amount,2):
+					row = target.append("references",{})
+					row.reference_doctype = "Sales Invoice"
+					row.reference_name = a.invoice_no
+					row.due_date = frappe.db.get_value("Sales Invoice",a.invoice_no,"due_date")
+					row.total_amount = flt(a.amount,2) - flt(allocated_amount, 2)
+					row.outstanding_amount = flt(a.amount,2) - flt(allocated_amount, 2)
+					row.allocated_amount = flt(a.amount,2) - flt(allocated_amount, 2)
+					row.exchange_rate = 1
+					total_amount += flt(row.total_amount,2)
+					outstanding_amount += flt(a.amount,2) - flt(allocated_amount, 2)
+		target.total_amount = flt(total_amount,2)
+		target.paid_amount = flt(total_amount,2)
+		target.total_allocated_amount = flt(total_amount,2)
+		target.actual_amount = flt(total_amount,2)
+		target.outstanding_amount = flt(a.amount,2) - flt(allocated_amount, 2)
 
 		# target.run_method("calculate_taxes_and_totals")
 
