@@ -81,7 +81,9 @@ frappe.ui.form.on('Bank Payment', {
 		cur_frm.set_value("bank_branch", null);
 		cur_frm.set_value("bank_account_no", null);
 		cur_frm.set_value("bank_balance", null);
+		
 	},
+
 	transaction_type: function(frm){
 		enable_disable(frm);
 		reset_entries(frm);

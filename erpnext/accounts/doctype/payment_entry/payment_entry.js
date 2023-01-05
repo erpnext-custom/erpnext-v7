@@ -815,20 +815,13 @@ frappe.ui.form.on('Payment Entry', {
 
 	branch: function(frm){
 		// frm.set_value("naming_series", "Journal Voucher");
-		frm.set_value("payment_type", "Pay");
+		//frm.set_value("payment_type", "Pay");
 
 		set_paid_from_and_to(frm)			
 	},
 
 	naming_series: function(frm){
-		if(frm.doc.naming_series == "Bank Payment Voucher"){
-			frm.set_value("payment_type", "Pay");
-			frm.set_value("naming_series", "Bank Payment Voucher");
-		}
-		if (frm.doc.naming_series == "Bank Receipt Voucher") {
-			frm.set_value("payment_type", "Receive");
-			frm.set_value("naming_series", "Bank Receipt Voucher");
-		}
+		set_paid_from_and_to(frm)
 	},
 
 	payment_type: function(frm) {
@@ -988,44 +981,19 @@ var create_custom_buttons = function(frm){
 		}
 	}
 },
+/* ePayment Ends */
 
 set_paid_from_and_to = function(frm){
-	
-	var account_type = undefined;
-	if (frm.doc.naming_series = "Bank Payment Voucher"){
-		account_type = "expense_bank_account"
-	} else if(frm.doc.naming_series = 'Bank Receipt Voucher'){
-		account_type = "revenue_bank_account"
+	if (frm.doc.payment_type == "Receive"){
+			frappe.model.get_value('Branch', {'name': frm.doc.branch}, 'revenue_bank_account',
+				function(d) {
+					cur_frm.set_value("paid_to",d.revenue_bank_account);
+			});
 	}
-	if (account_type !== undefined && frm.doc.branch !== undefined){
-		return frappe.call({
-			method: "erpnext.accounts.doctype.bank_payment.common.get_account_by_branch_frappe_call",
-			args: {
-				branch: frm.doc.branch,
-				account_type: account_type
-			},
-			callback: function(r) {
-				if(r.message.length === 1){
-					if(frm.doc.naming_series == 'Bank Receipt Voucher'){
-						frm.set_value("paid_to", r.message[0][0]);
-						frm.set_value("paid_from", "");
-					}		
-					if(frm.doc.naming_series == "Bank Payment Voucher"){
-						frm.set_value("paid_from", r.message[0][0]);
-						frm.set_value("paid_to", "");
-
-					}
-				} else {
-					frm.doc.paid_from = undefined;
-					frm.doc.paid_to = undefined;
-					frm.refresh_fields()
-				}
-			}
-		});	
-	} else {
-		frm.doc.paid_from = undefined;
-		frm.doc.paid_to = undefined;
-		frm.refresh_fields()
+	if (frm.doc.payment_type == "Pay"){
+			frappe.model.get_value('Branch', {'name': frm.doc.branch}, 'expense_bank_account',
+				function(d) {
+				cur_frm.set_value("paid_from",d.expense_bank_account);
+			});
 	}
 }
-/* ePayment Ends */
