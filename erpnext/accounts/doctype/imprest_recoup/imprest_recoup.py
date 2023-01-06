@@ -56,7 +56,7 @@ class ImprestRecoup(AccountsController):
                 if self.docstatus == 0 and self.workflow_state == "Recouped":
                         self.workflow_state = "Waiting Recoupment"
 
-		self.posting_date = nowdate()
+		# self.posting_date = nowdate()
 
                 # Update items
                 self.purchase_amount = 0.0
@@ -264,7 +264,7 @@ class ImprestRecoup(AccountsController):
                         "naming_series": "Bank Payment Voucher",
                         "title": "Imprest Recoupment ("+str(self.name)+")",
                         "user_remark": "Imprest Recoupment ("+str(self.name)+")",
-                        "posting_date": nowdate(),
+                        "posting_date": self.posting_date,
                         "company": self.company,
                         "total_amount_in_words": money_in_words(total_amount),
                         "accounts": accounts,
