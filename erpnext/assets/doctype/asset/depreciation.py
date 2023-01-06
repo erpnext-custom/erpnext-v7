@@ -42,7 +42,7 @@ def make_depreciation_entry(asset_name, date=None):
 
 	if asset.disable_depreciation:
 		print(str(asset.name))
-                frappe.throw("Depreciation disabled for this asset")	
+		frappe.throw("Depreciation disabled for this asset")	
 
 	fixed_asset_account, accumulated_depreciation_account, depreciation_expense_account = \
 		get_depreciation_accounts(asset)
@@ -169,9 +169,11 @@ def restore_asset(asset_name):
 	
 	asset.db_set("disposal_date", None)
 	asset.db_set("journal_entry_for_scrap", None)
-	
+	status = frappe.db.get_value("Journal Entry", je, ["docstatus"])
+	if status != 1:
+		frappe.throw(_("Please submit your journal entry {0} after verifying it.").format(je))
 	frappe.get_doc("Journal Entry", je).cancel()
-
+	
 	asset.set_status()
 
 @frappe.whitelist()
