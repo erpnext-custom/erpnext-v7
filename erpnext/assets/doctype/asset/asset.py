@@ -26,7 +26,8 @@ class Asset(Document):
 		self.validate_item()
 		self.set_missing_values()
 		self.validate_asset_values()
-		self.make_depreciation_schedule()
+		if self.value_after_depreciation > 1:
+			self.make_depreciation_schedule()
 		self.validate_expected_value_after_useful_life()
 		# Validate depreciation related accounts
 		get_depreciation_accounts(self)
