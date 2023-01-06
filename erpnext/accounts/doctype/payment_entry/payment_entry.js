@@ -549,6 +549,13 @@ frappe.ui.form.on('Payment Entry', {
 			frm.set_value("base_received_amount", frm.doc.base_paid_amount);
 			frm.set_value("actual_receivable_amount", frm.doc.base_paid_amount - frm.doc.tds_amount);
 		}
+		//added by Kinley to accomodate consolidated invioce partial payment receive
+		if(frm.doc.consolidated_invoice_id && frm.doc.paid_from_account_currency == frm.doc.paid_to_account_currency){
+			frm.set_value("received_amount", frm.doc.paid_amount);
+			frm.set_value("target_exchange_rate", frm.doc.source_exchange_rate);
+			frm.set_value("base_received_amount", frm.doc.base_paid_amount);
+			frm.set_value("actual_receivable_amount", frm.doc.base_paid_amount - frm.doc.tds_amount);
+		}
 
 		// if(frm.doc.payment_type == "Receive")
 		// 	frm.events.allocate_party_amount_against_ref_docs(frm, frm.doc.paid_amount);
