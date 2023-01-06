@@ -164,7 +164,7 @@ class PaymentEntry(AccountsController):
 						d.set(field, value)
 
 	def validate_actual_amount(self):
-		if flt(self.paid_amount,2) > flt(self.actual_amount,2):
+		if flt(self.paid_amount,2) > flt(self.actual_amount,2) and self.consolidated_invoice_id:
 			frappe.throw("Paid Amount cannot be greater than Actual Payable Amount.")
 						
 	def validate_payment_type(self):
