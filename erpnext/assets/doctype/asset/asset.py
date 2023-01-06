@@ -187,20 +187,19 @@ class Asset(Document):
 								"accumulated_depreciation_income_tax": income_accumulated_depreciation
 							})
 		last_row = self.schedules[-1]
-		# last_depreciation_amount = flt(self.gross_purchase_amount) - flt(self.expected_value_after_useful_life) - flt(last_row.accumulated_depreciation_amount)
-		last_depreciation_amount = flt(self.gross_purchase_amount) - flt(last_row.accumulated_depreciation_amount)
-
-		if last_depreciation_amount > 1:
+		last_depreciation_amount = flt(self.gross_purchase_amount) - 1- flt(last_row.accumulated_depreciation_amount)
+		# if last_depreciation_amount > 1:
 			# last_depreciation_income_tax = flt(self.gross_purchase_amount) - flt(self.expected_value_after_useful_life) - flt(last_row.accumulated_depreciation_income_tax)   
-			last_depreciation_income_tax = flt(self.gross_purchase_amount) - flt(last_row.accumulated_depreciation_income_tax)   
-			self.append("schedules", {
-				"schedule_date": get_last_day(add_days(schedule_date, 30)),
-				"depreciation_amount": last_depreciation_amount,
-				"depreciation_income_tax": last_depreciation_income_tax,
-    										# if last_depreciation_income_tax > 1 else income_tax_amount,
-				"accumulated_depreciation_amount": flt(last_depreciation_amount) + flt(last_row.accumulated_depreciation_amount),
-				"accumulated_depreciation_income_tax": flt(last_depreciation_income_tax) + flt(last_row.accumulated_depreciation_income_tax) if last_depreciation_income_tax > 1 else income_accumulated_depreciation
-			})
+		last_depreciation_income_tax = flt(self.gross_purchase_amount) - 1- flt(last_row.accumulated_depreciation_income_tax) 
+
+		self.append("schedules", {
+			"schedule_date": get_last_day(add_days(schedule_date, 30)),
+			"depreciation_amount": last_depreciation_amount,
+			"depreciation_income_tax": last_depreciation_income_tax,
+										# if last_depreciation_income_tax > 1 else income_tax_amount,
+			"accumulated_depreciation_amount": flt(last_depreciation_amount) + flt(last_row.accumulated_depreciation_amount),
+			"accumulated_depreciation_income_tax": flt(last_depreciation_income_tax) + flt(last_row.accumulated_depreciation_income_tax) 
+		})
 
 	def get_depreciation_amount(self, depreciable_value, num_days=1):
 		if self.depreciation_method == "Straight Line":
