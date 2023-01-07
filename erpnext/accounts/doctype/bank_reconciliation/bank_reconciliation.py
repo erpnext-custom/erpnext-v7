@@ -65,21 +65,21 @@ class BankReconciliation(Document):
 		(self.bank_account, self.bank_account, self.bank_account, self.from_date, self.to_date), as_dict=1)
 
 		for pe in payment_entries:
-                        total_deductions = 0
-                        for d in frappe.get_all("Payment Entry Deduction", ["amount"], {"parent":pe.payment_entry}):
-                                total_deductions += flt(d.amount)
+			total_deductions = 0
+			for d in frappe.get_all("Payment Entry Deduction", ["amount"], {"parent":pe.payment_entry}):
+				total_deductions += flt(d.amount)
 
 			tds_amount = frappe.db.get_value("Payment Entry", pe.payment_entry, "tds_amount")
 
-                        if frappe.db.get_value(pe.payment_document, pe.payment_entry, "payment_type") == "Pay":
-                                pe.amount += total_deductions
-                        else:
-                                pe.amount -= total_deductions
-                                pe.amount -= tds_amount
+			if frappe.db.get_value(pe.payment_document, pe.payment_entry, "payment_type") == "Pay":
+				pe.amount += total_deductions
+			else:
+				pe.amount -= total_deductions
+				pe.amount -= tds_amount
 
-                #
-                # Ver 2.0 Begins, Following entries added by SHIV on 28/05/2018
-                #
+			#
+			# Ver 2.0 Begins, Following entries added by SHIV on 28/05/2018
+			#
 		hsd_entries = frappe.db.sql("""
                         select
                                 "HSD Payment" as payment_document, name as payment_entry,
