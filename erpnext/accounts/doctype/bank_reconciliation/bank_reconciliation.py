@@ -53,7 +53,7 @@ class BankReconciliation(Document):
 			select 
 				"Payment Entry" as payment_document, name as payment_entry, 
 				reference_no as cheque_number, reference_date as cheque_date, 
-				if(paid_from=%s, paid_amount, actual_receivable_amount) as amount, 
+				case when payment_type = "Pay" then if(paid_from=%s, paid_amount, actual_receivable_amount) else if(paid_to=%s, paid_amount, actual_receivable_amount) end as amount, 
 				posting_date, party as against_account, clearance_date
 			from `tabPayment Entry`
 			where
@@ -62,7 +62,7 @@ class BankReconciliation(Document):
 			order by 
 				posting_date ASC, name DESC
 		""".format(condition), 
-		(self.bank_account, self.bank_account, self.bank_account, self.from_date, self.to_date), as_dict=1)
+		(self.bank_account, self.bank_account, self.bank_account, self.bank_account, self.from_date, self.to_date), as_dict=1)
 
 		for pe in payment_entries:
 			total_deductions = 0
