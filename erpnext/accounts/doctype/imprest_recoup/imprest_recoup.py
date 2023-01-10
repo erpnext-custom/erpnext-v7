@@ -107,7 +107,7 @@ class ImprestRecoup(AccountsController):
                                 "company": self.company,
                                 "branch": self.branch,
                                 "title": "Recoupment for "+str(self.name),
-                                "entry_date": now_datetime(),
+                                "entry_date": self.entry_date,
                                 "imprest_type": self.imprest_type,
                                 "amount": flt(self.purchase_amount),
                                 "revenue_bank_account": self.revenue_bank_account,
