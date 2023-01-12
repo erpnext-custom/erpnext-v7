@@ -9,6 +9,38 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_salary_tax
 import collections
 from frappe.model.naming import make_autoname
 
+def submit_sr20230112(submit=0):
+	counter = 0
+	for i in frappe.db.sql("""select name from `tabStock Reconciliation`
+		where name in ('SR/000600','SR/000585','SR/000583','SR/000579',
+			'SR/000577','SR/000575','SR/000574','SR/000568',
+			'SR/000564','SR/000563','SR/000560','SR/000558',
+			'SR/000556','SR/000537','SR/000524','SR/000523',
+			'SR/000504-2','SR/000316','SR/000370','SR/000319')""", as_dict=True):
+		counter += 1
+		doc = frappe.get_doc('Stock Reconciliation', i.name)
+		print(counter, doc.name, doc.docstatus)
+		if submit:
+			try:
+				doc.submit()
+			except Exception, e:
+				print 'ERROR: ', str(e)
+			print 'Submitted successfully...'
+		frappe.db.commit()
+
+# given by Jamyang & Sangay, NRDCL 2023/01/1
+def submit_pr20210511():
+	print('Submitting Stock Reconciliation...')
+	counter = 0
+	for i in frappe.db.sql("""select name from `tabProduction`
+		where name in ('PRO210500455', 'PRO210500456')
+		and docstatus = 0""", as_dict=True):
+		counter += 1
+		doc = frappe.get_doc('Production', i.name)
+		print counter, doc.name, doc.docstatus, 'Submitting...'
+		doc.submit()
+		frappe.db.commit()
+		print 'Submitted successfully...'
 
 # given by Mani Gyeltshen, NRDCL 2021/06/02
 def submit_cancel_pr20210602():
