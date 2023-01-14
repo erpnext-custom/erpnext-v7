@@ -9,6 +9,21 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_salary_tax
 import collections
 from frappe.model.naming import make_autoname
 
+def submit_sr20230114(submit=0):
+        counter = 0
+        for i in frappe.db.sql("""select name from `tabStock Reconciliation`
+                where name in ('SR/000616', 'SR/000617', 'SR/000618', 'SR/000619', 'SR/000621')""", as_dict=True):
+                counter += 1
+                doc = frappe.get_doc('Stock Reconciliation', i.name)
+                print(counter, doc.name, doc.docstatus)
+                if submit:
+                        try:
+                                doc.submit()
+                                print 'Submitted successfully...'
+                        except Exception, e:
+                                print 'ERROR: ', str(e)
+                frappe.db.commit()
+
 def submit_sr20230112(submit=0):
 	counter = 0
 	for i in frappe.db.sql("""select name from `tabStock Reconciliation`
