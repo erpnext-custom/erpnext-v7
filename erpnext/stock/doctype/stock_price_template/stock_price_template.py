@@ -115,4 +115,4 @@ def get_item_rate(tran_type, item_code, tran_date):
 #added by cety to get conversion factor
 @frappe.whitelist()
 def get_conversion_factor(item_code):
-	return frappe.db.sql("select uom from `tabUOM Conversion Detail` where parent='{}'".format(item_code))
+	return frappe.db.get_value("Item", item_code, "stock_uom")
