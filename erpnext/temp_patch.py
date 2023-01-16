@@ -9,6 +9,47 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_salary_tax
 import collections
 from frappe.model.naming import make_autoname
 
+def submit_dn_20230116():
+        counter = 0
+        for i in frappe.db.sql("""select * from `tabDelivery Note`
+                where name in ('DN22113201','DN22113070','DN22113068','DN22113062',
+                'DN22113061','DN22112487','DN22112128','DN22112126',
+                'DN22112124','DN22112079','DN22112078','DN22112076',
+                'DN22112073','DN22112072','DN22112071','DN22112070',
+                'DN22112061','DN22112060','DN22112058','DN22112056',
+                'DN22112054','DN22112052','DN22112050','DN22112044',
+                'DN22112043','DN22112042','DN22112041','DN22112038',
+                'DN22112037','DN22112032','DN22111832','DN22111831',
+                'DN22111825','DN22111824','DN22111817','DN22111816',
+                'DN22111811','DN22111810','DN22111809','DN22111808',
+                'DN22111775','DN22111773','DN22111770','DN22111767',
+                'DN22111760','DN22111675','DN22111669','DN22111664',
+                'DN22111662','DN22111661','DN22111657','DN22111655',
+                'DN22111649','DN22111643','DN22111639','DN22111634',
+                'DN22111631','DN22111627','DN22111623','DN22111620',
+                'DN22111616','DN22111613','DN22111612','DN22111611',
+                'DN22111598','DN22111594','DN22111591','DN22111587',
+                'DN22111584','DN22110909','DN22110907','DN22110904',
+                'DN22110901','DN22110899','DN22110898','DN22110894',
+                'DN22110884','DN22110881','DN22110868','DN22110864',
+                'DN22110861','DN22110859','DN22110854','DN22110846',
+                'DN22110844','DN22110839','DN22094675','DN22094676',
+                'DN22094677','DN22094679','DN22094680','DN22094682',
+                'DN22094225','DN22094223','DN22094222','DN22094210',
+                'DN22094209','DN22094208','DN22094205','DN22093836',
+                'DN22092959','DN22092932')
+                order by posting_date""", as_dict=True):
+                counter += 1
+                print(doc.name, doc.posting_date, doc.docstatus)
+                if i.docstatus == 0:
+                        try:
+                                doc = frappe.get_doc("Delivery NOte", doc.name)
+                                doc.submit()
+                                frappe.db.commit()
+                        except Exception as e:
+                                print(str(e))
+        frappe.db.commit()
+
 def submit_sr20230114(submit=0):
         counter = 0
         for i in frappe.db.sql("""select name from `tabStock Reconciliation`
