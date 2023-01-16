@@ -40,7 +40,7 @@ def submit_dn_20230116():
                 'DN22092959','DN22092932')
                 order by posting_date""", as_dict=True):
                 counter += 1
-                print(doc.name, doc.posting_date, doc.docstatus)
+                print(i.name, i.posting_date, i.docstatus)
                 if i.docstatus == 0:
                         try:
                                 doc = frappe.get_doc("Delivery NOte", doc.name)
