@@ -43,7 +43,7 @@ def submit_dn_20230116():
                 print(i.name, i.posting_date, i.docstatus)
                 if i.docstatus == 0:
                         try:
-                                doc = frappe.get_doc("Delivery NOte", i.name)
+                                doc = frappe.get_doc("Delivery Note", i.name)
                                 doc.submit()
                                 frappe.db.commit()
                         except Exception as e:
