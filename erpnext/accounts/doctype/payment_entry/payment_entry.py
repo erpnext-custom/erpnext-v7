@@ -812,8 +812,8 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 	party_currency = ''
 	# Ver 2.0 Ends
 	
-	if dt in ("Sales Order", "Purchase Order") and flt(doc.per_billed, 2) > 0:
-		frappe.throw(_("Can only make payment against unbilled {0}").format(dt))
+	# if dt in ("Sales Order", "Purchase Order") and flt(doc.per_billed, 2) > 0:
+	# 	frappe.throw(_("Can only make payment against unbilled {0}").format(dt))
 	
 	party_type = "Customer" if dt in ("Sales Invoice", "Sales Order") else "Supplier"
 
