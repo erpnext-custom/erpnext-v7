@@ -46,6 +46,8 @@ class HallBooking(AccountsController):
 					"debit": flt(self.amount),
 					"cost_center": frappe.db.get_value("Branch", self.branch, "cost_center"),
 					"business_activity": default_ba,
+					"against_voucher_type": "Hall Booking",
+					"against_voucher": self.name
 				}, debit_currency)
 			)
     
