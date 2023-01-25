@@ -267,7 +267,18 @@ class ReceivablePayableReport(object):
                 group by posting_date, party_type, party, voucher_type, voucher_no,
                 against_voucher_type, against_voucher, account_currency, cost_center
                 order by posting_date, party"""
-                .format(select_fields, conditions, cus_query, date_condition, party_type), values, as_dict=True)
+                # .format(select_fields, conditions, cus_query, date_condition, party_type), values, as_dict=True)
+            self.gl_entries = frappe.db.sql("""select posting_date, party_type, party,
+                voucher_type, voucher_no, against_voucher_type, against_voucher, account_currency, '' remarks,cost_center, {0}
+                from `tabGL Entry`
+                where docstatus < 2 and party_type='{4}' and (party is not null and party != '') {1}
+                {2}
+                {3}
+                and against_voucher_type is not null
+                group by posting_date, party_type, party, voucher_type, voucher_no,
+                against_voucher_type, against_voucher, account_currency, cost_center
+                order by posting_date, party"""
+                .format(select_fields, conditions, cus_query, date_condition, party_type), as_dict=True)
 
         return self.gl_entries
 
