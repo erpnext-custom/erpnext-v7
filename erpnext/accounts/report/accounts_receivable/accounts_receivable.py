@@ -257,17 +257,29 @@ class ReceivablePayableReport(object):
             else:
                 select_fields = "debit, credit"
 
+            # self.gl_entries = frappe.db.sql("""select posting_date, party_type, party,
+            #     voucher_type, voucher_no, against_voucher_type, against_voucher, account_currency, '' remarks,cost_center, {0}
+            #     from `tabGL Entry`
+            #     where docstatus < 2 and party_type='{4}' and (party is not null and party != '') {1}
+            #     {2}
+            #     {3}
+            #     and case when voucher_type != "Hall Booking" then against_voucher_type is not null end
+            #     group by posting_date, party_type, party, voucher_type, voucher_no,
+            #     against_voucher_type, against_voucher, account_currency, cost_center
+            #     order by posting_date, party"""
+            #     .format(select_fields, conditions, cus_query, date_condition, party_type), values, as_dict=True)
+
             self.gl_entries = frappe.db.sql("""select posting_date, party_type, party,
                 voucher_type, voucher_no, against_voucher_type, against_voucher, account_currency, '' remarks,cost_center, {0}
                 from `tabGL Entry`
-                where docstatus < 2 and party_type=%s and (party is not null and party != '') {1}
+                where docstatus < 2 and party_type='{4}' and (party is not null and party != '') {1}
                 {2}
                 {3}
                 and case when voucher_type != "Hall Booking" then against_voucher_type is not null end
                 group by posting_date, party_type, party, voucher_type, voucher_no,
                 against_voucher_type, against_voucher, account_currency, cost_center
                 order by posting_date, party"""
-                .format(select_fields, conditions, cus_query, date_condition), values, as_dict=True)
+                .format(select_fields, conditions, cus_query, date_condition, party_type), as_dict=True)
 
         return self.gl_entries
 
@@ -278,11 +290,11 @@ class ReceivablePayableReport(object):
         party_type_field = scrub(party_type)
 
         if self.filters.company:
-            conditions.append("company=%s")
-            values.append(self.filters.company)
+            conditions.append("company='{}'".format(self.filters.company))
+            # values.append(self.filters.company)
 
         if self.filters.get(party_type_field):
-            conditions.append("party=%s")
+            conditions.append("party='{}'".format(self.filters.get(party_type_field)))
             values.append(self.filters.get(party_type_field))
         
         if self.filters.cost_center:
@@ -294,7 +306,7 @@ class ReceivablePayableReport(object):
                 conditions += " and "
                 for key in cc:
                     if key.name:
-                        con.append("cost_center=%s") 
+                        con.append("cost_center='{}'".format(key.name)) 
                         values.append(key.name)
                     
                 con = " or ".join(con)[3:]
@@ -302,7 +314,7 @@ class ReceivablePayableReport(object):
                 # frappe.msgprint(str(conditions))
                 return conditions, values
             else:	
-                conditions.append("cost_center=%s")
+                conditions.append("cost_center='{}'".format(self.filters.cost_center))
                 values.append(self.filters.cost_center)
                 
         return " and ".join(conditions), values
