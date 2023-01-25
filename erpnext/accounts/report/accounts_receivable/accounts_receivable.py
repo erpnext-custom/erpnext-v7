@@ -195,6 +195,9 @@ class ReceivablePayableReport(object):
             out_amt = frappe.db.get_value("Hire Charge Invoice", gle.voucher_no, "outstanding_amount")
         elif gle.voucher_type == "POL":
             out_amt = frappe.db.get_value("POL", gle.voucher_no, "outstanding_amount")
+        elif gle.voucher_type == "Hall Booking":
+            if frappe.db.get_value("Hall Booking", gle.voucher_no, "payment_received") != 1:
+                out_amt = frappe.db.get_value("Hall Booking", gle.voucher_no, "amount")
                 # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
         else:
             pass
