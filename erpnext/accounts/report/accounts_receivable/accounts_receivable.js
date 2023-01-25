@@ -37,7 +37,7 @@ frappe.query_reports["Accounts Receivable"] = {
 		},
 		{
 			"fieldname" : "cost_center",
-			"label": __ ("Cost Center"),
+			"label": __("Cost Center"),
 			"fieldtype" : "Link",
 			"options": "Cost Center",
 		},
