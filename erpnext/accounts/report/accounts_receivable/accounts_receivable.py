@@ -322,13 +322,8 @@ class ReceivablePayableReport(object):
         if not hasattr(self, "gl_entries_map"):
             self.gl_entries_map = {}
             for gle in self.get_gl_entries(party_type):
-                if gle.against_voucher_type and gle.against_voucher and gle.voucher_type != "Hall Booking":
+                if gle.against_voucher_type and gle.against_voucher:
                     self.gl_entries_map.setdefault(gle.party, {})\
-                        .setdefault(gle.against_voucher_type, {})\
-                        .setdefault(gle.against_voucher, [])\
-                        .append(gle)
-                elif gle.voucher_type == "Hall Booking":
-                        self.gl_entries_map.setdefault(gle.party, {})\
                         .setdefault(gle.against_voucher_type, {})\
                         .setdefault(gle.against_voucher, [])\
                         .append(gle)
