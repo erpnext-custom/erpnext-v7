@@ -275,7 +275,6 @@ class ReceivablePayableReport(object):
                 where docstatus < 2 and party_type='{4}' and (party is not null and party != '') {1}
                 {2}
                 {3}
-                and case when voucher_type != "Hall Booking" then against_voucher_type is not null end
                 group by posting_date, party_type, party, voucher_type, voucher_no,
                 against_voucher_type, against_voucher, account_currency, cost_center
                 order by posting_date, party"""
