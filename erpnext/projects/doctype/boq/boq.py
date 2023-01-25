@@ -121,11 +121,6 @@ class BOQ(Document):
                
 
                 for item in self.boq_item:
-                         #added by cety on 8/24/2021
-                        quantity = float(item.quantity)
-                        rate = float(item.rate)
-                        amount = "{:.2f}".format(float(quantity) * float(rate))
-                        #frappe.throw("amount:{}".format(amount))
                         if item.is_group:
                                 item_group              = item.item
                                 item.quantity           = 0.0
@@ -138,14 +133,14 @@ class BOQ(Document):
                                 item.balance_quantity   = 0.0
                                 item.balance_amount     = 0.0
                         else:
-                                item.amount           = amount
+                                item.amount           = flt(flt(item.quantity) * flt(item.rate), 2)
                                 item.claimed_quantity = 0.0
                                 item.claimed_amount   = 0.0
                                 item.booked_quantity  = 0.0
                                 item.booked_amount    = 0.0
                                 item.balance_quantity = flt(item.quantity)
                                 item.balance_rate     = flt(item.rate)
-                                item.balance_amount   = flt(item.amount)
+                                item.balance_amount   = flt(item.amount,2)
 
                                 '''
                                 self.total_amount    += flt(item.amount)
