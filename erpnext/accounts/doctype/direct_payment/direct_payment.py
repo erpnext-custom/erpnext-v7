@@ -184,6 +184,8 @@ class DirectPayment(AccountsController):
                         'party_type': party_type,						
                         "company": self.company,
                         "remarks": self.remarks,
+                        "against_voucher_type": a.reference_type if a.reference_type else None,
+                        "against_voucher": a.reference_name if a.reference_name else None,
                         "business_activity": self.business_activity,
                         "consolidation_party_type":a.party_type,
                         "consolidation_party":a.party

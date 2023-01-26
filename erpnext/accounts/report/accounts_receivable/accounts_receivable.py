@@ -198,6 +198,12 @@ class ReceivablePayableReport(object):
         elif gle.voucher_type == "Hall Booking":
             if frappe.db.get_value("Hall Booking", gle.voucher_no, "payment_received") != 1:
                 out_amt = frappe.db.get_value("Hall Booking", gle.voucher_no, "amount")
+                paid_amt = frappe.db.sql("""
+                    select sum(ifnull(credit,0)) from `tabGL Entry` where voucher_type = 'Direct Payment'
+                    and against_voucher = '{}'
+                """.format(gle.voucher_no))
+                if paid_amt:
+                    out_amt = flt(flt(out_amt,2)-flt(paid_amt[0][0],2),2)
                 # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
         else:
             pass
