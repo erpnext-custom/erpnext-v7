@@ -306,7 +306,7 @@ class ReceivablePayableReport(object):
             values.append(self.filters.get(party_type_field))
         
         if self.filters.cost_center:
-            cc = frappe.db.sql("""SELECT name FROM `tabCost Center` where parent = '{0}'""".format(self.filters.cost_center), as_dict=1)
+            cc = frappe.db.sql("""SELECT name FROM `tabCost Center` where parent_cost_center = '{0}'""".format(self.filters.cost_center), as_dict=1)
             
             if cc:
                 con = [""]
