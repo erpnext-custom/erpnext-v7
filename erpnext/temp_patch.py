@@ -9,6 +9,38 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_salary_tax
 import collections
 from frappe.model.naming import make_autoname
 
+
+def cancel_sr20230128(cancel=0):
+        counter = 0
+        for i in frappe.db.sql("""select name from `tabStock Reconciliation`
+                where name in ('SR/000537')""", as_dict=True):
+                counter += 1
+                doc = frappe.get_doc('Stock Reconciliation', i.name)
+                print(counter, doc.name, doc.docstatus)
+                if cancel and doc.docstatus == 1:
+                        try:
+                                doc.cancel()
+                                print 'Cancelled successfully...'
+                        except Exception, e:
+                                print 'ERROR: ', str(e)
+                frappe.db.commit()
+                
+def submit_sr20230128(submit=0):
+        counter = 0
+        for i in frappe.db.sql("""select name from `tabStock Reconciliation`
+                where name in ('SR/000719', 'SR/000623', 'SR/000744', 'SR/000749', 'SR/000795', 
+                        'SR/000798', 'SR/000799', 'SR/000801', 'SR/000803')""", as_dict=True):
+                counter += 1
+                doc = frappe.get_doc('Stock Reconciliation', i.name)
+                print(counter, doc.name, doc.docstatus)
+                if submit and doc.docstatus == 0:
+                        try:
+                                doc.submit()
+                                print 'Submitted successfully...'
+                        except Exception, e:
+                                print 'ERROR: ', str(e)
+                frappe.db.commit()
+                
 def submit_dn_20230116():
         counter = 0
         for i in frappe.db.sql("""select * from `tabDelivery Note`
