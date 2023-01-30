@@ -103,6 +103,7 @@ class PaymentEntry(AccountsController):
 			ci = frappe.get_doc("Consolidated Invoice",self.consolidated_invoice_id)
 			if ci.payment_entry:
 				id = 0
+				payment_entry = None
 				for a in str(ci.payment_entry).split(", "):
 					if a != self.name:
 						if id == 0:
