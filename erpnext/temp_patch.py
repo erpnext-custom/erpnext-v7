@@ -22,9 +22,10 @@ def submit_sr20230130(submit=0):
                         try:
                                 doc.submit()
                                 print 'Submitted successfully...'
+                                frappe.db.commit()
                         except Exception, e:
                                 print 'ERROR: ', str(e)
-                frappe.db.commit()
+                                frappe.db.rollback()
                 
 def cancel_sr20230128(cancel=0):
         counter = 0
