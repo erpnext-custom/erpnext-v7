@@ -9,7 +9,7 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_salary_tax
 import collections
 from frappe.model.naming import make_autoname
 
-def submit_sr20230128(submit=0):
+def submit_sr20230130(submit=0):
         counter = 0
         for i in frappe.db.sql("""select name from `tabStock Reconciliation`
                 where name in ('SR/000905','SR/000887','SR/000883','SR/000882',
