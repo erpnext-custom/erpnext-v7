@@ -216,11 +216,12 @@ class StockReconciliation(StockController):
 
 				self.insert_entries(row)
 			except Exception as e:
-				error.append("Row# : {} {}".format(row.idx, str(e)))
-		if error:
-			for e in error:
-				frappe.msgprint(_("{}".format(e)))
-			frappe.throw(_("Unable to submit"))
+				# error.append("Row# : {} {}".format(row.idx, str(e)))
+				frappe.throw(_("Row# : {} {}").format(row.idx, str(e)))
+		# if error:
+		# 	for e in error:
+		# 		frappe.msgprint(_("{}".format(e)))
+		# 	frappe.throw(_("Unable to submit"))
 
 	def insert_entries(self, row):
 		"""Insert Stock Ledger Entries"""
