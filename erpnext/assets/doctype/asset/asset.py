@@ -31,8 +31,8 @@ class Asset(Document):
 		get_depreciation_accounts(self)
 
 	def check_asset_values(self):
-                if (flt(self.residual_value) + flt(self.opening_accumulated_depreciation) + flt(self.expected_value_after_useful_life)) > flt(self.gross_purchase_amount):
-                        frappe.throw("Gross Amount should be >= (Opening + Useful Life + Residual)")
+				if (flt(self.residual_value) + flt(self.opening_accumulated_depreciation) + flt(self.expected_value_after_useful_life)) > flt(self.gross_purchase_amount):
+						frappe.throw("Gross Amount should be >= (Opening + Useful Life + Residual)")
 
 	def on_submit(self):
 		self.make_asset_gl_entry()
@@ -184,7 +184,7 @@ class Asset(Document):
 				depreciation_amount = ((flt(self.gross_purchase_amount) - flt(self.residual_value)) * 12 * flt(num_days))/(flt(self.total_number_of_depreciations) * 365.25)
 			elif self.total_number_of_depreciations == 1:
 				depreciation_amount = (flt(self.gross_purchase_amount) - flt(self.expected_value_after_useful_life))
-  		else:
+		else:
 			depreciation_amount = 0.0
 
 		return flt(depreciation_amount, 2)
@@ -212,9 +212,9 @@ class Asset(Document):
 		for d in self.get("schedules"):
 			if d.journal_entry:
 				je = frappe.get_doc("Journal Entry", d.journal_entry)
-                                if je.docstatus == 1:
-                                        je.cancel()
-                                d.db_set("journal_entry", None)
+				if je.docstatus == 1:
+					je.cancel()
+				d.db_set("journal_entry", None)
 
 		self.db_set("value_after_depreciation",
 			(flt(self.gross_purchase_amount) - flt(self.opening_accumulated_depreciation)))
@@ -291,42 +291,42 @@ class Asset(Document):
 				})
 			je.submit();
 
-        def make_opening_accumulated_gl_entry(self):
-                """
-                        1. There is a mistake in getting the account by using the method below. 
-                        2. Method and variable Names has to be descriptive
-                """
-                accumulated_account = frappe.db.get_all("Asset Category Account","accumulated_depreciation_account",{"parent":self.asset_category},order_by="idx", as_list=1)
-                accumulated_account = accumulated_account[0][0] if accumulated_account else None 
-                #frappe.msgprint(_("{0}").format(accumulated_account))
-                if self.opening_accumulated_depreciation:
-                        je = frappe.new_doc("Journal Entry")
-                        je.flags.ignore_permissions = 1
-                        je.update({
-                                "voucher_type": "Journal Entry",
-                                "company": self.company,
-                                "remark": self.name + " (" + self.asset_name + " ) Asset Issued",
-                                "user_remark": self.name + "(" + self.asset_name + ") Asset Issued",
-                                "posting_date": self.purchase_date,
-                                "branch": self.branch
-                                })
-                        #credit
-                        je.append("accounts", {
-                                "account" : accumulated_account,
-                                "credit_in_account_currency": self.opening_accumulated_depreciation,
-                                "reference_type": "Asset",
-                                "reference_name": self.name,
-                                "cost_center": self.cost_center
-                                })
-                        #debit account update
-                        je.append("accounts", {
-                                "account": self.credit_account,
-                                "debit_in_account_currency": self.opening_accumulated_depreciation,
-                                "reference_type": "Asset",
-                                "reference_name": self.name,
-                                "cost_center": self.cost_center
-                                })
-                        je.submit();
+		def make_opening_accumulated_gl_entry(self):
+				"""
+						1. There is a mistake in getting the account by using the method below. 
+						2. Method and variable Names has to be descriptive
+				"""
+				accumulated_account = frappe.db.get_all("Asset Category Account","accumulated_depreciation_account",{"parent":self.asset_category},order_by="idx", as_list=1)
+				accumulated_account = accumulated_account[0][0] if accumulated_account else None 
+				#frappe.msgprint(_("{0}").format(accumulated_account))
+				if self.opening_accumulated_depreciation:
+						je = frappe.new_doc("Journal Entry")
+						je.flags.ignore_permissions = 1
+						je.update({
+								"voucher_type": "Journal Entry",
+								"company": self.company,
+								"remark": self.name + " (" + self.asset_name + " ) Asset Issued",
+								"user_remark": self.name + "(" + self.asset_name + ") Asset Issued",
+								"posting_date": self.purchase_date,
+								"branch": self.branch
+								})
+						#credit
+						je.append("accounts", {
+								"account" : accumulated_account,
+								"credit_in_account_currency": self.opening_accumulated_depreciation,
+								"reference_type": "Asset",
+								"reference_name": self.name,
+								"cost_center": self.cost_center
+								})
+						#debit account update
+						je.append("accounts", {
+								"account": self.credit_account,
+								"debit_in_account_currency": self.opening_accumulated_depreciation,
+								"reference_type": "Asset",
+								"reference_name": self.name,
+								"cost_center": self.cost_center
+								})
+						je.submit();
 		
 	def delete_asset_gl_entries(self):
 		gl_list = frappe.db.sql(""" select distinct je.name as journal_entry from `tabJournal Entry Account` as jea, `tabJournal Entry` as je where je.voucher_type = 'Journal Entry' and je.name = jea.parent and jea.reference_name = %s and je.docstatus = 1""", self.name, as_dict=True)
