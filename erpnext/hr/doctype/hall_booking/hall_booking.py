@@ -74,9 +74,9 @@ class HallBooking(AccountsController):
 		if frappe.db.sql("""select name from `tabGL Entry` where voucher_type=%s
 			and voucher_no=%s""", (self.doctype, self.name)):
 			for a in frappe.db.sql("""select name from `tabGL Entry` where voucher_type=%s
-			and voucher_no=%s""", (self.doctype, self.name)):
+			and voucher_no=%s""", (self.doctype, self.name),as_dict=1):
 				frappe.db.sql("""
-					delete from `tabGL Entry` where name = '{}'""".format(a))
+					delete from `tabGL Entry` where name = '{}'""".format(a.name))
 
 
 @frappe.whitelist()
