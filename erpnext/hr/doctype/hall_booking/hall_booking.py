@@ -73,7 +73,12 @@ class HallBooking(AccountsController):
 	def make_gl_entries_on_cancel(self, repost_future_gle=True):
 		if frappe.db.sql("""select name from `tabGL Entry` where voucher_type=%s
 			and voucher_no=%s""", (self.doctype, self.name)):
-				make_gl_entries(cancel=(self.docstatus == 2))
+			for a in frappe.db.sql("""select name from `tabGL Entry` where voucher_type=%s
+			and voucher_no=%s""", (self.doctype, self.name)):
+				frappe.db.sql("""
+					delete from `tabGL Entry` where name = '{}'
+                """.format(a))
+
 
 @frappe.whitelist()
 def make_direct_payment(source_name, target_doc=None):
