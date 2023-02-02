@@ -10,6 +10,8 @@ from frappe.model.mapper import get_mapped_doc
 from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
 from erpnext.accounts.accounts_custom_functions import get_company
+from erpnext.accounts.general_ledger import make_gl_entries
+
 
 class HallBooking(AccountsController):
 	def validate(self):
@@ -25,7 +27,6 @@ class HallBooking(AccountsController):
 			frappe.throw("Hall type <b>{0}</b> has been already booked by <b>{1}</b> from <b>{2}</b> till <b>{3}</b>".format(data[0].hall_type, data[0].customer, data[0].from_date, data[0].to_date))
 	def on_submit(self):
 		self.company = get_company(self)
-		from erpnext.accounts.general_ledger import make_gl_entries
 		gl_entries = []
 		default_ba = get_default_ba()
 		if self.amount:
@@ -72,7 +73,7 @@ class HallBooking(AccountsController):
 	def make_gl_entries_on_cancel(self, repost_future_gle=True):
 		if frappe.db.sql("""select name from `tabGL Entry` where voucher_type=%s
 			and voucher_no=%s""", (self.doctype, self.name)):
-				self.make_gl_entries(repost_future_gle)
+				make_gl_entries(repost_future_gle = repost_future_gle)
 
 @frappe.whitelist()
 def make_direct_payment(source_name, target_doc=None):
