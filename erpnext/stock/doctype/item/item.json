@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 1, 
- "allow_rename": 1, 
+ "allow_rename": 0, 
  "autoname": "field:item_code", 
  "beta": 0, 
  "creation": "2013-05-03 10:45:46", 
@@ -2852,7 +2852,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 1, 
- "modified": "2023-02-04 11:51:21.671964", 
+ "modified": "2023-02-04 12:19:32.830521", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Item", 
