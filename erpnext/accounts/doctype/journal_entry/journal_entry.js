@@ -78,15 +78,16 @@ frappe.ui.form.on("Journal Entry", {
 	},
 
 	branch: function(frm){
-		if (frm.doc.branch == undefined || frm.doc.voucher_type != 'Bank Entry'){
-			return;
-		} else {
-			frm.doc.voucher_type = "Journal Entry"
-			frm.doc.accounts.forEach((acc) => {
-				acc.account = ""
-				frm.refresh_fields();
-			});
-		}
+		// not sure of the use of below code so commented. Kinley Dorji
+		// if (frm.doc.branch == undefined || frm.doc.voucher_type != 'Bank Entry'){
+		// 	return;
+		// } else {
+		// 	frm.doc.voucher_type = "Journal Entry"
+		// 	frm.doc.accounts.forEach((acc) => {
+		// 		acc.account = ""
+		// 		frm.refresh_fields();
+		// 	});
+		// }
 	},
 
 	voucher_type: function(frm){
