@@ -36,15 +36,15 @@ def execute(filters):
 			sle.warehouse,
 			item_detail.stock_uom, sle.actual_qty, sle.qty_after_transaction,
 			(sle.incoming_rate if sle.actual_qty > 0 else 0.0),
-			sle.valuation_rate, sle.stock_value, sle.voucher_type, sle.voucher_no,
+			sle.valuation_rate, sle.stock_value_difference, sle.stock_value, sle.voucher_type, sle.voucher_no,
 			sle.vehicle_no, sle.transporter_name, sle.company])
 	return columns, data
 
 def get_columns():
-	return [_("Material Code") + ":Link/Item:130", _("Date") + ":Date:95", _("Time") + "Time:95", _("Material Name") + "::120", _("Timber Class") + ":Link/Timber Class:100", _("Material Group") + ":Link/Item Group:100", _("Material Sub Group") + ":Link/Item Sub Group:100",
+	return [_("Material Code") + ":Link/Item:80", _("Date") + ":Date:95", _("Time") + "Time:95", _("Material Name") + "::120", _("Timber Class") + ":Link/Timber Class:100", _("Material Group") + ":Link/Item Group:100", _("Material Sub Group") + ":Link/Item Sub Group:100",
 	 	_("Branch") + ":Link/Branch:100", _("Warehouse") + ":Link/Warehouse:100",
-		_("Stock UOM") + ":Link/UOM:100", _("Qty") + ":Float:50", _("Balance Qty") + ":Float:100",
-		_("Incoming Rate") + ":Currency:110", _("MAP") + ":Currency:110", _("Balance Value") + ":Currency:110",
+		_("Stock UOM") + ":Link/UOM:80", _("Qty") + ":Float:100", _("Balance Qty") + ":Float:100",
+		_("Incoming Rate") + ":Currency:110", _("MAP") + ":Currency:110", _("Value") + ":Currency:110", _("Balance Value") + ":Currency:110",
 		_("Transaction Type") + "::110", _("Transaction No.") + ":Dynamic Link/"+_("Transaction Type")+":100", _("Vehicle No") + ":Data:100", _("Transporter") + ":Data:100", _("Company") + ":Link/Company:100"
 	]
 
@@ -59,7 +59,7 @@ def get_stock_ledger_entries(filters):
     	                            WHEN sle.voucher_type = 'Purchase Receipt' THEN pr.branch
     	                            ELSE 'None' END) as branch, 
 				sle.warehouse, sum(sle.actual_qty) as actual_qty, (sle.qty_after_transaction) as qty_after_transaction, sle.incoming_rate, sle.valuation_rate,
-				sle.stock_value,
+				sle.stock_value, sle.stock_value_difference,
 				(CASE
     	                            WHEN sle.voucher_type = 'Production' AND pmi.name = sle.voucher_detail_no THEN 'Raw Materials'
     	                            ELSE sle.voucher_type
@@ -96,7 +96,7 @@ def get_stock_ledger_entries(filters):
     	                            WHEN sle.voucher_type = 'Purchase Receipt' THEN pr.branch
     	                            ELSE 'None' END) as branch, 
 				sle.warehouse, sum(sle.actual_qty) as actual_qty, (sle.qty_after_transaction) as qty_after_transaction, sle.incoming_rate, sle.valuation_rate,
-				sle.stock_value,
+				sle.stock_value, sle.stock_value_difference,
 				(CASE
     	                            WHEN sle.voucher_type = 'Production' AND pmi.name = sle.voucher_detail_no THEN 'Raw Materials'
     	                            ELSE sle.voucher_type
