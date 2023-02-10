@@ -27,9 +27,9 @@ class Account(Document):
 		#Account Codification if is not group -- Tashi Dorji
 		#account_code = self.account_code_base
 		#if cint(self.is_group) == 0:
-		account_code = self.account_code_gen()
-		#if account_code:
-		self.account_code = account_code
+		# account_code = self.account_code_gen()
+		# if account_code:
+		# 	self.account_code = account_code
 		#self.name = str(account_code) + ' - ' + self.account_name.strip() + ' - ' + company.abbr
 		self.name = self.account_name.strip() + ' - ' + company.abbr
 
