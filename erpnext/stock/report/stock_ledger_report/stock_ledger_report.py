@@ -58,8 +58,9 @@ def get_stock_ledger_entries(filters):
     	                            WHEN sle.voucher_type = 'Production' THEN prod.branch
     	                            WHEN sle.voucher_type = 'Purchase Receipt' THEN pr.branch
     	                            ELSE 'None' END) as branch, 
-				sle.warehouse, sle.actual_qty as actual_qty, sle.qty_after_transaction as qty_after_transaction, sle.incoming_rate, sle.valuation_rate,
-				sle.stock_value, sle.stock_value_difference,
+				sle.warehouse, sum(sle.actual_qty) as actual_qty, max(sle.qty_after_transaction) as qty_after_transaction, 
+				avg(sle.incoming_rate) incoming_rate, avg(sle.valuation_rate) valuation_rate,
+				max(sle.stock_value) stock_value, sum(sle.stock_value_difference) stock_value_difference,
 				(CASE
     	                            WHEN sle.voucher_type = 'Production' AND pmi.name = sle.voucher_detail_no THEN 'Raw Materials'
     	                            ELSE sle.voucher_type
@@ -84,7 +85,6 @@ def get_stock_ledger_entries(filters):
 			where sle.company = '{company}'
 			and sle.posting_date between '{from_date}' and '{to_date}'
 			{sle_conditions} {group_by} order by sle.posting_date asc, sle.posting_time asc, sle.name asc) as data {branch_cond}
-
 			""".format(sle_conditions=get_sle_conditions(filters), branch_cond=get_branch_conditions(filters), company=filters.get("company"), from_date=filters.get("from_date"), to_date=filters.get("to_date"), group_by = get_group_by(filters))
 	else:
 		query = """select * from (
@@ -95,8 +95,9 @@ def get_stock_ledger_entries(filters):
     	                            WHEN sle.voucher_type = 'Production' THEN prod.branch
     	                            WHEN sle.voucher_type = 'Purchase Receipt' THEN pr.branch
     	                            ELSE 'None' END) as branch, 
-				sle.warehouse, sle.actual_qty as actual_qty, sle.qty_after_transaction as qty_after_transaction, sle.incoming_rate, sle.valuation_rate,
-				sle.stock_value, sle.stock_value_difference,
+				sle.warehouse, sum(sle.actual_qty) as actual_qty, max(sle.qty_after_transaction) as qty_after_transaction, 
+				avg(sle.incoming_rate) incoming_rate, avg(sle.valuation_rate) valuation_rate,
+				max(sle.stock_value), sum(sle.stock_value_difference) stock_value_difference,
 				(CASE
     	                            WHEN sle.voucher_type = 'Production' AND pmi.name = sle.voucher_detail_no THEN 'Raw Materials'
     	                            ELSE sle.voucher_type
@@ -165,7 +166,7 @@ def get_stock_ledger_entries(filters):
 	# 	""".format(sle_conditions=get_sle_conditions(filters), branch_cond=get_branch_conditions(filters)),  filters, as_dict=1)
 
 def get_group_by(filters):
-	return ""
+	return "group by posting_date, posting_time, item_code, branch, voucher_no, batch_no, serial_no, vehicle_no, transporter_name, company"
 	# if filters.get("transaction_type") != "Production":
 	# 	group_by = "group by sle.voucher_no, sle.item_code, sle.warehouse"
 	# else:
