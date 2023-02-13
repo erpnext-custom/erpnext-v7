@@ -89,6 +89,9 @@ frappe.ui.form.on('MusterRoll Application Item', {
 		if(doc.rate_per_day) {
 			frappe.model.set_value(cdt, cdn, "rate_per_hour", (doc.rate_per_day * 1.5) / 8)
 			cur_frm.refresh_field("rate_per_hour")
+
+			frappe.model.set_value(cdt, cdn, "rate_per_hour_normal", (doc.rate_per_day/8))
+			cur_frm.refresh_field("rate_per_hour_normal")
 		}
 	},
 	"existing_cid": function(frm, cdt, cdn){
@@ -96,7 +99,7 @@ frappe.ui.form.on('MusterRoll Application Item', {
 
 		frappe.call({
 			method: "frappe.client.get_value",
-			args: {doctype: "Muster Roll Employee", fieldname: ["person_name", "rate_per_day", "rate_per_hour"],
+			args: {doctype: "Muster Roll Employee", fieldname: ["person_name", "rate_per_day", "rate_per_hour", "rate_per_hour_normal"],
 					filters: {
 								name: child.existing_cid
 					}},
@@ -104,6 +107,7 @@ frappe.ui.form.on('MusterRoll Application Item', {
 				frappe.model.set_value(cdt, cdn, "person_name", r.message.person_name);
 				frappe.model.set_value(cdt, cdn, "rate_per_day", r.message.rate_per_day);
 				frappe.model.set_value(cdt, cdn, "rate_per_hour", r.message.rate_per_hour);
+				frappe.model.set_value(cdt, cdn, "rate_per_hour_normal", r.message.rate_per_hour_normal);
 			}
 		})
 	},	

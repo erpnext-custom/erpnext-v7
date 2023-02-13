@@ -72,6 +72,9 @@ frappe.ui.form.on('Musterroll', {
 	if(wages.rate_per_day) {
 		frappe.model.set_value(wages.doctype, wages.name, "rate_per_hour", (wages.rate_per_day * 1.5) /8 );
 		frm.refresh_field("rate_per_hour")
+
+		frappe.model.set_value(wages.doctype, wages.name, "rate_per_hour_normal", (wages.rate_per_day/8));
+		frm.refresh_field("rate_per_hour_normal")
 		}
 	},
 	})

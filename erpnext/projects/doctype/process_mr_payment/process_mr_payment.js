@@ -58,7 +58,19 @@ frappe.ui.form.on('Process MR Payment', {
 				frm.refresh_fields();
 			}
 		});
-	}
+	},
+	// employee_type: function(frm){
+	// 	update_is_holiday_overtime_entry(frm);
+	// },
+	// cost_center: function(frm){
+	// 	update_is_holiday_overtime_entry(frm);
+	// },
+	// fiscal_year: function(frm){
+	// 	update_is_holiday_overtime_entry(frm);
+	// },
+	// month: function(frm){
+	// 	update_is_holiday_overtime_entry(frm);
+	// }
 });
 
 function get_records(employee_type, fiscal_year, month, from_date, to_date, cost_center, branch, dn) {
@@ -151,3 +163,21 @@ function get_records(employee_type, fiscal_year, month, from_date, to_date, cost
 		}
 	})
 }
+
+
+// function update_is_holiday_overtime_entry(frm){
+// 	if (frm.doc.employee_type && frm.doc.cost_center){
+// 		frappe.call({
+// 			method: "erpnext.projects.doctype.process_mr_payment.process_mr_payment.update_is_holiday_overtime_entry",
+// 			args: {
+// 				"employee_type": frm.doc.employee_type,
+// 				"branch": frm.doc.branch,
+// 				"fiscal_year": frm.doc.fiscal_year,
+// 				"fiscal_month": frm.doc.month
+// 			},
+// 			callback: function(r){
+// 				console.log(r.message);
+// 			}
+// 		})
+// 	}
+// }

@@ -48,102 +48,103 @@ def add_header(w, args):
 
 def add_data(w, args):
 	#dates = get_dates(args)
-        month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].index(args.month) + 1
-        month = str(month) if cint(month) > 9 else str("0" + str(month))
+	month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].index(args.month) + 1
+	month = str(month) if cint(month) > 9 else str("0" + str(month))
 
-        total_days = monthrange(cint(args.fiscal_year), cint(month))[1]
-        start_date = str(args.fiscal_year) + '-' + str(month) + '-' + str('01')
-        end_date   = str(args.fiscal_year) + '-' + str(month) + '-' + str(total_days)
-        
+	total_days = monthrange(cint(args.fiscal_year), cint(month))[1]
+	start_date = str(args.fiscal_year) + '-' + str(month) + '-' + str('01')
+	end_date   = str(args.fiscal_year) + '-' + str(month) + '-' + str(total_days)
+	
 	employees  = get_active_employees(args, start_date, end_date)
 	loaded     = get_loaded_records(args, start_date, end_date)
 	
 	for e in employees:
-                number_of_hours = ''
-                
+		number_of_hours = ''
+		
 		row = [
 			e.branch, e.cost_center, e.etype, "\'"+str(e.name)+"\'", e.person_name, args.fiscal_year, args.month
 		]
 
-                for day in range(cint(total_days)):
-                        number_of_hours = loaded.get(e.etype, frappe._dict()).get(e.name, frappe._dict()).get(day+1,'')
-                        row.append(number_of_hours)                
+		for day in range(cint(total_days)):
+			number_of_hours = loaded.get(e.etype, frappe._dict()).get(e.name, frappe._dict()).get(day+1,'')
+			row.append(number_of_hours)                
 		w.writerow(row)
 	return w
 
 def get_loaded_records(args, start_date, end_date):
-        loaded_list= frappe._dict()
+	loaded_list= frappe._dict()
 
-        rl = frappe.db.sql("""
-                        select
-                                case 
-                                    when employee_type = 'Muster Roll Employee' then 'MR'
-                                    when employee_type = 'GEP Employee' then 'GEP'
-                                    else 'Employee'
-                                end as employee_type,
-                                number as employee,
-                                day(date) as day_of_date,
-                                sum(ifnull(number_of_hours,0)) as number_of_hours
-                        from `tabOvertime Entry`
-                        where branch = '{0}'
-                        and date between %s and %s
-                        and docstatus = 1
-                        group by employee_type, employee, day_of_date
-                """.format(args.branch), (start_date, end_date), as_dict=1)
+	rl = frappe.db.sql("""
+			select
+				case 
+				    when employee_type = 'Muster Roll Employee' then 'MR'
+				    when employee_type = 'GEP Employee' then 'GEP'
+				    else 'Employee'
+				end as employee_type,
+				number as employee,
+				day(date) as day_of_date,
+				sum(ifnull(number_of_hours,0)) as number_of_hours
+			from `tabOvertime Entry`
+			where branch = '{0}'
+			and date between %s and %s
+			and docstatus = 1
+			group by employee_type, employee, day_of_date
+		""".format(args.branch), (start_date, end_date), as_dict=1)
 
-        for r in rl:
-                loaded_list.setdefault(r.employee_type, frappe._dict()).setdefault(r.employee, frappe._dict()).setdefault(r.day_of_date,r.number_of_hours)
+	for r in rl:
+		loaded_list.setdefault(r.employee_type, frappe._dict()).setdefault(r.employee, frappe._dict()).setdefault(r.day_of_date,r.number_of_hours)
 
-        return loaded_list
+	return loaded_list
 
 def get_active_employees(args, start_date, end_date):
 	employees = frappe.db.sql("""
-                select distinct
-                        "MR" as etype,
-                        me.name,
-                        me.person_name,
-                        iw.branch,
-                        iw.cost_center
+		select distinct
+			"MR" as etype,
+			me.name,
+			me.person_name,
+			iw.branch,
+			iw.cost_center
 		from `tabMuster Roll Employee` as me, `tabEmployee Internal Work History` as iw
-                where me.docstatus < 2
-                and me.status = 'Active'
+		where me.docstatus < 2
+		and me.status = 'Active'
 		and iw.parent = me.name
-                and iw.branch = '{0}'
+		and iw.branch = '{0}'
 		and (
-                        ('{1}' between iw.from_date and ifnull(iw.to_date,now()))
-                        or
-                        ('{2}' between iw.from_date and ifnull(iw.to_date,now()))
-                        or
-                        (iw.from_date between '{1}' and '{2}')
-                        or
-                        (ifnull(iw.to_date,now()) between '{1}' and '{2}')
-                )
+			('{1}' between iw.from_date and ifnull(iw.to_date,now()))
+			or
+			('{2}' between iw.from_date and ifnull(iw.to_date,now()))
+			or
+			(iw.from_date between '{1}' and '{2}')
+			or
+			(ifnull(iw.to_date,now()) between '{1}' and '{2}')
+		)
 		UNION
 		select distinct
-                        "GEP" as etype,
-                        ge.name,
-                        ge.person_name,
-                        iw.branch,
-                        iw.cost_center
+			"GEP" as etype,
+			ge.name,
+			ge.person_name,
+			iw.branch,
+			iw.cost_center
 		from `tabGEP Employee` as ge, `tabEmployee Internal Work History` as iw
-                where ge.docstatus < 2
+		where ge.docstatus < 2
 		and ge.status = 'Active'
-                and iw.parent = ge.name
-                and iw.branch = '{0}'
+		and iw.parent = ge.name
+		and iw.branch = '{0}'
 		and (
-                        ('{1}' between iw.from_date and ifnull(iw.to_date,now()))
-                        or
-                        ('{2}' between iw.from_date and ifnull(iw.to_date,now()))
-                        or
-                        (iw.from_date between '{1}' and '{2}')
-                        or
-                        (ifnull(iw.to_date,now()) between '{1}' and '{2}')
-                )
+			('{1}' between iw.from_date and ifnull(iw.to_date,now()))
+			or
+			('{2}' between iw.from_date and ifnull(iw.to_date,now()))
+			or
+			(iw.from_date between '{1}' and '{2}')
+			or
+			(ifnull(iw.to_date,now()) between '{1}' and '{2}')
+		)
 		""".format(args.branch, start_date, end_date), {"branch": args.branch}, as_dict=1)
 	return employees
 
 @frappe.whitelist()
-def upload():			
+def upload():
+	from erpnext.projects.doctype.process_mr_payment.process_mr_payment import check_if_holiday_overtime_entry		
 	if not frappe.has_permission("Overtime Entry", "create"):
 		raise frappe.PermissionError
 
@@ -166,31 +167,34 @@ def upload():
 		try:
 			row_idx = i + 4
 			for j in range(8, len(row) + 1):
-                                month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].index(row[6]) + 1
-                                month = str(month) if cint(month) > 9 else str("0" + str(month))
-                                day   = str(cint(j) - 7) if cint(j) > 9 else str("0" + str(cint(j) - 7))
+				month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].index(row[6]) + 1
+				month = str(month) if cint(month) > 9 else str("0" + str(month))
+				day   = str(cint(j) - 7) if cint(j) > 9 else str("0") + str(cint(j) - 7)
+				if int(day) < 10 and day:
+					day = "0"+str(int(day))
+				old = frappe.db.get_value("Overtime Entry", {"number":str(row[3]).strip('\''), "date": str(row[5]) + '-' + str(month) + '-' + str(day), "docstatus": 1}, ["docstatus","name","number_of_hours"], as_dict=1)
 
-                                old = frappe.db.get_value("Overtime Entry", {"number":str(row[3]).strip('\''), "date": str(row[5]) + '-' + str(month) + '-' + str(day), "docstatus": 1}, ["docstatus","name","number_of_hours"], as_dict=1)
-
-                                if old:
-                                        doc = frappe.get_doc("Overtime Entry", old.name)
-                                        doc.db_set('number_of_hours', flt(row[j-1]))
-                                
-                                if not old and flt(row[j-1]) > 0:
-                                        doc = frappe.new_doc("Overtime Entry")
+				if old:
+					doc = frappe.get_doc("Overtime Entry", old.name)
+					doc.db_set('number_of_hours', flt(row[j-1]))
+				
+				if not old and flt(row[j-1]) > 0:
+					doc = frappe.new_doc("Overtime Entry")
 					doc.branch          = row[0]
-                                        doc.cost_center     = row[1]
-                                        doc.number          = str(row[3]).strip('\'')
-                                        doc.date            = str(row[5]) + '-' + str(month) + '-' + str(day)
-                                        doc.number_of_hours = flt(row[j -1])
-                                        
-                                        if str(row[2]) == "MR":
-                                                doc.employee_type = "Muster Roll Employee"
-                                        elif str(row[2]) == "GEP":
-                                                doc.employee_type = "GEP Employee"
-                                                
-					if not getdate(doc.date) > getdate(nowdate()):
-						doc.submit()
+					doc.cost_center     = row[1]
+					doc.number          = str(row[3]).strip('\'')
+					doc.date            = str(row[5]) + '-' + str(month) + '-' + str(day)
+					doc.number_of_hours = flt(row[j -1])
+					if day != None or day != []:
+						doc.is_holiday = check_if_holiday_overtime_entry(row[0], doc.date)
+					else:
+						doc.is_holiday = 0
+					if str(row[2]) == "MR":
+						doc.employee_type = "Muster Roll Employee"
+					elif str(row[2]) == "GEP":
+						doc.employee_type = "GEP Employee"
+					# if not getdate(doc.date) > getdate(nowdate()):
+					doc.submit()
 		except Exception, e:
 			error = True
 			ret.append('Error for row (#%d) %s : %s' % (row_idx,
