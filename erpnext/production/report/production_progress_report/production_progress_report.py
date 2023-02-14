@@ -290,9 +290,9 @@ def get_cc_conditions(filters):
 			branch = branch.replace(' - NRDCL','')
 			condition += " and pe.branch = '"+branch+"'"
 		else:
-			if filters.cost_center:
-				is_company = frappe.db.get_value("Cost Center", filters.cost_center)
-			if not is_company:
+			# if filters.cost_center:
+			# 	is_company = frappe.db.get_value("Cost Center", filters.cost_center)
+			if not filters.is_company:
 				ccs = []
 				all_ccs = frappe.db.sql("""
 					select name from `tabCost Center` where parent_cost_center = '{0}'
