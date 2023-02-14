@@ -102,7 +102,7 @@ def check_item_code(doctype, txt, searchfield, start, page_len, filters):
 					from `tabAsset Issue Details` aid
 					where aid.purchase_receipt = ar.ref_doc
 					and aid.docstatus != 2
-					and (select sum(ad.qty) from `tabAsset Issue Details` ad where ad.docstatus != 2 and ad.purchase_receipt = ar.ref_doc and ad.item_code = '{item}') < ar.qty
+					and (select sum(ad.qty) from `tabAsset Issue Details` ad where ad.docstatus != 2 and ad.purchase_receipt = ar.ref_doc and ad.item_code = '{item}') > ar.qty
 				)
 			""".format(cond=cond, item=filters.get('item_code'))
     

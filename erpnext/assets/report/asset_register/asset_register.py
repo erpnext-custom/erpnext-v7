@@ -190,8 +190,10 @@ def get_data(filters):
 
 			if a.status in ('Scrapped', 'Sold') and a.disposal_date < filters.from_date:
 				dep_opening = 0
+				net_income_tax = 0
 			else:
 				dep_opening 	= flt(a.opening_accumulated_depreciation,2) + flt(a.dep_opening,2)
+				net_income_tax = flt(a.gross_purchase_amount) - flt(a.iopening) - flt(a.depreciation_income_tax) - flt(a.opening_income)
 			dep_addition	= flt(a.dep_addition,2)
 			dep_adjustment 	= flt(a.dep_adjustment,2) if (dep_opening+dep_addition) else 0
 			dep_total	= dep_opening + dep_addition - dep_adjustment
@@ -209,7 +211,11 @@ def get_data(filters):
 			'''
 
 			net_useful_life = gross_total - dep_total
-			net_income_tax = flt(a.gross_purchase_amount) - flt(a.iopening) - flt(a.depreciation_income_tax) - flt(a.opening_income)
+			#Added by Thukten to make Net Income value same to Net Book Value if the Asset is Depreciated within the same Fiscal Year
+			if a.status in ('Scrapped', 'Sold') and a.disposal_date > filters.from_date:
+				net_income_tax  = net_useful_life
+
+			#net_income_tax = flt(a.gross_purchase_amount) - flt(a.iopening) - flt(a.depreciation_income_tax) - flt(a.opening_income)
 
 			total_gross_opening 	+= gross_opening
 			total_gross_addition 	+= gross_addition
