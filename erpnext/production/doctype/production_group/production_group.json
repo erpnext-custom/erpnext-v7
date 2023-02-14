@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 0, 
- "allow_rename": 0, 
+ "allow_rename": 1, 
  "autoname": "field:production_group", 
  "beta": 0, 
  "creation": "2018-10-12 09:38:08.792433", 
@@ -72,7 +72,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-11-02 10:55:19.963302", 
+ "modified": "2023-02-14 12:20:29.103525", 
  "modified_by": "Administrator", 
  "module": "Production", 
  "name": "Production Group", 
@@ -125,6 +125,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
- "track_changes": 0, 
+ "track_changes": 1, 
  "track_seen": 0
 }
