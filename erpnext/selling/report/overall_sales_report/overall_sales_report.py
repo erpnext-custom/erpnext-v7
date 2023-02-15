@@ -503,8 +503,12 @@ def get_conditions(filters=None):
 		else:
 			cond += " and dn.branch = '"+branch+"'"
 	
-	if filters.location and filters.report_by == "Delivery Note":
-		cond += " and dni.location = '" + str(filters.location) + "'"
+	if filters.location:
+		if filters.report_by == "Delivery Note":
+			cond += " and dni.location = '" + str(filters.location) + "'"
+		if filters.report_by == "Sales Order":
+			cond += " and so.location = '"+ str(filters.location) + "'"
+			
 
 	if filters.uom:
 		if filters.report_by == "Sales Order":
