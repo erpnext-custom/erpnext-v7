@@ -49,7 +49,7 @@
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_filter": 1, 
-   "in_list_view": 1, 
+   "in_list_view": 0, 
    "label": "Material Name", 
    "length": 0, 
    "no_copy": 0, 
@@ -704,7 +704,7 @@
  "issingle": 0, 
  "istable": 1, 
  "max_attachments": 0, 
- "modified": "2019-06-14 12:56:06.875441", 
+ "modified": "2023-02-15 12:17:11.439724", 
  "modified_by": "Administrator", 
  "module": "Buying", 
  "name": "Request for Quotation Item", 
@@ -716,6 +716,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
- "track_changes": 0, 
+ "track_changes": 1, 
  "track_seen": 0
 }

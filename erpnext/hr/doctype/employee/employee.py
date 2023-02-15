@@ -94,6 +94,7 @@ class Employee(Document):
 		self.validate_employment()
 		self.validate_employee_leave_approver()
 		self.validate_reports_to()
+		self.validate_highest_qualification()
 
 #		if self.passport_number:
 #			data = frappe.db.sql("select employee_name from `tabEmployee` where passport_number = '{0}'".format(self.passport_number), as_dict=True)
@@ -128,6 +129,14 @@ class Employee(Document):
 			self.update_user_permissions()
 		self.post_casual_leave()
 		self.update_salary_structure()
+
+	def validate_highest_qualification(self):
+		count = 0
+		for a in self.education:
+			if a.is_highest_qualification_level == 1:
+				count += 1
+		if count > 1:
+			frappe.throw("Employee has two Highest Qualifiication Level please check under Educational Qualification")
 
 	def update_retirement_age(self):
                 ret = frappe.db.sql("""
