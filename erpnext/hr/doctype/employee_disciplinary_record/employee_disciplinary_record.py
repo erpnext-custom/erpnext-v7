@@ -65,8 +65,8 @@ class EmployeeDisciplinaryRecord(Document):
 			self.db_set("promotion_month", promotion_cycle)
 
 		#Update Employee Master : Employment_status ="Suspended", promotion and increment cycle = blank if checked			
-		emp = frappe.get_doc("Employee", self.employee)
-		emp.employment_status = "Suspended"
+		# emp = frappe.get_doc("Employee", self.employee)
+		# emp.employment_status = "Suspended"
 
 		if self.salary_increment:
 			emp.increment_and_promotion_cycle = ""
