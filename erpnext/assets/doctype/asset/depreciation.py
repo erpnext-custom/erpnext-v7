@@ -30,6 +30,7 @@ def get_depreciable_assets(asset, date):
 		and a.docstatus=1
 		and ds.schedule_date<=%s
 		and a.disable_depreciation = 0
+		and a.asset_category != 'Investment Property'
 		and ifnull(ds.journal_entry, '')=''
 		{}
 	""".format(cond), date)
