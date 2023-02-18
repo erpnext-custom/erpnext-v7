@@ -157,7 +157,7 @@ class AssetModifier(Document):
 					accu_income = flt(i.accumulated_depreciation_income_tax) + (flt(value)/(100 * 365.25)) * flt(asset_obj.asset_depreciation_percent) * num_till_days
 					self.update_value(i.name, dep_amount, accu_dep, income, accu_income)
 
-					if i.journal_entry:
+					if i.journal_entry and frappe.db.get_value("Journal Entry", i.journal_entry, "docstatus") == 1:
 						update_jv(i.journal_entry, dep_amount)
 						""" below code added by Jai, 18 Feb 2023 """
 						if flt(asset_obj.gross_purchase_amount) != flt(0.0):
