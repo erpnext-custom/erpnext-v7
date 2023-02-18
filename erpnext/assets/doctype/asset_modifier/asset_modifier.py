@@ -128,7 +128,7 @@ class AssetModifier(Document):
 				""" below code added by Jai, 18 Feb 2023 """
 				if flt(asset_obj.gross_purchase_amount) == flt(0.0):
 					asset_obj.db_set("value_after_depreciation", 0)
-				else
+				else:
 					asset_obj.db_set("value_after_depreciation", flt(asset_obj.gross_purchase_amount))
 
 				if self.docstatus == 1:
