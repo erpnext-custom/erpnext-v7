@@ -125,6 +125,10 @@ class AssetModifier(Document):
 				#Make GL Entries for additional values and update gross_amount (rate)
 				asset_obj.db_set("additional_value", flt(asset_obj.additional_value) + flt(value))
 				asset_obj.db_set("gross_purchase_amount", flt(flt(asset_obj.gross_purchase_amount) + flt(value)))
+				""" below code added by Jai, 18 Feb 2023 """
+				if flt(asset_obj.gross_purchase_amount) == flt(0.0):
+					asset_obj.db_set("value_after_depreciation", 0)
+
 				if self.docstatus == 1:
 					self.make_gl_entry(asset_account, credit_account, value, asset_obj, start_date)
 				#Get dep. schedules which had not yet happened
@@ -153,6 +157,9 @@ class AssetModifier(Document):
 
 					if i.journal_entry:
 						update_jv(i.journal_entry, dep_amount)
+						""" below code added by Jai, 18 Feb 2023 """
+						if flt(asset_obj.gross_purchase_amount) != flt(0.0):
+							asset_obj.db_set("value_after_depreciation", flt(flt(asset_obj.gross_purchase_amount) - flt(accu_dep) - flt(asset_obj.residual_value), 2))
 
 				##Update last dep schedule date
 					last_sch_date = i.schedule_date
