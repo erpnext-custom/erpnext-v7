@@ -70,9 +70,10 @@ def get_depreciation_details(filters):
 		FROM `tabDepreciation Schedule` as ds
 		WHERE ds.schedule_date <= '{to_date}'
 		AND IFNULL(ds.journal_entry,'') != ''
+		AND exists (select 1 from `tabJournal Entry` je where je.name=ds.journal_entry and je.docstatus=1)
 		GROUP BY ds.parent
 	""".format(from_date=filters.from_date, to_date=filters.to_date)
-
+	""" above this cond. added by Jai 19 Feb, 2023 => AND exists (select 1 from `tabJournal Entry` je where je.name=ds.journal_entry and je.docstatus=1) """
 	'''
 		AND EXISTS(SELECT 1
 			FROM `tabJournal Entry` je
