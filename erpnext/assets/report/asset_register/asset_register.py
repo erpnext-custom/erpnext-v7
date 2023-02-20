@@ -124,7 +124,7 @@ def get_data(filters):
 					WHERE am.asset = a.name
 					AND am.docstatus = 1
 					AND am.addition_date BETWEEN '{from_date}' AND '{to_date}'
-					AND am.value > 0
+					AND am.value != 0
 					),0)
 				) 
 			) gross_addition,
