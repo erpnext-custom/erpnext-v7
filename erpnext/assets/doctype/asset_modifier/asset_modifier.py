@@ -135,36 +135,38 @@ class AssetModifier(Document):
 					self.make_gl_entry(asset_account, credit_account, value, asset_obj, start_date)
 				#Get dep. schedules which had not yet happened
 				schedules = frappe.db.get_all("Depreciation Schedule", order_by="schedule_date", filters = {"parent": asset_obj.name, "schedule_date": [">=", start_date]},fields={"name", "schedule_date", "journal_entry", "depreciation_amount", "accumulated_depreciation_amount", "depreciation_income_tax","accumulated_depreciation_income_tax"})
-				if not schedules:
-					frappe.throw(_("Asset <b>{}</b> Depreciation Schedule Date is out of Effective Date {}".format(asset, str(start_date))))
-				##Get total number of dep days for the asset
-				total_days = get_number_of_days(start_date, schedules[-1]['schedule_date'])
-				##Assign the last dep schedule date for num of days calc
-				last_sch_date = start_date
-				for i in schedules:
-				#Add additional values to the depreciation schedules
-				#Calc num of days for each dep schedule
-					num_days = get_number_of_days(last_sch_date, i.schedule_date)
-				#Calc num of days till current schedule
-					num_till_days = get_number_of_days(start_date, i.schedule_date)
-				##Updated dep amount
-					dep_amount = flt(i.depreciation_amount) + (flt(value) * num_days / total_days)
-				##Updated accu dep amount
-					accu_dep = flt(i.accumulated_depreciation_amount) + (flt(value) * num_till_days / total_days)
-				#Income amount
-					income = flt(i.depreciation_income_tax) + (flt(value)/(100 * 365.25)) * flt(asset_obj.asset_depreciation_percent) * num_days
-				#Accumulated Income amount
-					accu_income = flt(i.accumulated_depreciation_income_tax) + (flt(value)/(100 * 365.25)) * flt(asset_obj.asset_depreciation_percent) * num_till_days
-					self.update_value(i.name, dep_amount, accu_dep, income, accu_income)
+				# if not schedules:
+				# 	frappe.throw(_("Asset <b>{}</b> Depreciation Schedule Date is out of Effective Date {}".format(asset, str(start_date))))
+				
+				if schedules:
+					##Get total number of dep days for the asset
+					total_days = get_number_of_days(start_date, schedules[-1]['schedule_date'])
+					##Assign the last dep schedule date for num of days calc
+					last_sch_date = start_date
+					for i in schedules:
+					#Add additional values to the depreciation schedules
+					#Calc num of days for each dep schedule
+						num_days = get_number_of_days(last_sch_date, i.schedule_date)
+					#Calc num of days till current schedule
+						num_till_days = get_number_of_days(start_date, i.schedule_date)
+					##Updated dep amount
+						dep_amount = flt(i.depreciation_amount) + (flt(value) * num_days / total_days)
+					##Updated accu dep amount
+						accu_dep = flt(i.accumulated_depreciation_amount) + (flt(value) * num_till_days / total_days)
+					#Income amount
+						income = flt(i.depreciation_income_tax) + (flt(value)/(100 * 365.25)) * flt(asset_obj.asset_depreciation_percent) * num_days
+					#Accumulated Income amount
+						accu_income = flt(i.accumulated_depreciation_income_tax) + (flt(value)/(100 * 365.25)) * flt(asset_obj.asset_depreciation_percent) * num_till_days
+						self.update_value(i.name, dep_amount, accu_dep, income, accu_income)
 
-					if i.journal_entry and frappe.db.get_value("Journal Entry", i.journal_entry, "docstatus") == 1:
-						update_jv(i.journal_entry, dep_amount)
-						""" below code added by Jai, 18 Feb 2023 """
-						if flt(asset_obj.gross_purchase_amount) != flt(0.0):
-							asset_obj.db_set("value_after_depreciation", flt(flt(asset_obj.gross_purchase_amount) - flt(accu_dep) - flt(asset_obj.residual_value), 2))
+						if i.journal_entry and frappe.db.get_value("Journal Entry", i.journal_entry, "docstatus") == 1:
+							update_jv(i.journal_entry, dep_amount)
+							""" below code added by Jai, 18 Feb 2023 """
+							if flt(asset_obj.gross_purchase_amount) != flt(0.0):
+								asset_obj.db_set("value_after_depreciation", flt(flt(asset_obj.gross_purchase_amount) - flt(accu_dep) - flt(asset_obj.residual_value), 2))
 
-				##Update last dep schedule date
-					last_sch_date = i.schedule_date
+					##Update last dep schedule date
+						last_sch_date = i.schedule_date
 
 				#Add the reappropriation details for record
 				app_details = frappe.new_doc("Asset Modification Entries")
