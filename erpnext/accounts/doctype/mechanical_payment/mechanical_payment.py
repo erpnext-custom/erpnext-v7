@@ -99,7 +99,10 @@ class MechanicalPayment(AccountsController):
 		for ref in self.items:
 			if ref.reference_type == "Job Card":
 				doc = frappe.get_doc("Job Card", ref.reference_name)
-				doc.mechanical_payment = self.name
+				if not doc.mechanical_payment:
+					doc.mechanical_payment = self.name
+				else:
+					doc.mechanical_payment = str(doc.mechanical_payment)+", "+self.name
 				doc.save(ignore_permissions=True)
 	
 	def update_ref_doc(self, cancel=None):
