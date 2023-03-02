@@ -459,11 +459,12 @@ def make_payment_entry(source_name, target_doc=None):
 @frappe.whitelist()
 def make_payment(source_name, target_doc=None):
 		def update_docs(obj, target, source_parent):
+
 				paid_doc_amount = frappe.db.sql("""
 					select ifnull(sum(a.payable_amount),0) from `tabMechanical Payment Item` b, `tabMechanical Payment` a
 					where a.name = b.parent and a.docstatus = 1
 					and b.reference_name = '{}'
-				""".format(obj.reference_name))[0][0]
+				""".format(obj.name))[0][0]
 				paid_amount = obj.total_amount
 				if paid_doc_amount:
 					paid_amount = flt(flt(paid_amount,2)-flt(paid_amount,2),2) 
