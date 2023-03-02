@@ -459,6 +459,13 @@ def make_payment_entry(source_name, target_doc=None):
 @frappe.whitelist()
 def make_payment(source_name, target_doc=None):
 		def update_docs(obj, target, source_parent):
+				paid_doc_amount = frappe.db.sql("""
+					select ifnull(sum(a.payable_amount),0) from `tabMechanical Payment Item` b, `tabMechanical Payment` a
+					where a.name = b.parent and a.docstatus = 1
+				""")[0][0]
+				paid_amount = obj.total_amount
+				if paid_doc_amount:
+					paid_amount = flt(flt(paid_amount,2)-flt(paid_amount,2),2) 
 				target.posting_date = nowdate()
 				target.payment_for = "Job Card"
 				target.net_amount = obj.total_amount
@@ -468,8 +475,8 @@ def make_payment(source_name, target_doc=None):
 				target.append("items", {
 						"reference_type": "Job Card",
 						"reference_name": obj.name,
-						"outstanding_amount": obj.total_amount,
-						"allocated_amount": obj.total_amount
+						"outstanding_amount": paid_amount,
+						"allocated_amount": paid_amount 
 				})
 
 		doc = get_mapped_doc("Job Card", source_name, {
