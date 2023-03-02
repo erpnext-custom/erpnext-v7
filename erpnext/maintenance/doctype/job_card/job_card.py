@@ -470,8 +470,9 @@ def make_payment(source_name, target_doc=None):
 					paid_amount = flt(flt(paid_amount,2)-flt(paid_doc_amount,2),2) 
 				target.posting_date = nowdate()
 				target.payment_for = "Job Card"
-				target.net_amount = obj.total_amount
-				target.actual_amount = obj.total_amount
+				target.payable_amount = paid_amount
+				target.net_amount = paid_amount
+				target.actual_amount = paid_amount
 				target.outgoing_account = frappe.db.get_value("Branch", obj.branch, "revenue_bank_account")
 				target.supplier = obj.supplier
 				target.append("items", {
