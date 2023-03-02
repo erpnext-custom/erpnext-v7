@@ -88,6 +88,7 @@ class MechanicalPayment(AccountsController):
 		
 		self.make_gl_entry()
 		self.update_ref_doc(cancel=1)
+		self.update_job_card(cancel=True)
 		self.cancel_budget_entry()
 
 	def check_amount(self):
@@ -95,14 +96,26 @@ class MechanicalPayment(AccountsController):
 			frappe.throw("Net Amount cannot be less than Zero")
 		if self.tds_amount < 0:
 			frappe.throw("TDS Amount cannot be less than Zero")
-	def update_job_card(self): 
+	def update_job_card(self, cancel=False): 
 		for ref in self.items:
 			if ref.reference_type == "Job Card":
 				doc = frappe.get_doc("Job Card", ref.reference_name)
-				if not doc.mechanical_payment:
-					doc.mechanical_payment = self.name
+				if cancel == False:
+					if not doc.mechanical_payment:
+						doc.mechanical_payment = self.name
+					else:
+						doc.mechanical_payment = str(doc.mechanical_payment)+", "+self.name
 				else:
-					doc.mechanical_payment = str(doc.mechanical_payment)+", "+self.name
+					mechanical_payment = None
+					if doc.mechanical_payment:
+						for mp in str(doc.mechanical_payment).split(", "):
+							if mp != self.name:
+								if not mechanical_payment:
+									mechanical_payment = mp
+								else:
+									mechanical_payment = mechanical_payment+", "+mp
+					doc.mechanical_payment = mechanical_payment
+								
 				doc.save(ignore_permissions=True)
 	
 	def update_ref_doc(self, cancel=None):
