@@ -122,9 +122,9 @@ class MechanicalPayment(AccountsController):
 		for a in self.items:
 			doc = frappe.get_doc(a.reference_type, a.reference_name)
 			if cancel:
-				amount = flt(doc.outstanding_amount) + flt(a.allocated_amount)
+				amount = flt(doc.outstanding_amount) + flt(self.payable_amount)
 			else:
-				amount = flt(doc.outstanding_amount) -  flt(a.allocated_amount) 
+				amount = flt(doc.outstanding_amount) -  flt(self.payable_amount) 
 
 			if a.reference_type == "Job Card":
 				payable_amount = doc.total_amount
