@@ -94,10 +94,10 @@ frappe.ui.form.on("Journal Entry", {
 		console.log(frm.doc.voucher_type)
 		if (frm.doc.branch == undefined || frm.doc.voucher_type != 'Bank Entry' && (frm.doc.naming_series != 'Bank Payment Voucher' || 
 		frm.doc.naming_series != 'Bank Receipt Voucher')){
-			frm.doc.accounts.forEach((acc) => {
-				acc.account = ""
-				frm.refresh_fields();
-			});
+			// frm.doc.accounts.forEach((acc) => {
+			// 	acc.account = ""
+			// 	frm.refresh_fields();
+			// });
 			console.log(frm.doc.voucher_type, "inside", frm.doc.naming_series,frm.doc.branch)
 			return;
 		}
