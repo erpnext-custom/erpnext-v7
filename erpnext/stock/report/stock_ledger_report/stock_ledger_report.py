@@ -166,7 +166,7 @@ def get_stock_ledger_entries(filters):
 	# 	""".format(sle_conditions=get_sle_conditions(filters), branch_cond=get_branch_conditions(filters)),  filters, as_dict=1)
 
 def get_group_by(filters):
-	return "group by posting_date, posting_time, item_code, branch, voucher_no, batch_no, serial_no, vehicle_no, transporter_name, company"
+	return "group by posting_date, posting_time, item_code, branch, warehouse, voucher_no, batch_no, serial_no, vehicle_no, transporter_name, company"
 	# if filters.get("transaction_type") != "Production":
 	# 	group_by = "group by sle.voucher_no, sle.item_code, sle.warehouse"
 	# else:
