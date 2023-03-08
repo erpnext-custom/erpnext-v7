@@ -1212,13 +1212,13 @@ def get_branch_location(site, item, branch=None, location=None):
 		else:
 			cond.append('spr.location = "{0}"'.format(location))
 	
-	item_uom = frappe.db.get_value('Item', item, 'stock_uom')
-	if item_uom:
-		check_uom = frappe.db.sql("select 1 from `tabSelling Price` sp, `tabSelling Price Rate` spr where spr.parent = sp.name and spr.particular='{0}' and spr.selling_uom='{1}'".format(item, item_uom))
-		if check_uom:
-			cond.append('IF(spr.selling_uom IS NULL,"",spr.selling_uom) = "{0}"'.format(item_uom))
-		else:
-			cond.append('IF(spr.selling_uom IS NULL,"",spr.selling_uom) = ""')
+	# item_uom = frappe.db.get_value('Item', item, 'stock_uom')
+	# if item_uom:
+	# 	check_uom = frappe.db.sql("select 1 from `tabSelling Price` sp, `tabSelling Price Rate` spr where spr.parent = sp.name and spr.particular='{0}' and spr.selling_uom='{1}'".format(item, item_uom))
+	# 	if check_uom:
+	# 		cond.append('IF(spr.selling_uom IS NULL,"",spr.selling_uom) = "{0}"'.format(item_uom))
+	# 	else:
+	# 		cond.append('IF(spr.selling_uom IS NULL,"",spr.selling_uom) = ""')
 
 	cond = " and ".join(cond)
 	cond = " and "+cond if cond else cond
@@ -1279,6 +1279,7 @@ def get_branch_location(site, item, branch=None, location=None):
 		and spr.price_based_on = "Item"
 		and spr.particular = "{item}"
 		and i.name = "{item}"
+		and (ifnull(spr.selling_uom,'') = '' or ifnull(spr.selling_uom,'') = i.stock_uom)
 		{cond}
 		and (
 			spr.location is null
