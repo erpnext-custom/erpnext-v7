@@ -9,7 +9,7 @@ from frappe.utils import flt, cint, getdate, get_datetime, get_url, nowdate, now
 from erpnext.accounts.general_ledger import make_gl_entries
 from frappe import _
 from erpnext.controllers.accounts_controller import AccountsController
-from erpnext.custom_utils import check_future_date
+from erpnext.custom_utils import check_future_date, check_tds_remittance
 
 class DirectPayment(AccountsController):
     def validate(self):
@@ -26,6 +26,7 @@ class DirectPayment(AccountsController):
         pass
 
     def on_cancel(self):
+        check_tds_remittance(self.name)
         if self.clearance_date:
             frappe.throw("Already done bank reconciliation.")
         self.post_gl_entry()

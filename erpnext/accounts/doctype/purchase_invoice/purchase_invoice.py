@@ -17,7 +17,7 @@ from erpnext.accounts.general_ledger import make_gl_entries, merge_similar_entri
 from erpnext.accounts.doctype.gl_entry.gl_entry import update_outstanding_amt
 from frappe.model.naming import make_autoname
 from erpnext.custom_autoname import get_auto_name
-from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
+from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date, check_tds_remittance
 
 form_grid_templates = {
 	"items": "templates/form_grid/item_grid.html"
@@ -782,6 +782,7 @@ class PurchaseInvoice(BuyingController):
 			)
 
 	def on_cancel(self):
+		check_tds_remittance(self.name)
 		check_uncancelled_linked_doc(self.doctype, self.name)
 		self.check_for_closed_status()
 

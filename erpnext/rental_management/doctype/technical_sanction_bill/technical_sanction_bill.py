@@ -10,6 +10,7 @@ from frappe.model.mapper import get_mapped_doc
 from frappe.utils import cstr, flt, fmt_money, formatdate, nowdate, cint
 from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
+from erpnext.custom_utils import check_tds_remittance
 
 class TechnicalSanctionBill(AccountsController):
 	def validate(self):
@@ -170,6 +171,7 @@ class TechnicalSanctionBill(AccountsController):
 
 
 	def on_cancel(self):
+		check_tds_remittance(self.name)
 		if self.docstatus == 2:
 			self.cancel_linked_docs()
 			self.make_gl_entries()

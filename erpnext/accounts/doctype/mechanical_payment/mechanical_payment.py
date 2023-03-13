@@ -7,7 +7,7 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import getdate, cint, cstr, flt, fmt_money, formatdate, nowdate
 from erpnext.controllers.accounts_controller import AccountsController
-from erpnext.custom_utils import generate_receipt_no, check_future_date, get_branch_cc
+from erpnext.custom_utils import generate_receipt_no, check_future_date, get_branch_cc, check_tds_remittance
 from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
 
 class MechanicalPayment(AccountsController):
@@ -95,7 +95,8 @@ class MechanicalPayment(AccountsController):
 		self.update_ref_doc()
 		self.consume_budget()
 
-	def on_cancel(self):	
+	def on_cancel(self):
+		check_tds_remittance(self.name)
 		if self.clearance_date:
 			frappe.throw("Already done bank reconciliation.")
 		

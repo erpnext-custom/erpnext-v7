@@ -17,6 +17,7 @@ from frappe.model.document import Document
 from frappe.utils import flt, time_diff_in_hours, get_datetime, getdate, cint, get_datetime_str
 from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
+from erpnext.custom_utils import check_tds_remittance
 
 class ProjectInvoice(AccountsController):
 	def validate(self):
@@ -39,6 +40,7 @@ class ProjectInvoice(AccountsController):
                 self.set_status()
 
         def on_cancel(self):
+                check_tds_remittance(self.name)
                 self.make_gl_entries()
                 self.update_boq_item()
                 self.update_boq()
