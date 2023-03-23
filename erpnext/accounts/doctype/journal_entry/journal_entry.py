@@ -136,6 +136,19 @@ class JournalEntry(AccountsController):
 		# Following method is created by SHIV on 04/09/2017
 		self.update_project_advance(cancel=True)
 		# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+		if self.voucher_type == "Depreciation Entry":
+			self.update_asset_depreciation_schedule()
+
+	def update_asset_depreciation_schedule(self):
+		for a in frappe.get_list("Depreciation Schedule", filters={"journal_entry": self.name}, fields=["name","depreciation_amount","parent"]):
+			asset_doc = frappe.get_doc("Asset", a.parent)
+			
+			for s in asset_doc.get("schedules"):
+				if s.journal_entry == self.name:
+					s.db_set("journal_entry", None)
+					asset_doc.value_after_depreciation = asset_doc.value_after_depreciation + a.depreciation_amount
+			
+			asset_doc.db_update()
 
 	def validate_party(self):
 		for d in self.get("accounts"):
