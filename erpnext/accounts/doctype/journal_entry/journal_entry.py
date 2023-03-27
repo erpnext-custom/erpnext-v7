@@ -141,7 +141,7 @@ class JournalEntry(AccountsController):
 
 	def update_asset_depreciation_schedule(self):
 		# for a in frappe.get_list("Depreciation Schedule", filters={"journal_entry": self.name}, fields=["name","depreciation_amount","parent"]):
-		for a in frappe.db.sql("select name,depreciation_amount,parent from `tabDepreciation Schedule` where journal_entry='{}'".format(self.name)):
+		for a in frappe.db.sql("select name,depreciation_amount,parent from `tabDepreciation Schedule` where journal_entry='{}'".format(self.name), as_dict=True):
 			asset_doc = frappe.get_doc("Asset", a.parent)
 			
 			for s in asset_doc.get("schedules"):
