@@ -45,9 +45,9 @@ class DirectPayment(AccountsController):
             if self.payment_type == "Receive":
                 inter_company = frappe.db.get_value(
                     "Customer", self.party, "inter_company")
-                if inter_company == 0:
-                    frappe.throw(
-                        _("Selected Customer {0} is not inter company ".format(self.party)))
+                # if inter_company == 0:
+                #     frappe.throw(
+                #         _("Selected Customer {0} is not inter company ".format(self.party)))
 
             if self.payment_type == "Payment" and a.party_type == "Customer":
                 frappe.throw(
