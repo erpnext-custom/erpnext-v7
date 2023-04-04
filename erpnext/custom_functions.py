@@ -26,7 +26,7 @@ def check_pending_approvers():
 	for a in sorted_list:
 		send_email(a, sorted_list[a], "Travel Claim")
 
-	mrs = frappe.db.sql("select name, leave_approver as approver, creation as date from `tabLeave Application` where docstatus = 0", as_dict=True)
+	mrs = frappe.db.sql("select name, leave_approver as approver, creation as date from `tabLeave Application` where docstatus = 0 and workflow_state not in ('Draft','Rejected','Rejected by Supervisor')", as_dict=True)
 	sorted_list = segregrate(mrs)
 	for a in sorted_list:
 		send_email(a, sorted_list[a], "Leave Application")
