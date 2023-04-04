@@ -252,23 +252,23 @@ class ProjectPayment(AccountsController):
                 tot_adv_amount = 0.0
                 tot_inv_amount = 0.0
 
-                if flt(self.total_amount) <= 0:
+                if flt(self.total_amount,2) <= 0:
                         frappe.throw(_("Total amount should be greater than zero"),title="Invalid Data")
                         
                 for adv in self.advances:
-                        tot_adv_amount += adv.allocated_amount
-                        if flt(adv.allocated_amount) > flt(adv.total_amount):
+                        tot_adv_amount += flt(adv.allocated_amount,2)
+                        if flt(adv.allocated_amount,2) > flt(adv.total_amount,2):
                                 frappe.throw(_("Advance#{0} : Allocated amount cannot be more than available balance").format(adv.reference_name))
 
                 for inv in self.references:
-                        tot_inv_amount += inv.allocated_amount
-                        if flt(inv.allocated_amount) > flt(inv.total_amount):
+                        tot_inv_amount += flt(inv.allocated_amount,2)
+                        if flt(inv.allocated_amount,2) > flt(inv.total_amount,2):
                                 frappe.throw(_("Invoice#{0} : Allocated amount cannot be more than available balance").format(inv.reference_name))                        
 
-                if flt(tot_adv_amount) > flt(tot_inv_amount):
+                if flt(tot_adv_amount,2) > flt(tot_inv_amount,2):
                         frappe.throw(_("Total advance allocated Nu. {0}/- cannot be more than total invoice amount allocated Nu. {1}/-.".format("{:,.2f}".format(flt(tot_adv_amount)), "{:,.2f}".format(flt(tot_inv_amount)))))
 
-                if flt(self.total_amount) > flt(tot_inv_amount,2):
+                if flt(self.total_amount,2) > flt(tot_inv_amount,2):
                         frappe.throw(_("Total Amount({0}) cannot be more than Total Invoice Amount Allocated({1})").format(flt(self.total_amount),flt(tot_inv_amount)))
                         
         def load_references(self):

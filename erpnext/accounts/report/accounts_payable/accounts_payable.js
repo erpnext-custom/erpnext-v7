@@ -23,6 +23,21 @@ frappe.query_reports["Accounts Payable"] = {
 			"default": get_today()
 		},
 		{
+			"fieldname": "account",
+			"label": __("Payable Account"),
+			"fieldtype": "Link",
+			"options": "Account",
+			"default": "Creditors-Other - CDCL",
+			"get_query": function() {
+				return {
+					filters: {
+						'account_type': 'Payable',
+						'is_group': 0
+					}
+				};
+			}
+		},
+		{
 			"fieldname":"ageing_based_on",
 			"label": __("Ageing Based On"),
 			"fieldtype": "Select",

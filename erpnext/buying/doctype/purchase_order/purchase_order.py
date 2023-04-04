@@ -66,6 +66,11 @@ class PurchaseOrder(BuyingController):
 		self.validate_minimum_order_qty()
 		self.create_raw_materials_supplied("supplied_items")
 		self.set_received_qty_for_drop_ship_items()
+		self.check_po_date()
+
+	def check_po_date(self):
+		if self.schedule_date < self.transaction_date:
+			frappe.throw("Delivery Date-{} cannot be less than PO date-{}".format(self.schedule_date, self.transaction_date))
 
 	def validate_asset_brand(self):
 		for a in self.items:

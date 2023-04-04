@@ -23,6 +23,21 @@ frappe.query_reports["Accounts Receivable"] = {
 			"default": get_today()
 		},
 		{
+			"fieldname": "account",
+			"label": __("Receivable Account"),
+			"fieldtype": "Link",
+			"options": "Account",
+			"default": "Debtor-others - CDCL",
+			"get_query": function() {
+				return {
+					filters: {
+						'account_type': 'Receivable',
+						'is_group': 0
+					}
+				};
+			}
+		},
+		{
 			"fieldname":"ageing_based_on",
 			"label": __("Ageing Based On"),
 			"fieldtype": "Select",
