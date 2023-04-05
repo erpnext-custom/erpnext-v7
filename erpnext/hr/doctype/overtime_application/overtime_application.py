@@ -116,3 +116,23 @@ class OvertimeApplication(Document):
 			frappe.throw("You need to cancel the journal entry " + str(self.payment_jv) + " first!")
 		
 		self.db_set("payment_jv", "")
+
+def get_permission_query_conditions(user):
+	if not user: user = frappe.session.user
+	user_roles = frappe.get_roles(user)
+
+	if user == "Administrator":
+		return
+	if "HR User" in user_roles or "HR Manager" in user_roles:
+		return
+
+	return """(
+		`tabOvertime Application`.owner = '{user}'
+		or
+		exists(select 1
+				from `tabEmployee`
+				where `tabEmployee`.name = `tabOvertime Application`.employee
+				and `tabEmployee`.user_id = '{user}')
+		or
+		(`tabOvertime Application`.approver = '{user}' and `tabOvertime Application`.workflow_state not in ('Draft','Approved','Rejected','Cancelled'))
+	)""".format(user=user)
