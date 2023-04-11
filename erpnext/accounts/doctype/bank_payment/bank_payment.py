@@ -556,7 +556,7 @@ class BankPayment(Document):
 					#added by cety on 5-09-2022 for customer
 					elif party_type == "Customer":
 						query = """select c.bank_name, c.bank_branch, c.bank_account_type, 
-										c.account_number as bank_account_no, c.name as beneficiary_name,
+										c.account_number as bank_account_no, c.customer_name as beneficiary_name,
 										(CASE WHEN c.bank_name = "INR" THEN c.inr_bank_code ELSE NULL END) inr_bank_code,
 										(CASE WHEN c.bank_name = "INR" THEN c.inr_purpose_code ELSE NULL END) inr_purpose_code
 										from `tabCustomer` c
