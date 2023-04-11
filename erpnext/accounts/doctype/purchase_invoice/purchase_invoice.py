@@ -448,9 +448,10 @@ class PurchaseInvoice(BuyingController):
 		if self.tds_account and flt(self.tds_amount):
 			# Didnot use base_grand_total to book rounding loss gle
 			grand_total_in_company_currency = flt((self.net_total) * self.conversion_rate, self.precision("grand_total"))
+		elif self.total_add_ded > 0:
+			grand_total_in_company_currency = flt((self.total+self.other_charges) * self.conversion_rate, self.precision("grand_total"))
 		else:
 			# Didnot use base_grand_total to book rounding loss gle
-			# grand_total_in_company_currency = flt((self.total+self.other_charges) * self.conversion_rate, self.precision("grand_total"))
 			grand_total_in_company_currency = flt((self.base_net_total+self.other_charges) * self.conversion_rate, self.precision("grand_total"))
 
 		gl_entries.append(
