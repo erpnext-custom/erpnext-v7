@@ -655,13 +655,13 @@ class SalesInvoice(SellingController):
 		
 		# merge gl entries before adding pos entries
 		gl_entries = merge_similar_entries(gl_entries)
-		if frappe.session.user == "Administrator":
-			frappe.throw(str(gl_entries))
+
 		self.make_pos_gl_entries(gl_entries)
 		self.make_gle_for_change_amount(gl_entries)
 
 		self.make_write_off_gl_entry(gl_entries)
-		frappe.msgprint(str(gl_entries))
+		if frappe.session.user == "Administrator":
+			frappe.throw(str(gl_entries))
 		return gl_entries
 
 	def make_customer_gl_entry(self, gl_entries):
