@@ -655,12 +655,13 @@ class SalesInvoice(SellingController):
 		
 		# merge gl entries before adding pos entries
 		gl_entries = merge_similar_entries(gl_entries)
-
+		if frappe.session.user == "Administrator":
+			frappe.throw(str(gl_entries))
 		self.make_pos_gl_entries(gl_entries)
 		self.make_gle_for_change_amount(gl_entries)
 
 		self.make_write_off_gl_entry(gl_entries)
-		# frappe.msgprint(str(gl_entries))
+		frappe.msgprint(str(gl_entries))
 		return gl_entries
 
 	def make_customer_gl_entry(self, gl_entries):
@@ -727,8 +728,8 @@ class SalesInvoice(SellingController):
 						self.get_gl_dict({
 							"account": item.income_account,
 							"against": self.customer,
-							"credit": item.base_net_amount,
-							"credit_in_account_currency": item.base_net_amount \
+							"credit": self.base_total,
+							"credit_in_account_currency": self.base_total \
 								if account_currency==self.company_currency else item.net_amount,
 							"cost_center": item.cost_center,
 							"business_activity": item.business_activity,
