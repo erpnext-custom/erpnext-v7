@@ -24,8 +24,8 @@ class ImprestRecoup(AccountsController):
                         msg = '<b>Reference# : <a href="#Form/Imprest Recoup/{0}">{0}</a></b>'.format(t.name)
                         frappe.throw(_("Found unclosed entries. Previous entries needs to be either closed or cancelled in order to determine opening balance for the current transaction.<br>{0}").format(msg),title="Invalid Operation")
 
-                if not self.final_settlement:   # Ver 3.0 Begins, by SHIV on 2018/11/18, if condition added (applicable for only NRDCL)
-                        self.post_receipt_entry()
+                # if not self.final_settlement:   # Ver 3.0 Begins, by SHIV on 2018/11/18, if condition added (applicable for only NRDCL)
+                #         self.post_receipt_entry()
                 update_dependencies(self.branch, self.imprest_type, self.entry_date)
                 self.post_gl_entry()
                 self.consume_budget()
