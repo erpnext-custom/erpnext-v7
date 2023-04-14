@@ -32,6 +32,8 @@ class TechnicalSanctionBill(AccountsController):
 			tdsAmount = self.tds_amount
 		self.total_amount = total - self.total_deduction_amount - tdsAmount
 
+		self.total_gross_amount = total
+
 	def on_submit(self):
 		self.make_gl_entries()
 		self.update_linked_docs()
