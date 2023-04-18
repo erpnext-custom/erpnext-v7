@@ -67,11 +67,11 @@ def get_data(filters):
 	if cint(filters.show_excluded_accounts):
 		excluded_accounts = get_excluded_accounts()
 		if len(excluded_accounts) > 1:
-			cond = "and a1.name in ({})".format(','.join(['"'+str(i)+'"' for i in excluded_accounts]))
+			cond = "and name in ({})".format(','.join(['"'+str(i)+'"' for i in excluded_accounts]))
 		elif len(excluded_accounts) == 1:
-			cond = 'and a1.name = "{}"'.format(excluded_accounts[0])
+			cond = 'and name = "{}"'.format(excluded_accounts[0])
 	else:
-		cond = "and a1.exclude_account = 0"
+		cond = "and exclude_account = 0"
 
 	accounts = frappe.db.sql("""select name, parent_account, account_name, root_type, report_type, lft, rgt
 		from `tabAccount` where company=%s {cond} order by lft""".format(cond=cond), (filters.company), as_dict=True)
