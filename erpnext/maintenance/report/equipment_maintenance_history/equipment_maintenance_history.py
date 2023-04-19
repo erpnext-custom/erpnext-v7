@@ -35,7 +35,12 @@ def get_data(filters=None):
 		select se.posting_date as posting_date, se.branch, sed.issued_equipment_no as equipment, (select equipment_number from `tabEquipment` where name = sed.issued_equipment_no)
 as equipment_number, 'Stock entry', se.name, 'Stock entry',  sed.amount, sed.qty, se.name 
 from `tabStock Entry` se, `tabStock Entry Detail` sed where se.name= sed.parent and issue_to_equipment =1 
-and posting_date between '{0}' AND '{1}' and se.branch = '{2}'  """.format(filters.from_date, filters.to_date, filters.branch, filters.equipment)
+and posting_date between '{0}' AND '{1}' and se.branch = '{2}' 
+		union
+		select je.posting_date as posting_date, je.branch, jea.party as equipment, (select equipment_number from `tabEquipment` where name = jea.party)
+as equipment_number, 'Journal Entry', je.name, 'Journal Entry',  je.debit as, 0 as qty, je.name 
+from `tabJournal Entry` je, `tabJournal Entry Account` jea where je.name= jea.parent and jea.party_type = 'Equipment' 
+and posting_date between '{0}' AND '{1}' and je.branch = '{2}' and je.docstatus = 1""".format(filters.from_date, filters.to_date, filters.branch, filters.equipment)
 
 
 	# if filters.from_date and filters.to_date:
