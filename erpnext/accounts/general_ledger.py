@@ -8,6 +8,7 @@ from frappe import _
 from frappe.model.meta import get_field_precision
 from erpnext.budget.doctype.budget.budget import validate_expense_against_budget
 from frappe import msgprint
+from erpnext.custom_utils import check_account_frozen
 
 class StockAccountInvalidTransaction(frappe.ValidationError): pass
 
@@ -81,6 +82,10 @@ def check_if_in_list(gle, gl_map):
 def save_entries(gl_map, adv_adj, update_outstanding):
 	validate_account_for_auto_accounting_for_stock(gl_map)
 	round_off_debit_credit(gl_map)
+
+	""" added by Jai 21 April 2023 """
+	if gl_map and not adv_adj:
+		check_account_frozen(gl_map[0]["posting_date"])
 
 	for entry in gl_map:
 		make_entry(entry, adv_adj, update_outstanding)
