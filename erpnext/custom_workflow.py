@@ -334,6 +334,9 @@ def validate_workflow_states(doc):
 				vars(doc)[document_approver[1]] = officiating[1] if officiating else final_approver[1]
 
 		elif workflow_state in ['Rejected', 'Rejected By Supervisor']:
+			if  doc.leave_approver != frappe.session.user:
+				frappe.throw("Only {0} can Reject the leave application".format(doc.leave_approver))
+
 			if workflow_state == "Rejected".lower():
 				doc.status = "Rejected"
 
