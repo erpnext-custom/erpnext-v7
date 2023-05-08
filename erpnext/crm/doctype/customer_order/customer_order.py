@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from frappe.utils import cint, flt, now, add_days, add_to_date, get_datetime
+from frappe.utils import cint, flt, now, today, add_days, add_to_date, get_datetime
 from frappe.model.document import Document
 from erpnext.crm_utils import get_branch_rate, get_branch_location, get_vehicles, get_limit_details
 from erpnext.crm_api import init_payment
@@ -499,6 +499,13 @@ class CustomerOrder(Document):
 			self.dzongkhag	= doc.dzongkhag
 			self.plot_no	= doc.plot_no
 			self.site_location	= doc.location
+			self.construction_start_date = doc.construction_start_date
+			self.construction_end_date = doc.construction_end_date
+
+			if self.construction_start_date and self.construction_end_date \
+				and not (str(self.construction_start_date) <= str(today()) <= str(self.construction_end_date)):
+				frappe.throw(_("You can place the orders only within the approved construction dates i.e., between {} and {}")\
+					.format(self.construction_start_date, self.construction_end_date))
 		else:
 			if frappe.db.exists("Product Category", {"name": self.product_category, "site_required": 1}):
 				if self.product_category == "Timber" and self.product_group == "Sawn Timber" and flt(self.total_quantity) <= 25:
