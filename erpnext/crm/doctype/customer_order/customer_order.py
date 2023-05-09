@@ -501,6 +501,8 @@ class CustomerOrder(Document):
 			self.site_location	= doc.location
 			self.construction_start_date = doc.construction_start_date
 			self.construction_end_date = doc.construction_end_date
+			if doc.extension_till_date and doc.extension_till_date > doc.construction_end_date:
+				self.construction_end_date = doc.extension_till_date
 
 			if self.construction_start_date and self.construction_end_date \
 				and not (str(self.construction_start_date) <= str(today()) <= str(self.construction_end_date)):
