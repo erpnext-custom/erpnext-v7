@@ -77,7 +77,7 @@ class ImprestRecoup(AccountsController):
                 if flt(opening_balance) != flt(self.opening_balance):
                         #frappe.msgprint(_("Opening balance has been changed from Nu.{0}/- to Nu.{1}/-").format(flt(self.opening_balance),flt(opening_balance)),title="Change in values")
                         self.opening_balance = flt(opening_balance)
-                frappe.throw(self.opening_balance, self.receipt_amount, self.purchase_amount)
+                # frappe.throw(self.opening_balance, self.receipt_amount, self.purchase_amount)
                 self.closing_balance = flt(self.opening_balance)+flt(self.receipt_amount)-flt(self.purchase_amount)
 
         def validate_amounts(self):
