@@ -70,11 +70,8 @@ class AssetIssueDetails(Document):
 		asset.insert()
 		frappe.db.commit()
 
-		asset_code = frappe.db.get_value("Asset", {'item_code':self.item_code, 'docstatus': 0, 'issued_to':self.issued_to, 'branch':self.branch}, 'name')
-		if asset_code:
-			frappe.db.sql("update `tabAsset Issue Details` set reference_code=%s where name=%s",(asset_code, self.name))
-		else:
-			frappe.throw("Asset not able to create for asset issue no.".format(self.name))
+		frappe.db.sql("update `tabAsset Issue Details` set reference_code=%s where name=%s",(asset.name, self.name))
+
 
 	def on_cancel(self):
 		if self.reference_code:
